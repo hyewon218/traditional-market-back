@@ -2,6 +2,7 @@ package com.market.domain.market.entity;
 
 import com.market.domain.base.BaseEntity;
 import com.market.domain.image.entity.Image;
+import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.shop.entity.Shop;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,4 +47,9 @@ public class Market extends BaseEntity {
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<Shop> shopList = new ArrayList<>();
 
+    public void update(MarketRequestDto requestDto){
+        this.marketName = requestDto.getMarketName();
+        this.marketAddr = requestDto.getMarketAddr();
+        this.marketDetail = requestDto.getMarketDetail();
+    }
 }

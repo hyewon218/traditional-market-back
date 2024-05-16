@@ -4,6 +4,7 @@ import com.market.domain.base.BaseEntity;
 import com.market.domain.image.entity.Image;
 import com.market.domain.item.entity.Item;
 import com.market.domain.market.entity.Market;
+import com.market.domain.shop.dto.ShopRequestDto;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,4 +48,12 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<Image> image = new ArrayList<>();
 
+    public void update(ShopRequestDto requestDto) {
+        this.shopName = requestDto.getShopName();
+        this.tel = requestDto.getTel();
+        this.owner = requestDto.getOwner();
+        this.postCode = requestDto.getPostCode();
+        this.streetAddr = requestDto.getStreetAddr();
+        this.detailAddr = requestDto.getDetailAddr();
+    }
 }
