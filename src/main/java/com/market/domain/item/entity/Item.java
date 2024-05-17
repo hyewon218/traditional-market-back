@@ -4,6 +4,8 @@ import com.market.domain.base.BaseEntity;
 import com.market.domain.image.entity.Image;
 import com.market.domain.item.constant.ItemSellStatus;
 import com.market.domain.item.dto.ItemRequestDto;
+import com.market.domain.item.itemComment.entity.ItemComment;
+import com.market.domain.item.itemLike.entity.ItemLike;
 import com.market.domain.shop.entity.Shop;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,12 +58,19 @@ public class Item extends BaseEntity {
     private Shop shop;
 
     @OneToMany(mappedBy = "item", orphanRemoval = true)
-    private List<Image> image = new ArrayList<>();
+    private List<Image> imageList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "item", orphanRemoval = true)
+    private List<ItemLike> itemLikeList = new ArrayList<>();
 
-    public void update(ItemRequestDto requestDto){
+    @OneToMany(mappedBy = "item", orphanRemoval = true)
+    private List<ItemComment> itemCommentList = new ArrayList<>();
+
+    public void updateItem(ItemRequestDto requestDto){
         this.itemName = requestDto.getItemName();
         this.price = requestDto.getPrice();
+        this.stockNumber = requestDto.getStockNumber();
         this.itemDetail = requestDto.getItemDetail();
+        this.itemSellStatus = requestDto.getItemSellStatus();
     }
 }
