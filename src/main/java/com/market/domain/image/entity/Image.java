@@ -42,17 +42,17 @@ public class Image {
     @JoinColumn(name = "item_no")
     private Item item;
 
-    public Image(Market market,String urlText){
+    public Image(Market market, String urlText) {
         this.market = market;
         this.imageUrl = urlText;
     }
 
-    public Image(Shop shop,String urlText){
+    public Image(Shop shop, String urlText) {
         this.shop = shop;
         this.imageUrl = urlText;
     }
 
-    public Image(Item item,String urlText){
+    public Image(Item item, String urlText) {
         this.item = item;
         this.imageUrl = urlText;
     }
