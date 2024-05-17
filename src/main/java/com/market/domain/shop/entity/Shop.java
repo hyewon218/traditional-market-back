@@ -5,6 +5,8 @@ import com.market.domain.image.entity.Image;
 import com.market.domain.item.entity.Item;
 import com.market.domain.market.entity.Market;
 import com.market.domain.shop.dto.ShopRequestDto;
+import com.market.domain.shop.shopComment.entity.ShopComment;
+import com.market.domain.shop.shopLike.entity.ShopLike;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +28,22 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_no")
     private Long no;
 
+    @Column(nullable = false)
     private String shopName;
 
+    @Column(nullable = false)
     private String tel;
 
+    @Column(nullable = false)
     private String owner;
 
+    @Column(nullable = false)
     private String postCode; // 주소 찾기 api 이용 시 필요, 우편번호
 
+    @Column(nullable = false)
     private String streetAddr; // 주소 찾기 api 이용 시 필요, 도로명 주소
 
+    @Column(nullable = false)
     private String detailAddr; // 주소 찾기 api 이용 시 필요, 상세 주소
 
     @ManyToOne
@@ -46,9 +54,15 @@ public class Shop extends BaseEntity {
     private List<Item> itemList = new ArrayList<>();
 
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
-    private List<Image> image = new ArrayList<>();
+    private List<Image> imageList = new ArrayList<>();
 
-    public void update(ShopRequestDto requestDto) {
+    @OneToMany(mappedBy = "shop", orphanRemoval = true)
+    private List<ShopLike> shopLikeList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "shop", orphanRemoval = true)
+    private List<ShopComment> shopCommentList = new ArrayList<>();
+
+    public void updateShop(ShopRequestDto requestDto) {
         this.shopName = requestDto.getShopName();
         this.tel = requestDto.getTel();
         this.owner = requestDto.getOwner();
