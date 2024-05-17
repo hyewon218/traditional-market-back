@@ -5,14 +5,18 @@ import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.member.entity.Member;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
+import com.market.domain.shop.shopLike.entity.ShopLike;
+import com.market.domain.shop.shopLike.repository.ShopLikeRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,14 +35,15 @@ public class ShopServiceImpl implements ShopService {
     private final MarketRepository marketRepository;
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
+    private final ShopLikeRepository shopLikeRepository;
 
     @Override
     @Transactional // 상점 생성
     public void createShop(ShopRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
-        // 선택한 시장 에 상점 등록
+        // 선택한 시장에 상점 등록
         Market market = marketRepository.findById(requestDto.getMarketNo()).orElseThrow(
-            () -> new IllegalArgumentException("해당 시장이 존재하지 않습니다.")
+            () -> new BusinessException(ErrorCode.NOT_FOUND_MARKET)
         );
 
         Shop shop = requestDto.toEntity(market);
@@ -72,16 +77,17 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional // 상점명 수정
+    @Transactional // 상점 수정
     public void updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
         Shop shop = findShop(shopNo);
 
-        shop.update(requestDto);
+        shop.updateShop(requestDto);
 
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "shop " + shop.getNo());
+
                 if (imageRepository.existsByImageUrlAndNo(fileUrl, shop.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
@@ -91,15 +97,39 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional // 시장 삭제
-    public void deleteShop(Long marketNo) {
-        Shop shop = findShop(marketNo);
+    @Transactional // 상점 삭제
+    public void deleteShop(Long shopNo) {
+        Shop shop = findShop(shopNo);
         shopRepository.delete(shop);
     }
 
+    @Override
+    @Transactional
+    public void createShopLike(Long shopNo, Member member) { // 좋아요 생성
+        Shop shop = findShop(shopNo);
+
+        shopLikeRepository.findByShopAndMember(shop, member).ifPresent(shopLike -> {
+            throw new BusinessException(ErrorCode.EXISTS_SHOP_LIKE);
+        });
+        shopLikeRepository.save(new ShopLike(shop, member));
+    }
+
+    @Override
+    @Transactional
+    public void deleteShopLike(Long shopNo, Member member) { // 좋아요 삭제
+        Shop shop = findShop(shopNo);
+        Optional<ShopLike> shopLike = shopLikeRepository.findByShopAndMember(shop, member);
+
+        if (shopLike.isPresent()) {
+            shopLikeRepository.delete(shopLike.get());
+        } else {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_SHOP_LIKE);
+        }
+    }
+
     @Override // 시장 찾기
-    public Shop findShop(Long marketNo) {
-        return shopRepository.findById(marketNo)
-            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
+    public Shop findShop(Long shopNo) {
+        return shopRepository.findById(shopNo)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_SHOP));
     }
 }

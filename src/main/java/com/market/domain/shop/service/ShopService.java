@@ -1,5 +1,6 @@
 package com.market.domain.shop.service;
 
+import com.market.domain.member.entity.Member;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.Shop;
@@ -36,7 +37,7 @@ public interface ShopService {
     /**
      * 상점명 수정
      *
-     * @param shopNo   : 수정할 상점 no
+     * @param shopNo     : 수정할 상점 no
      * @param requestDto : 상점 수정 요청정보
      */
     void updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
@@ -48,6 +49,22 @@ public interface ShopService {
      * @param shopNo : 삭제할 상점 no
      */
     void deleteShop(Long shopNo);
+
+    /**
+     * 좋아요 생성
+     *
+     * @param shopNo : 종아요할 상점 no
+     * @param member : 좋아요 생성 요청자
+     */
+    void createShopLike(Long shopNo, Member member);
+
+    /**
+     * 좋아요 삭제
+     *
+     * @param shopNo : 종아요 삭제할 상점 no
+     * @param member : 좋아요 삭제 요청자
+     */
+    void deleteShopLike(Long shopNo, Member member);
 
     /**
      * 상점 찾기
