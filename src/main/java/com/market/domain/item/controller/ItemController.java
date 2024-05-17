@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -69,5 +70,21 @@ public class ItemController {
         @PathVariable Long itemNo) {
         itemService.deleteItem(itemNo);
         return ResponseEntity.ok().body(new ApiResponse("상품 삭제 완료!", HttpStatus.OK.value()));
+    }
+
+    @PostMapping("/items/{itemNo}/like")
+    public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
+        @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        itemService.createItemLike(itemNo, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(new ApiResponse("해당 상품에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
+    }
+
+    @DeleteMapping("/items/{itemNo}/like")
+    public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
+        @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        itemService.deleteItemLike(itemNo, userDetails.getUser());
+        return ResponseEntity.ok()
+            .body(new ApiResponse("해당 상품에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
 }

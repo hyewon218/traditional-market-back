@@ -6,11 +6,15 @@ import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.entity.Market;
+import com.market.domain.market.marketLike.entity.MarketLike;
+import com.market.domain.market.marketLike.repository.MarketLikeRepository;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +32,7 @@ public class MarketServiceImpl implements MarketService {
     private final MarketRepository marketRepository;
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
+    private final MarketLikeRepository marketLikeRepository;
 
     @Override
     @Transactional // 시장 생성
@@ -44,6 +49,7 @@ public class MarketServiceImpl implements MarketService {
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
+
                 if (imageRepository.existsByImageUrlAndNo(fileUrl, market.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
@@ -74,9 +80,11 @@ public class MarketServiceImpl implements MarketService {
         Market market = findMarket(marketNo);
 
         market.update(requestDto);
+
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
+
                 if (imageRepository.existsByImageUrlAndNo(fileUrl, market.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
@@ -90,6 +98,31 @@ public class MarketServiceImpl implements MarketService {
     public void deleteMarket(Long marketNo) {
         Market market = findMarket(marketNo);
         marketRepository.delete(market);
+    }
+
+    @Override
+    @Transactional
+    public void createMarketLike(Long marketNo, Member member) { // 좋아요 생성
+        Market market = findMarket(marketNo);
+
+        marketLikeRepository.findByMarketAndMember(market, member).ifPresent(itemLike -> {
+            throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
+        });
+        marketLikeRepository.save(new MarketLike(market, member));
+    }
+
+    @Override
+    @Transactional
+    public void deleteMarketLike(Long marketNo, Member member) { // 좋아요 삭제
+        Market market = findMarket(marketNo);
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market,
+            member);
+
+        if (marketLike.isPresent()) {
+            marketLikeRepository.delete(marketLike.get());
+        } else {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ITEM_LIKE);
+        }
     }
 
     @Override // 시장 찾기

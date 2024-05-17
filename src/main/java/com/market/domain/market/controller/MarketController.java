@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -69,5 +70,21 @@ public class MarketController {
         @PathVariable Long marketNo) {
         marketService.deleteMarket(marketNo);
         return ResponseEntity.ok().body(new ApiResponse("시장 삭제 완료!", HttpStatus.OK.value()));
+    }
+
+    @PostMapping("/markets/{marketNo}/like")
+    public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
+        @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        marketService.createMarketLike(marketNo, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(new ApiResponse("해당 시장에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
+    }
+
+    @DeleteMapping("/markets/{marketNo}/like")
+    public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
+        @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        marketService.deleteMarketLike(marketNo, userDetails.getUser());
+        return ResponseEntity.ok()
+            .body(new ApiResponse("해당 시장에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
 }

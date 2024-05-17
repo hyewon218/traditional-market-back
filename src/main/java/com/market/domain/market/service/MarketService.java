@@ -3,6 +3,7 @@ package com.market.domain.market.service;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.entity.Market;
+import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -49,6 +50,22 @@ public interface MarketService {
      * @param marketNo : 삭제할 시장 no
      */
     void deleteMarket(Long marketNo);
+
+    /**
+     * 좋아요 생성
+     *
+     * @param marketNo : 종아요할 시장 no
+     * @param member   : 좋아요 생성 요청자
+     */
+    void createMarketLike(Long marketNo, Member member);
+
+    /**
+     * 좋아요 삭제
+     *
+     * @param marketNo : 종아요 삭제할 시장 no
+     * @param member   : 좋아요 삭제 요청자
+     */
+    void deleteMarketLike(Long marketNo, Member member);
 
     /**
      * 시장 찾기

@@ -21,6 +21,7 @@ public class MarketRequestDto {
     @NotBlank(message = "시장 주소는 필수 입력 값입니다.")
     private String marketAddr;
 
+    @NotBlank(message = "시장 상세는 필수 입력 값입니다.")
     private String marketDetail;
 
     public Market toEntity() {

@@ -6,13 +6,17 @@ import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.dto.ItemResponseDto;
 import com.market.domain.item.entity.Item;
+import com.market.domain.item.itemLike.entity.ItemLike;
+import com.market.domain.item.itemLike.repository.ItemLikeRepository;
 import com.market.domain.item.repository.ItemRepository;
+import com.market.domain.member.entity.Member;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +35,7 @@ public class ItemServiceImpl implements ItemService {
     private final ShopRepository shopRepository;
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
+    private final ItemLikeRepository itemLikeRepository;
 
     @Override
     @Transactional // 상품 생성
@@ -38,7 +43,7 @@ public class ItemServiceImpl implements ItemService {
         throws IOException {
         // 선택한 상점에 상품 등록
         Shop shop = shopRepository.findById(requestDto.getShopNo()).orElseThrow(
-            () -> new IllegalArgumentException("해당 상점이 존재하지 않습니다.")
+            () -> new BusinessException(ErrorCode.NOT_FOUND_SHOP)
         );
 
         Item item = requestDto.toEntity(shop);
@@ -48,6 +53,7 @@ public class ItemServiceImpl implements ItemService {
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
+
                 if (imageRepository.existsByImageUrlAndNo(fileUrl, item.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
@@ -77,11 +83,12 @@ public class ItemServiceImpl implements ItemService {
         throws IOException {
         Item item = findItem(itemNo);
 
-        item.update(requestDto);
+        item.updateItem(requestDto);
 
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
+
                 if (imageRepository.existsByImageUrlAndNo(fileUrl, item.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
@@ -97,9 +104,33 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.delete(item);
     }
 
+    @Override
+    @Transactional
+    public void createItemLike(Long itemNo, Member member) { // 좋아요 생성
+        Item item = findItem(itemNo);
+
+        itemLikeRepository.findByItemAndMember(item, member).ifPresent(itemLike -> {
+            throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
+        });
+        itemLikeRepository.save(new ItemLike(item, member));
+    }
+
+    @Override
+    @Transactional
+    public void deleteItemLike(Long itemNo, Member member) { // 좋아요 삭제
+        Item item = findItem(itemNo);
+        Optional<ItemLike> itemLike = itemLikeRepository.findByItemAndMember(item, member);
+
+        if (itemLike.isPresent()) {
+            itemLikeRepository.delete(itemLike.get());
+        } else {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ITEM_LIKE);
+        }
+    }
+
     @Override // 시장 찾기
     public Item findItem(Long itemNo) {
         return itemRepository.findById(itemNo)
-            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ITEM));
     }
 }
