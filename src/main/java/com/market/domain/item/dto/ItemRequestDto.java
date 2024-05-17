@@ -3,6 +3,7 @@ package com.market.domain.item.dto;
 import com.market.domain.item.constant.ItemSellStatus;
 import com.market.domain.item.entity.Item;
 import com.market.domain.shop.entity.Shop;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,13 +19,17 @@ public class ItemRequestDto {
 
     private long shopNo; // 소속 상점 no
 
+    @NotBlank(message = "상품명은 필수 입력 값입니다.")
     private String itemName;
 
+    @NotBlank(message = "상품가격은 필수 입력 값입니다.")
     private int price;
 
-    private int stockNumber;
-
+    @NotBlank(message = "상품 상세는 필수 입력 값입니다.")
     private String itemDetail;
+
+    @NotBlank(message = "재고는 필수 입력 값입니다.")
+    private int stockNumber;
 
     private ItemSellStatus itemSellStatus;
 

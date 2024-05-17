@@ -19,18 +19,23 @@ public class ShopRequestDto {
 
     private long marketNo; // 소속 시장 no
 
+    @NotBlank(message = "상점명은 필수 입력 값입니다.")
     private String shopName;
 
-    @NotBlank
+    @NotBlank(message = "상점 번호는 필수 입력 값입니다.")
     @Pattern(regexp = "^01(?:0|1|[6-9])[.-]?(\\d{3}|\\d{4})[.-]?(\\d{4})$", message = "10 ~ 11 자리의 숫자만 입력 가능합니다.")
     private String tel;
 
+    @NotBlank(message = "상점 사장님 이름은 필수 입력 값입니다.")
     private String owner;
 
+    @NotBlank(message = "상점 우편번호는 필수 입력 값입니다.")
     private String postCode;
 
+    @NotBlank(message = "상점 도로명주소는 필수 입력 값입니다.")
     private String streetAddr;
 
+    @NotBlank(message = "상점 상세주소는 필수 입력 값입니다.")
     private String detailAddr;
 
     public Shop toEntity(Market market) {
