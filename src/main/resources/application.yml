@@ -28,3 +28,8 @@ cloud:
       static: ${STATIC}
     s3:
       bucket: ${BUCKET}
+
+jwt:
+  issuer: songwc3@gmail.com
+  a_secret_key: ssong123456789123456789ajijdifjjiajsdfasdfsdfaasdf
+  r_secret_key: 123456789123456789ajijdifsdfaeaaajajaiajsdfasdfsdasdffssong

@@ -35,6 +35,15 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5:3.1.2.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-mail' // 회원가입 시 이메일 인증 기능
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'// AWS
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5' // JWT
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1' // XML 문서와 Java 객체 간 매핑 자동화
+    testImplementation 'org.projectlombok:lombok' // 테스트를 위한 세팅
+    testAnnotationProcessor 'org.projectlombok:lombok' // 테스트를 위한 세팅
+    implementation 'com.google.code.gson:gson:2.10.1' // 객체를 JSON 문자열로 처리
+
+
 }
 
 tasks.named('test') {

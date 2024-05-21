@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Builder
@@ -22,6 +21,7 @@ public class MemberResponseDto {
     private Role role;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private String token;
 
     public MemberResponseDto(Member member) {
         this.memberNo = member.getMemberNo();
