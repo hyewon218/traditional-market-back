@@ -29,6 +29,10 @@ public enum ErrorCode {
     NOT_USER_ITEM_UPDATE(HttpStatus.BAD_REQUEST,"I005","작성자만 수정할 수 있습니다."),
     NOT_USER_ITEM_DELETE(HttpStatus.BAD_REQUEST,"I006","작셩자만 삭제할 수 있습니다."),
     NOT_FOUND_ITEM_COMMENT(HttpStatus.BAD_REQUEST,"I007","존재하지 않는 댓글입니다."),
+    // 주문
+    OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "O001", "재고가 존재하지 않습니다."),
+    ORDER_NOT_EXISTS(HttpStatus.BAD_REQUEST, "O002", "해당 주문이 존재하지 않습니다."),
+    NOT_ORDER_DELETE(HttpStatus.BAD_REQUEST, "O003", "주문 취소 권한이 없습니다."),
 
     // aws s3
     EXISTED_FILE(HttpStatus.BAD_REQUEST, "A001", "중복된 파일명입니다."),
