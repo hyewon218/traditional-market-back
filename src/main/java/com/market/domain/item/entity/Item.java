@@ -7,6 +7,8 @@ import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.itemComment.entity.ItemComment;
 import com.market.domain.item.itemLike.entity.ItemLike;
 import com.market.domain.shop.entity.Shop;
+import com.market.global.exception.ErrorCode;
+import com.market.global.exception.OutOfStockException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -66,11 +68,25 @@ public class Item extends BaseEntity {
     @OneToMany(mappedBy = "item", orphanRemoval = true)
     private List<ItemComment> itemCommentList = new ArrayList<>();
 
-    public void updateItem(ItemRequestDto requestDto){
+    public void updateItem(ItemRequestDto requestDto) {
         this.itemName = requestDto.getItemName();
         this.price = requestDto.getPrice();
         this.stockNumber = requestDto.getStockNumber();
         this.itemDetail = requestDto.getItemDetail();
         this.itemSellStatus = requestDto.getItemSellStatus();
+    }
+
+    public void removeStock(int stockNumber) { // 주문 수량 갯수만큼 재고 차감
+        int restStock = this.stockNumber - stockNumber;
+        if (restStock < 0) {
+            throw new OutOfStockException(
+                ErrorCode.OUT_OF_STOCK.getMessage() + String.format("(현재 재고 수량: %d)",
+                    this.stockNumber));
+        }
+        this.stockNumber = restStock;
+    }
+
+    public void addStock(int stockNumber) { // 주문 취소 시 상품의 재고를 증가
+        this.stockNumber += stockNumber;
     }
 }
