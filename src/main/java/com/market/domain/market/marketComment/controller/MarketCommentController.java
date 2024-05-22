@@ -3,6 +3,7 @@ package com.market.domain.market.marketComment.controller;
 import com.market.domain.market.marketComment.dto.MarketCommentRequestDto;
 import com.market.domain.market.marketComment.service.MarketCommentService;
 import com.market.global.response.ApiResponse;
+import com.market.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/markets")
 @RequiredArgsConstructor
 public class MarketCommentController {
 
@@ -27,7 +28,7 @@ public class MarketCommentController {
         @RequestBody MarketCommentRequestDto marketCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        marketCommentService.createMarketComment(marketCommentRequestDto, userDetails.get());
+        marketCommentService.createMarketComment(marketCommentRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("댓글 생성 완료!", HttpStatus.CREATED.value()));
     }
@@ -38,7 +39,7 @@ public class MarketCommentController {
         @RequestBody MarketCommentRequestDto marketCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         marketCommentService.updateMarketComment(commentNo, marketCommentRequestDto,
-            userDetails.getUser());
+            userDetails.getMember());
         return ResponseEntity.ok().body(new ApiResponse("댓글 수정 완료!", HttpStatus.OK.value()));
     }
 
@@ -46,7 +47,7 @@ public class MarketCommentController {
     public ResponseEntity<ApiResponse> deleteMarketComment(
         @PathVariable Long commentNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        marketCommentService.deleteMarketComment(commentNo, userDetails.getUser());
+        marketCommentService.deleteMarketComment(commentNo, userDetails.getMember());
         return ResponseEntity.ok().body(new ApiResponse("댓글 삭제 완료!", HttpStatus.OK.value()));
     }
 }

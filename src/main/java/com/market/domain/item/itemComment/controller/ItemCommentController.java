@@ -3,6 +3,7 @@ package com.market.domain.item.itemComment.controller;
 import com.market.domain.item.itemComment.dto.ItemCommentRequestDto;
 import com.market.domain.item.itemComment.service.ItemCommentService;
 import com.market.global.response.ApiResponse;
+import com.market.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/items")
 @RequiredArgsConstructor
 public class ItemCommentController {
 
@@ -27,7 +28,7 @@ public class ItemCommentController {
         @RequestBody ItemCommentRequestDto itemCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        itemCommentService.createItemComment(itemCommentRequestDto, userDetails.get());
+        itemCommentService.createItemComment(itemCommentRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("댓글 생성 완료!", HttpStatus.CREATED.value()));
     }
@@ -37,7 +38,7 @@ public class ItemCommentController {
         @PathVariable Long commentNo,
         @RequestBody ItemCommentRequestDto itemCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        itemCommentService.updateItemComment(commentNo, itemCommentRequestDto, userDetails.getUser());
+        itemCommentService.updateItemComment(commentNo, itemCommentRequestDto, userDetails.getMember());
         return ResponseEntity.ok().body(new ApiResponse("댓글 수정 완료!", HttpStatus.OK.value()));
     }
 
@@ -45,7 +46,7 @@ public class ItemCommentController {
     public ResponseEntity<ApiResponse> deleteItemComment(
         @PathVariable Long commentNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        itemCommentService.deleteItemComment(commentNo, userDetails.getUser());
+        itemCommentService.deleteItemComment(commentNo, userDetails.getMember());
         return ResponseEntity.ok().body(new ApiResponse("댓글 삭제 완료!", HttpStatus.OK.value()));
     }
 }

@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         "order by o.orderDate desc ",
         countQuery = "select count(o) " +
             "from Order o " +
-            "where o.member.memberId = :memberId") // 성능 저하로 countQuery 분리
+            "where o.member.memberId = :memberId ") // 성능 저하로 countQuery 분리
     Page<Order> findOrderListWithMember(@Param("memberId") String memberId, Pageable pageable);
 
     @Query("select o " +

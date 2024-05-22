@@ -3,6 +3,7 @@ package com.market.domain.shop.shopComment.controller;
 import com.market.domain.shop.shopComment.dto.ShopCommentRequestDto;
 import com.market.domain.shop.shopComment.service.ShopCommentService;
 import com.market.global.response.ApiResponse;
+import com.market.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/shops")
 @RequiredArgsConstructor
 public class ShopCommentController {
 
@@ -27,7 +28,7 @@ public class ShopCommentController {
         @RequestBody ShopCommentRequestDto shopCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        shopCommentService.createShopComment(shopCommentRequestDto, userDetails.get());
+        shopCommentService.createShopComment(shopCommentRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("댓글 생성 완료!", HttpStatus.CREATED.value()));
     }
@@ -37,7 +38,7 @@ public class ShopCommentController {
         @PathVariable Long commentNo,
         @RequestBody ShopCommentRequestDto shopCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        shopCommentService.updateShopComment(commentNo, shopCommentRequestDto, userDetails.getUser());
+        shopCommentService.updateShopComment(commentNo, shopCommentRequestDto, userDetails.getMember());
         return ResponseEntity.ok().body(new ApiResponse("댓글 수정 완료!", HttpStatus.OK.value()));
     }
 
@@ -45,7 +46,7 @@ public class ShopCommentController {
     public ResponseEntity<ApiResponse> deleteShopComment(
         @PathVariable Long commentNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        shopCommentService.deleteShopComment(commentNo, userDetails.getUser());
+        shopCommentService.deleteShopComment(commentNo, userDetails.getMember());
         return ResponseEntity.ok().body(new ApiResponse("댓글 삭제 완료!", HttpStatus.OK.value()));
     }
 }
