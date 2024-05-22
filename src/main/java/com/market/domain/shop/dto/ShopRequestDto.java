@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 public class ShopRequestDto {
 
-    private long marketNo; // 소속 시장 no
+    private Long marketNo; // 소속 시장 no
 
     @NotBlank(message = "상점명은 필수 입력 값입니다.")
     private String shopName;

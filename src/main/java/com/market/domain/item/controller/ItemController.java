@@ -4,6 +4,7 @@ import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.dto.ItemResponseDto;
 import com.market.domain.item.service.ItemService;
 import com.market.global.response.ApiResponse;
+import com.market.global.security.UserDetailsImpl;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +76,7 @@ public class ItemController {
     @PostMapping("/items/{itemNo}/like")
     public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
         @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        itemService.createItemLike(itemNo, userDetails.getUser());
+        itemService.createItemLike(itemNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 상품에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
@@ -83,7 +84,7 @@ public class ItemController {
     @DeleteMapping("/items/{itemNo}/like")
     public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
         @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        itemService.deleteItemLike(itemNo, userDetails.getUser());
+        itemService.deleteItemLike(itemNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 상품에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }

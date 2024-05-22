@@ -4,6 +4,7 @@ import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.service.ShopService;
 import com.market.global.response.ApiResponse;
+import com.market.global.security.UserDetailsImpl;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +76,7 @@ public class ShopController {
     @PostMapping("/shops/{shopNo}/like")
     public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        shopService.createShopLike(shopNo, userDetails.getUser());
+        shopService.createShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 상점에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
@@ -83,7 +84,7 @@ public class ShopController {
     @DeleteMapping("/shops/{shopNo}/like")
     public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        shopService.deleteShopLike(shopNo, userDetails.getUser());
+        shopService.deleteShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 삼점에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }

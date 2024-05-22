@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ItemCommentRequestDto {
 
-    private long itemNo; // 댓글 남길 상품 no
+    private Long itemNo; // 댓글 남길 상품 no
     private String comment;
 
     public ItemComment toEntity(Item item, Member member) {

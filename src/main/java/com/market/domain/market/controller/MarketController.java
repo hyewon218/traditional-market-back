@@ -4,6 +4,7 @@ import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.service.MarketService;
 import com.market.global.response.ApiResponse;
+import com.market.global.security.UserDetailsImpl;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +76,7 @@ public class MarketController {
     @PostMapping("/markets/{marketNo}/like")
     public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        marketService.createMarketLike(marketNo, userDetails.getUser());
+        marketService.createMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 시장에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
@@ -83,7 +84,7 @@ public class MarketController {
     @DeleteMapping("/markets/{marketNo}/like")
     public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        marketService.deleteMarketLike(marketNo, userDetails.getUser());
+        marketService.deleteMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 시장에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
