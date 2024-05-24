@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @TestPropertySource(properties = {"spring.config.location = classpath:application-test.yml"})
-class OrderServiceTest {
+class OrderServiceImplTest {
 
     @Autowired
     private OrderService orderService;

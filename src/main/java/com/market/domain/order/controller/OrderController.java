@@ -6,7 +6,6 @@ import com.market.domain.orderItem.dto.OrderItemRequestDto;
 import com.market.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +28,7 @@ public class OrderController {
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         Long orderNo = orderService.order(requestDto, userDetails.getMember());
-        return new ResponseEntity<>(orderNo, HttpStatus.OK);
+        return ResponseEntity.ok().body(orderNo);
     }
 
     @GetMapping("/orders") // 주문 조회
@@ -48,6 +47,6 @@ public class OrderController {
     public ResponseEntity<Long> cancelOrder(@PathVariable("orderNo") Long orderNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         orderService.cancelOrder(orderNo, userDetails.getMember());
-        return new ResponseEntity<>(orderNo, HttpStatus.OK);
+        return ResponseEntity.ok().body(orderNo);
     }
 }

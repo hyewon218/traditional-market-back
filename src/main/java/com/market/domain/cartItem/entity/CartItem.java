@@ -12,11 +12,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "cart_item")
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CartItem extends BaseEntity {
 
     @Id
@@ -34,4 +40,11 @@ public class CartItem extends BaseEntity {
 
     private int count;
 
+    public void addCount(int count) { // 장바구니에 기존에 담겨 있는 상품 수량 추가
+        this.count += count;
+    }
+
+    public void updateCount(int count) {
+        this.count = count;
+    }
 }

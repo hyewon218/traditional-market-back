@@ -11,11 +11,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "cart")
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Cart extends BaseEntity {
 
     @Id
@@ -26,5 +32,4 @@ public class Cart extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_no")
     private Member member;
-
 }
