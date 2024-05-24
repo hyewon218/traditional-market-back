@@ -1,5 +1,6 @@
 package com.market.domain.orderItem.dto;
 
+import com.market.domain.cartItem.entity.CartItem;
 import com.market.domain.item.entity.Item;
 import com.market.domain.orderItem.entity.OrderItem;
 import jakarta.validation.constraints.Max;
@@ -34,5 +35,13 @@ public class OrderItemRequestDto {
             .count(this.count)
             .item(item)
             .build();
+    }
+
+    public static OrderItemRequestDto of(CartItem cartItem) {
+        return OrderItemRequestDto.builder()
+            .itemNo(cartItem.getItem().getNo())
+            .count(cartItem.getCount())
+            .build();
+
     }
 }

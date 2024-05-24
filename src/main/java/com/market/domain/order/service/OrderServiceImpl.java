@@ -80,22 +80,4 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByOrderNoWithMemberAndOrderItemListAndItem(orderNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_EXISTS));
     }
-
-
-    // 장바구니 관련 - 이동
-    @Transactional
-    public Long orders(List<OrderItemRequestDto> orderItemDtoList, Member member) {
-        List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
-
-        for (OrderItemRequestDto orderItemDto : orderItemDtoList) {
-            // 선택한 상품 주문
-            Item item = itemRepository.findById(orderItemDto.getItemNo()).orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
-            );
-            orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
-        }
-        Order order = Order.toEntity(member, orderItemList); // (주문 상품 담아) 주문 생성
-        orderRepository.save(order); // 주문 저장
-        return order.getNo();
-    }
 }
