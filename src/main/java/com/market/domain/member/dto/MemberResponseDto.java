@@ -2,6 +2,7 @@ package com.market.domain.member.dto;
 
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.global.jwt.entity.RefreshToken;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,8 @@ public class MemberResponseDto {
     private Role role;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private String token;
+    private String accessToken;
+    private String refreshToken; // 삭제할 것
 
     public MemberResponseDto(Member member) {
         this.memberNo = member.getMemberNo();

@@ -3,6 +3,7 @@ package com.market.domain.member.controller;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MemberResponseDto;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.service.MemberServiceImpl;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberServiceImpl memberService;
+    private final MemberRepository memberRepository;
     private final ApiLoginSuccessHandler apiLoginSuccessHandler;
 
     // 회원 가입
@@ -50,9 +53,9 @@ public class MemberController {
     
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(HttpServletRequest request, HttpServletResponse response) {
-        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
-        return ResponseEntity.ok(new ApiResponse("로그아웃 성공", HttpStatus.OK.value()));
+    public ResponseEntity<ApiResponse> logout(HttpServletRequest httpRequest) {
+       memberService.logOut(httpRequest);
+       return ResponseEntity.ok(new ApiResponse("로그아웃 성공", HttpStatus.OK.value()));
     }
 
     // 전체 회원 조회
@@ -69,12 +72,32 @@ public class MemberController {
     }
     
     // 특정 회원 조회
-    @GetMapping("/1")
+    @GetMapping("/myinfo")
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Member member = memberService.findById(userDetails.getMember().getMemberNo());
         return ResponseEntity.ok()
                 .body(new MemberResponseDto(member));
     }
+
+    // admin 권한일 경우 다른 회원의 상세정보 열람 가능, 일반회원은 자신의 정보만 열람 가능
+//    @GetMapping("/myinfo/{memberNo}")
+//    public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long memberNo) {
+//        Member member;
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+//        // admin 권한일 경우
+//        if (isAdmin) {
+//            member = memberService.findById(memberNo);
+//        // 로그인중인 사용자가 자신의 정보를 열람할 경우
+//        } else if (userDetails.getMember().getMemberNo().equals(memberNo)) {
+//            member = memberService.findById(userDetails.getMember().getMemberNo());
+//        } else {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body("접근이 거부되었습니다");
+//        }
+//        return ResponseEntity.ok()
+//                .body(new MemberResponseDto(member));
+//    }
 
     // 회원 수정
     @PutMapping("")
@@ -87,7 +110,7 @@ public class MemberController {
     // 회원 삭제
     @DeleteMapping("")
     public ResponseEntity<ApiResponse> deleteMember(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        memberService.deleteMember(userDetails.getMember().getMemberNo());
+        memberService.deleteMember(userDetails.getMember().getMemberNo(), userDetails.getMember().getMemberId());
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 

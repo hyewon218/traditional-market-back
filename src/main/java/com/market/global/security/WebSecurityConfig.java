@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.global.jwt.repository.RefreshTokenRepository;
 import com.market.global.jwt.config.TokenAuthenticationFilter;
 import com.market.global.jwt.config.TokenProvider;
+import com.market.global.redis.RedisUtils;
 import com.market.global.security.handler.ApiLoginSuccessHandler;
 import com.market.global.security.handler.CustomAccessDeniedHandler;
 import com.market.global.security.handler.CustomAuthenticationEntryPoint;
@@ -38,6 +39,7 @@ public class WebSecurityConfig {
         private final RefreshTokenRepository refreshTokenRepository;
         private final CustomAccessDeniedHandler customAccessDeniedHandler;
         private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+        private final RedisUtils redisUtils;
 
         @Bean
         public SecurityFilterChain filterChain1(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -45,8 +47,9 @@ public class WebSecurityConfig {
             http
                     .authorizeHttpRequests(authorize -> authorize
                             .requestMatchers(HttpMethod.GET, "/api/members").hasAnyRole("ADMIN") // 전체 회원 목록 조회
-                            .requestMatchers("/admin/**", "/market/**", "/store/**", "/item/**").hasAnyRole("ADMIN")
-                            .requestMatchers("/", "/api/members/signup", "/members/login", "/api/members/login", "/members/signup", "/members/findid", "/members/findpw", "/markets", "/stores", "/items", "/css/**", "/js/**").permitAll()
+                            .requestMatchers("/api/admin/**", "/api/markets/**", "/api/shops/**", "/api/items/**").hasAnyRole("ADMIN")
+                            .requestMatchers("/", "/api/members/signup", "/members/login", "/api/members/login", "/api/members/logout",
+                                    "/api/markets", "/api/shops", "/api/items", "/css/**", "/js/**").permitAll()
                             .requestMatchers("/api/members/**").authenticated()
                             .anyRequest().authenticated()
                     )
@@ -89,12 +92,12 @@ public class WebSecurityConfig {
 
         @Bean
         public TokenAuthenticationFilter tokenAuthenticationFilter() {
-            return new TokenAuthenticationFilter(tokenProvider);
+            return new TokenAuthenticationFilter(tokenProvider, redisUtils);
         }
 
         @Bean
         public ApiLoginSuccessHandler apiLoginSuccessHandler() {
-            return new ApiLoginSuccessHandler(tokenProvider, refreshTokenRepository, objectMapper);
+            return new ApiLoginSuccessHandler(tokenProvider, refreshTokenRepository, objectMapper, redisUtils);
         }
 
         @Bean

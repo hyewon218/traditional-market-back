@@ -5,7 +5,6 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 
 @Service

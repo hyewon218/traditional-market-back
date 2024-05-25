@@ -21,6 +21,13 @@ public interface MemberService {
                          MemberRequestDto request) throws Exception;
 
     /**
+     * 로그아웃
+     *
+     * @param httpRequest :
+     */
+    void logOut(HttpServletRequest httpRequest);
+
+    /**
      * 회원 생성
      *
      * @param memberRequestDto : 회원 생성 요청정보
@@ -56,8 +63,8 @@ public interface MemberService {
      * 회원 삭제
      *
      * @param memberNo : 삭제할 회원 고유번호
+     * @param memberId : 삭제할 회원 아이디
      */
-    void deleteMember(long memberNo);
-
+    void deleteMember(long memberNo, String memberId);
 
 }
