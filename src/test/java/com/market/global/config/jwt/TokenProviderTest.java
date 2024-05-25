@@ -5,6 +5,7 @@ import com.market.global.jwt.config.TokenProvider;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 @SpringBootTest
 class TokenProviderTest {
 
@@ -91,7 +93,7 @@ class TokenProviderTest {
     @Test
     void getAuthentication() {
         // given
-        String memberId = "song7";
+        String memberId = "song101";
         String token = JwtFactory.builder()
                 .subject(memberId)
                 .build()
@@ -109,7 +111,7 @@ class TokenProviderTest {
     @Test
     void getMemberNo() {
         // given
-        Long memberNo = 14L;
+        Long memberNo = 100L;
         String token = JwtFactory.builder()
                 .claims(Map.of("no", memberNo))
                 .build()
