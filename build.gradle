@@ -42,6 +42,10 @@ dependencies {
     testImplementation 'org.projectlombok:lombok' // 테스트를 위한 세팅
     testAnnotationProcessor 'org.projectlombok:lombok' // 테스트를 위한 세팅
     implementation 'com.google.code.gson:gson:2.10.1' // 객체를 JSON 문자열로 처리
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.5' // redis
+    implementation 'org.modelmapper:modelmapper:3.2.0' // redis
+
+
 
 
 }

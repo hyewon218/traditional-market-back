@@ -6,6 +6,7 @@ import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenProvider;
 import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.jwt.repository.RefreshTokenRepository;
+import com.market.global.redis.RedisUtils;
 import com.market.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,6 +31,13 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final TokenProvider tokenProvider;
+    private final RedisUtils redisUtils;
+
+    // 회원 생성
+    @Override
+    public Member createMember(MemberRequestDto memberRequestDto){
+        return memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
+    }
 
     // 로그인
 //    @Override
@@ -79,12 +87,17 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // 로그아웃
-
-
-    // 회원 생성
     @Override
-    public Member createMember(MemberRequestDto memberRequestDto){
-        return memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
+    public void logOut(HttpServletRequest httpRequest) {
+
+        String authorizationHeader = httpRequest.getHeader(TokenProvider.HEADER_AUTHORIZATION);
+        String accessToken = tokenProvider.getAccessToken(authorizationHeader);
+        String memberId = tokenProvider.getMemberId(accessToken);
+        // 사용자 아이디 이용해서 리프레시 토큰 삭제
+        redisUtils.deleteValues(memberId);
+        // 액세스 토큰 블랙리스트 등록
+        redisUtils.setBlackList(memberId, accessToken, tokenProvider.getExpiration(accessToken));
+
     }
 
     // 전체 회원 조회
@@ -113,10 +126,9 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
-    public void deleteMember(long memberNo) {
-        RefreshToken refreshToken = refreshTokenRepository.findByMemberNo(memberNo);
+    public void deleteMember(long memberNo, String memberId) {
         memberRepository.deleteById(memberNo);
-        refreshTokenRepository.delete(refreshToken);
+        redisUtils.deleteValues(memberId);
     }
 
 

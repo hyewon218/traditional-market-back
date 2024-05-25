@@ -2,14 +2,13 @@ package com.market.global.jwt.config;
 
 import com.market.domain.member.entity.Member;
 import com.market.global.jwt.entity.RefreshToken;
-import com.market.global.jwt.repository.RefreshTokenRepository;
+import com.market.global.redis.RedisUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,37 +20,45 @@ import java.io.IOException;
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
-
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RedisUtils redisUtils;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+        if (uri.equals("/api/members/signup")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 요청 헤더와 Authorization 키의 값
         String authorizationHeader = request.getHeader(TokenProvider.HEADER_AUTHORIZATION);
 
         // 가져온 값에서 접두사 제거
-        String token = getAccessToken(authorizationHeader);
+        String token = tokenProvider.getAccessToken(authorizationHeader);
 
         // 가져온 토큰이 유효한지 확인하고, 유효한 때는 인증 정보 설정
-        if(tokenProvider.validToken(token)) {
+        if (tokenProvider.validToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } else {
             // access 토큰이 만료되었을 경우, refresh 토큰을 사용하여 새로운 access 토큰 발급
+            // 이후 기존 refresh 토큰 삭제 후 재발급
             Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
 
             if (currentAuth != null && currentAuth.isAuthenticated()) {
                 Member member = (Member) currentAuth.getPrincipal();
-                RefreshToken refreshToken = getRefreshTokenFromLoggedInMember();
+                String refreshToken = getRefreshTokenFromLoggedInMember();
 
                 if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
                     String newAccessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
                     Authentication newAuth = tokenProvider.getAuthentication(newAccessToken);
                     SecurityContextHolder.getContext().setAuthentication(newAuth);
-
+                    // 기존 refresh 토큰 삭제 후 다시 발급, 저장
+                    redisUtils.deleteValues(member.getMemberId());
+                    RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
+                    redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken());
                     response.setHeader(TokenProvider.HEADER_AUTHORIZATION, TokenProvider.TOKEN_PREFIX + " " + newAccessToken);
                 }
             }
@@ -59,21 +66,22 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String getAccessToken(String authorizationHeader) {
-
-        if(authorizationHeader != null && authorizationHeader.startsWith(TokenProvider.TOKEN_PREFIX)) {
-            return authorizationHeader.substring(TokenProvider.TOKEN_PREFIX.length()).trim();
-        }
-        return null;
-    }
-
     // 현재 로그인중인 회원의 refresh 토큰을 가져오는 메서드
-    private RefreshToken getRefreshTokenFromLoggedInMember() {
+//    private RefreshToken getRefreshTokenFromLoggedInMember() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        if (authentication != null && authentication.isAuthenticated()) {
+//            Member member = (Member) authentication.getPrincipal();
+//            return refreshTokenRepository.findByMemberNo(member.getMemberNo());
+//        }
+//        return null;
+//    }
+    private String getRefreshTokenFromLoggedInMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
             Member member = (Member) authentication.getPrincipal();
-            return refreshTokenRepository.findByMemberNo(member.getMemberNo());
+            return redisUtils.getValues(member.getMemberId());
         }
         return null;
     }
