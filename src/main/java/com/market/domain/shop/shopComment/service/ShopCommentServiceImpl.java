@@ -1,6 +1,11 @@
 package com.market.domain.shop.shopComment.service;
 
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.domain.shop.shopComment.dto.ShopCommentRequestDto;
@@ -18,6 +23,8 @@ public class ShopCommentServiceImpl implements ShopCommentService {
 
     private final ShopCommentRepository shopCommentRepository;
     private final ShopRepository shopRepository;
+    private final NotificationService notificationService;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
@@ -29,6 +36,19 @@ public class ShopCommentServiceImpl implements ShopCommentService {
         );
 
         shopCommentRepository.save(shopCommentRequestsDto.toEntity(shop, member));
+
+        // create alarm
+        Member receiver;
+        if (shop.getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
+            receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)
+            );
+        } else {
+            receiver = shop.getSeller();
+        }
+        notificationService.send(
+            NotificationType.NEW_COMMENT_ON_SHOP,
+            new NotificationArgs(member.getMemberNo(), shop.getNo()), receiver);
     }
 
     @Override

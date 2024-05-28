@@ -5,7 +5,12 @@ import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.Shop;
@@ -36,6 +41,8 @@ public class ShopServiceImpl implements ShopService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final ShopLikeRepository shopLikeRepository;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional // 상점 생성
@@ -45,9 +52,16 @@ public class ShopServiceImpl implements ShopService {
         Market market = marketRepository.findById(requestDto.getMarketNo()).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_MARKET)
         );
-
-        Shop shop = requestDto.toEntity(market);
-
+        // 상점 등록 시 사장님이 가입되어 있다면 사장님 member 정보 추가
+        Shop shop;
+        if (requestDto.getSellerNo() != null) {
+            Member seller = memberRepository.findById(requestDto.getSellerNo()).orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_EXISTS_SELLER)
+            );
+            shop = requestDto.toEntity(market, seller);
+        } else {
+            shop = requestDto.toEntity(market);
+        }
         shopRepository.save(shop);
 
         if (files != null) {
@@ -82,7 +96,14 @@ public class ShopServiceImpl implements ShopService {
         throws IOException {
         Shop shop = findShop(shopNo);
 
-        shop.updateShop(requestDto);
+        if (requestDto.getSellerNo() != null) { // 사장님이 후에 가입한다면 상점 수정으로 사장님 member 정보 추가
+            Member seller = memberRepository.findById(requestDto.getSellerNo()).orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_EXISTS_SELLER)
+            );
+            shop.updateShopSeller(requestDto, seller);
+        } else {
+            shop.updateShop(requestDto);
+        }
 
         if (files != null) {
             for (MultipartFile file : files) {
@@ -112,6 +133,19 @@ public class ShopServiceImpl implements ShopService {
             throw new BusinessException(ErrorCode.EXISTS_SHOP_LIKE);
         });
         shopLikeRepository.save(new ShopLike(shop, member));
+
+        // create alarm
+        Member receiver;
+        if (shop.getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
+            receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)
+            );
+        } else {
+            receiver = shop.getSeller();
+        }
+        notificationService.send(
+            NotificationType.NEW_LIKE_ON_SHOP,
+            new NotificationArgs(member.getMemberNo(), shop.getNo()), receiver);
     }
 
     @Override

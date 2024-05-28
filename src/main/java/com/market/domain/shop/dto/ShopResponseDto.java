@@ -18,7 +18,7 @@ public class ShopResponseDto {
 
     private String tel;
 
-    private String owner;
+    private String sellerName;
 
     private String postCode;
 
@@ -34,11 +34,11 @@ public class ShopResponseDto {
 
     private List<ShopCommentResponseDto> shopCommentList;
 
-    public static ShopResponseDto of(Shop shop) {
+    public static ShopResponseDto of(Shop shop) { // TODO : member 정보 추가
         return ShopResponseDto.builder()
             .shopName(shop.getShopName())
             .tel(shop.getTel())
-            .owner(shop.getOwner())
+            .sellerName(shop.getSellerName())
             .postCode(shop.getPostCode())
             .streetAddr(shop.getStreetAddr())
             .detailAddr(shop.getDetailAddr())

@@ -5,7 +5,12 @@ import com.market.domain.item.itemComment.dto.ItemCommentRequestDto;
 import com.market.domain.item.itemComment.entity.ItemComment;
 import com.market.domain.item.itemComment.repository.ItemCommentRepository;
 import com.market.domain.item.repository.ItemRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +23,8 @@ public class ItemCommentServiceImpl implements ItemCommentService {
 
     private final ItemCommentRepository itemCommentRepository;
     private final ItemRepository itemRepository;
+    private final NotificationService notificationService;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
@@ -29,6 +36,19 @@ public class ItemCommentServiceImpl implements ItemCommentService {
         );
 
         itemCommentRepository.save(itemCommentRequestDto.toEntity(item, member));
+
+        // create alarm
+        Member receiver;
+        if (item.getShop().getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
+            receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)
+            );
+        } else {
+            receiver = item.getShop().getSeller();
+        }
+        notificationService.send(
+            NotificationType.NEW_COMMENT_ON_SHOP,
+            new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
     }
 
     @Override

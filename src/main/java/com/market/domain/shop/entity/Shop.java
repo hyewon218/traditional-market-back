@@ -4,6 +4,7 @@ import com.market.domain.base.BaseEntity;
 import com.market.domain.image.entity.Image;
 import com.market.domain.item.entity.Item;
 import com.market.domain.market.entity.Market;
+import com.market.domain.member.entity.Member;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.shopComment.entity.ShopComment;
 import com.market.domain.shop.shopLike.entity.ShopLike;
@@ -35,7 +36,7 @@ public class Shop extends BaseEntity {
     private String tel;
 
     @Column(nullable = false)
-    private String owner;
+    private String sellerName;
 
     @Column(nullable = false)
     private String postCode; // 주소 찾기 api 이용 시 필요, 우편번호
@@ -46,9 +47,13 @@ public class Shop extends BaseEntity {
     @Column(nullable = false)
     private String detailAddr; // 주소 찾기 api 이용 시 필요, 상세 주소
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_no")
     private Market market;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="member_no")
+    private Member seller;
 
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<Item> itemList = new ArrayList<>();
@@ -62,10 +67,20 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<ShopComment> shopCommentList = new ArrayList<>();
 
+
     public void updateShop(ShopRequestDto requestDto) {
         this.shopName = requestDto.getShopName();
         this.tel = requestDto.getTel();
-        this.owner = requestDto.getOwner();
+        this.sellerName = requestDto.getSellerName();
+        this.postCode = requestDto.getPostCode();
+        this.streetAddr = requestDto.getStreetAddr();
+        this.detailAddr = requestDto.getDetailAddr();
+    }
+    public void updateShopSeller(ShopRequestDto requestDto, Member seller) {
+        this.seller = seller;
+        this.shopName = requestDto.getShopName();
+        this.tel = requestDto.getTel();
+        this.sellerName = requestDto.getSellerName();
         this.postCode = requestDto.getPostCode();
         this.streetAddr = requestDto.getStreetAddr();
         this.detailAddr = requestDto.getDetailAddr();
