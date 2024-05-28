@@ -30,7 +30,7 @@ public class Member extends BaseEntity {
     private String memberEmail;
 
     @Enumerated(EnumType.STRING)
-    private Role role;  // member, admin 권한
+    private Role role;  // member, admin, seller 권한
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_no")
@@ -41,5 +41,4 @@ public class Member extends BaseEntity {
         this.memberId = memberId;
         this.memberPw = memberPw;
     }
-
 }
