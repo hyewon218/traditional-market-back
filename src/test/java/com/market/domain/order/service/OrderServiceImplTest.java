@@ -3,20 +3,25 @@ package com.market.domain.order.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.market.domain.item.constant.ItemSellStatus;
+import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.entity.Item;
 import com.market.domain.item.repository.ItemRepository;
+import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.repository.OrderRepository;
 import com.market.domain.orderItem.constant.OrderStatus;
 import com.market.domain.orderItem.dto.OrderItemRequestDto;
+import com.market.domain.shop.entity.Shop;
+import com.market.domain.shop.repository.ShopRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,19 +42,38 @@ class OrderServiceImplTest {
     @Autowired
     MemberRepository memberRepository;
 
-    public Item saveItem() {
-        Item item = new Item();
-        item.setItemName("테스트 상품");
-        item.setPrice(10000);
-        item.setItemDetail("테스트 상품 상세 설명");
-        item.setItemSellStatus(ItemSellStatus.SELL);
-        item.setStockNumber(100);
+    @Autowired
+    ShopRepository shopRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    public Item saveItem(){
+
+        ItemRequestDto itemRequestDto = new ItemRequestDto();
+        itemRequestDto.setItemName("테스트 상품");
+        itemRequestDto.setPrice(10000);
+        itemRequestDto.setItemDetail("테스트 상품 상세 설명");
+        itemRequestDto.setItemSellStatus(ItemSellStatus.SELL);
+        itemRequestDto.setStockNumber(100);
+        itemRequestDto.setShopNo(1L);
+
+        Shop shop = shopRepository.findById(itemRequestDto.getShopNo()).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_FOUND_SHOP));
+
+        Item item = itemRequestDto.toEntity(shop);
+
         return itemRepository.save(item);
     }
 
-    public Member saveMember() {
-        Member member = new Member();
-        member.setMemberId("test1234");
+    public Member saveMember(){
+        MemberRequestDto memberRequestDto = new MemberRequestDto();
+        memberRequestDto.setMemberEmail("test@test.com");
+        memberRequestDto.setMemberId("test0218");
+        memberRequestDto.setMemberPw("test1234");
+
+        Member member = memberRequestDto.toEntity(passwordEncoder);
+
         return memberRepository.save(member);
     }
 
