@@ -16,9 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,8 +50,8 @@ public class MemberController {
     
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(HttpServletRequest httpRequest) {
-       memberService.logOut(httpRequest);
+    public ResponseEntity<ApiResponse> logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+       memberService.logOut(httpRequest, httpResponse);
        return ResponseEntity.ok(new ApiResponse("로그아웃 성공", HttpStatus.OK.value()));
     }
 
@@ -109,8 +106,9 @@ public class MemberController {
 
     // 회원 삭제
     @DeleteMapping("")
-    public ResponseEntity<ApiResponse> deleteMember(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        memberService.deleteMember(userDetails.getMember().getMemberNo(), userDetails.getMember().getMemberId());
+    public ResponseEntity<ApiResponse> deleteMember(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                    HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        memberService.deleteMember(userDetails.getMember().getMemberNo(), userDetails.getMember().getMemberId(), httpRequest, httpResponse);
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 

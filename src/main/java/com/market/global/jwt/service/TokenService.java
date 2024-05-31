@@ -1,10 +1,11 @@
 package com.market.global.jwt.service;
 
-import com.market.global.jwt.config.TokenProvider;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberServiceImpl;
+import com.market.global.jwt.config.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.Duration;
 
 @Service

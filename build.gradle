@@ -44,6 +44,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1' // 객체를 JSON 문자열로 처리
     implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.5' // redis
     implementation 'org.modelmapper:modelmapper:3.2.0' // redis
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.3.0' // oauth2.0
 
 
 

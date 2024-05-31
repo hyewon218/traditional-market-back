@@ -26,7 +26,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        if (uri.equals("/api/members/signup")) {
+        if (uri.equals("/api/members/signup") || uri.equals("/auth/success") ||
+                uri.equals("/login/oauth2/code/*") || uri.equals("/members/login")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -35,11 +36,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String authorizationHeader = request.getHeader(TokenProvider.HEADER_AUTHORIZATION);
 
         // 가져온 값에서 접두사 제거
-        String token = tokenProvider.getAccessToken(authorizationHeader);
+        String accessToken = tokenProvider.getAccessToken(authorizationHeader);
 
         // 가져온 토큰이 유효한지 확인하고, 유효한 때는 인증 정보 설정
-        if (tokenProvider.validToken(token)) {
-            Authentication authentication = tokenProvider.getAuthentication(token);
+        if (tokenProvider.validToken(accessToken)) {
+            Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } else {
@@ -53,13 +54,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
                 if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
                     String newAccessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
+                    tokenProvider.addTokenToCookie(request, response, newAccessToken);
                     Authentication newAuth = tokenProvider.getAuthentication(newAccessToken);
                     SecurityContextHolder.getContext().setAuthentication(newAuth);
                     // 기존 refresh 토큰 삭제 후 다시 발급, 저장
                     redisUtils.deleteValues(member.getMemberId());
                     RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
                     redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken());
-                    response.setHeader(TokenProvider.HEADER_AUTHORIZATION, TokenProvider.TOKEN_PREFIX + " " + newAccessToken);
+//                    response.setHeader(TokenProvider.HEADER_AUTHORIZATION, TokenProvider.TOKEN_PREFIX + " " + newAccessToken);
+                    response.setHeader(TokenProvider.HEADER_AUTHORIZATION, newAccessToken);
                 }
             }
         }
@@ -67,15 +70,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     // 현재 로그인중인 회원의 refresh 토큰을 가져오는 메서드
-//    private RefreshToken getRefreshTokenFromLoggedInMember() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//        if (authentication != null && authentication.isAuthenticated()) {
-//            Member member = (Member) authentication.getPrincipal();
-//            return refreshTokenRepository.findByMemberNo(member.getMemberNo());
-//        }
-//        return null;
-//    }
     private String getRefreshTokenFromLoggedInMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
