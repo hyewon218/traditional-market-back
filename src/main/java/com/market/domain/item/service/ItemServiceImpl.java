@@ -9,7 +9,12 @@ import com.market.domain.item.entity.Item;
 import com.market.domain.item.itemLike.entity.ItemLike;
 import com.market.domain.item.itemLike.repository.ItemLikeRepository;
 import com.market.domain.item.repository.ItemRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.global.exception.BusinessException;
@@ -36,6 +41,8 @@ public class ItemServiceImpl implements ItemService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final ItemLikeRepository itemLikeRepository;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional // 상품 생성
@@ -113,6 +120,19 @@ public class ItemServiceImpl implements ItemService {
             throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
         });
         itemLikeRepository.save(new ItemLike(item, member));
+
+        // create alarm
+        Member receiver;
+        if (item.getShop().getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
+            receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)
+            );
+        } else {
+            receiver = item.getShop().getSeller();
+        }
+        notificationService.send(
+            NotificationType.NEW_LIKE_ON_SHOP,
+            new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
     }
 
     @Override

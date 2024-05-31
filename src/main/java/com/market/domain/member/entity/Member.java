@@ -38,6 +38,8 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ProviderType providerType; // Google, Naver, Kakao, Local 로그인
+  
+    private Role role;  // member, admin, seller 권한
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_no")

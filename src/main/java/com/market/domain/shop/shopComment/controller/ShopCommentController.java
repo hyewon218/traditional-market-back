@@ -27,7 +27,6 @@ public class ShopCommentController {
     public ResponseEntity<ApiResponse> createShopComment(
         @RequestBody ShopCommentRequestDto shopCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         shopCommentService.createShopComment(shopCommentRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("댓글 생성 완료!", HttpStatus.CREATED.value()));
