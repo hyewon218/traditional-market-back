@@ -5,6 +5,7 @@ import com.market.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
+
 import java.util.List;
 
 public interface MemberService {
@@ -24,8 +25,9 @@ public interface MemberService {
      * 로그아웃
      *
      * @param httpRequest :
+     * @param httpResponse :
      */
-    void logOut(HttpServletRequest httpRequest);
+    void logOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse);
 
     /**
      * 회원 생성
@@ -64,7 +66,20 @@ public interface MemberService {
      *
      * @param memberNo : 삭제할 회원 고유번호
      * @param memberId : 삭제할 회원 아이디
+     * @param httpRequest :
+     * @param httpResponse :
      */
-    void deleteMember(long memberNo, String memberId);
+    void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
+
+    /**
+     * memberId 수정
+     *
+     * @param memberId : 수정할 회원 아이디
+     * @param memberRequestDto : 회원 수정 요청 정보
+     */
+    Member updateNickname(String memberId, MemberRequestDto memberRequestDto);
+    ///////////////////////////////////////////////
+
+
 
 }

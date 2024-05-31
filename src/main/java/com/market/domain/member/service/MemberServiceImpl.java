@@ -4,9 +4,9 @@ import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenProvider;
-import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.jwt.repository.RefreshTokenRepository;
 import com.market.global.redis.RedisUtils;
+import com.market.global.security.CookieUtil;
 import com.market.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Slf4j
@@ -71,33 +73,38 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
                       MemberRequestDto request) throws Exception {
-        Authentication authentication = authenticationConfiguration.getAuthenticationManager()
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.getMemberId(),
-                                request.getMemberPw(),
-                                null
-                        )
-                );
+        try {
+            Authentication authentication = authenticationConfiguration.getAuthenticationManager()
+                    .authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    request.getMemberId(),
+                                    request.getMemberPw(),
+                                    null
+                            )
+                    );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
 
-        return authentication;
+            return authentication;
+        } catch (AuthenticationException e) {
+            log.info("아이디 또는 패스워드가 틀렸습니다");
+            throw e;
+        }
     }
 
     // 로그아웃
     @Override
-    public void logOut(HttpServletRequest httpRequest) {
+    public void logOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
 
         String authorizationHeader = httpRequest.getHeader(TokenProvider.HEADER_AUTHORIZATION);
         String accessToken = tokenProvider.getAccessToken(authorizationHeader);
         String memberId = tokenProvider.getMemberId(accessToken);
         // 사용자 아이디 이용해서 리프레시 토큰 삭제
         redisUtils.deleteValues(memberId);
-        // 액세스 토큰 블랙리스트 등록
-        redisUtils.setBlackList(memberId, accessToken, tokenProvider.getExpiration(accessToken));
-
+        redisUtils.setBlackList(memberId, "logout", tokenProvider.getExpiration(accessToken));
+        // 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
     }
 
     // 전체 회원 조회
@@ -120,16 +127,37 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
 
-        member.update(requestDto.getMemberId(), passwordEncoder.encode(requestDto.getMemberPw()));
+        if (memberRepository.existsByMemberNickname(requestDto.getMemberNickname())) {
+            log.info("requestDto.getMemberNickname : " + requestDto.getMemberNickname());
+            log.info("member.getMemberNickname : " + member.getMemberNickname());
+            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
+        }
+        member.update(requestDto.getMemberNickname(), passwordEncoder.encode(requestDto.getMemberPw()));
         return member;
     }
 
     // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
-    public void deleteMember(long memberNo, String memberId) {
+    public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         memberRepository.deleteById(memberNo);
         redisUtils.deleteValues(memberId);
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
     }
 
+    ///////////////////////////////////////////////
+    // OAuth2 인증 성공 후 추가 정보 수정 실행(memberNickname)
+    @Override
+    public Member updateNickname(String memberId, MemberRequestDto memberRequestDto) {
+        Member member = memberRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberId));
 
+        if (memberRepository.existsByMemberNickname(memberRequestDto.getMemberNickname())) {
+            log.info("requestDto.getMemberNickname : " + memberRequestDto.getMemberNickname());
+            log.info("member.getMemberNickname : " + member.getMemberNickname());
+            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
+        }
+        member.updateNickname(memberRequestDto.getMemberNickname());
+        return member;
+    }
+    ///////////////////////////////////////////////
 }

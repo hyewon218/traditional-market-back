@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -58,12 +59,8 @@ public class RedisUtils {
         return (expireTime != null) ? expireTime : -1;
     }
 
-//    public void setBlackList(String key, Object value, long expiredAt) {
-//        redisBlackListTemplate.opsForValue().set(key, value, expiredAt, TimeUnit.MILLISECONDS);
-//    }
-
     public void setBlackList(String key, String value, long expiredAt) {
-        redisBlackListTemplate.opsForValue().set(key, "black" + value, expiredAt, TimeUnit.MILLISECONDS);
+        redisBlackListTemplate.opsForValue().set(key, "logout", expiredAt, TimeUnit.MILLISECONDS);
     }
 
 //    public <T> T getBlackList(String key, Class<T> clazz){
@@ -78,12 +75,16 @@ public class RedisUtils {
 //        return null;
 //    }
 
-    public String getBlackList(String key) {
+    public String getBlackListValue(String key) {
         return redisBlackListTemplate.opsForValue().get(key);
     }
 
-    public boolean hasBlack(String blackToken) {
-        return blackToken.startsWith("black");
+//    public boolean hasBlack(String key) {
+//        return getBlackListValue(key).startsWith("black");
+//    }
+
+    public boolean hasBlack(String key) {
+        return getBlackListValue(key).equals("logout");
     }
 
     public void deleteValues(String key) {
@@ -101,7 +102,4 @@ public class RedisUtils {
     public boolean hasKeyBlackList(String key) {
         return redisBlackListTemplate.hasKey(key);
     }
-
-
-
 }
