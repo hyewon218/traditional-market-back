@@ -59,7 +59,7 @@ public class WebSecurityConfig {
                     .authorizeHttpRequests(authorize -> authorize
                             .requestMatchers(HttpMethod.GET, "/api/members").hasAnyRole("ADMIN") // 전체 회원 목록 조회
                             .requestMatchers("/api/admin/**", "/api/markets/**", "/api/shops/**", "/api/items/**").hasAnyRole("ADMIN")
-                            .requestMatchers("/", "/api/members/signup", "/members/login", "/api/members/login", "/api/oauth2/login", "/api/members/logout",
+                            .requestMatchers("/api/members/verifycode", "/api/members/addinfo", "/", "/api/members/signup", "/members/login", "/api/members/login", "/api/oauth2/login", "/api/members/logout",
                                     "/api/markets", "/api/shops", "/api/items", "/css/**", "/js/**").permitAll()
                             .requestMatchers("/api/members/**").authenticated()
                             .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/auth/success").permitAll() // oauth2

@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @Entity
 @Getter
-//@Setter
+@Setter // 임시비밀번호 설정때문에 import
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member")
@@ -38,8 +38,6 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ProviderType providerType; // Google, Naver, Kakao, Local 로그인
-  
-    private Role role;  // member, admin, seller 권한
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_no")

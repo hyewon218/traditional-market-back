@@ -42,18 +42,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 authToken.getAuthorizedClientRegistrationId().toUpperCase());
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-//        OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOauth2UserInfo(providerType, oAuth2User.getAttributes());
         OAuth2UserInfo userInfo = OAuth2UserInfo.of(providerType, oAuth2User.getAttributes());
 //        Member member = memberRepository.findByMemberEmail((String) userInfo.getAttributes().get("email"));
         Optional<Member> optionalMember = memberRepository.findByMemberEmail(userInfo.memberEmail());
-
         if (optionalMember.isEmpty()) {
             throw new IllegalArgumentException("해당 이메일을 가진 회원을 찾을 수 없습니다");
         }
         Member member = optionalMember.get();
+
+        // 액세스토큰 생성
         String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
         log.info("access 토큰이 생성되었습니다 : " + accessToken);
         tokenProvider.addTokenToCookie(request, response, accessToken);
+        String cookie = tokenProvider.getTokenFromCookie(request);
+        if (cookie == null) {
+            log.info("쿠키가 null입니다");
+        }
+        log.info("cookie : {}", cookie);
         String targetUrl = getTargetUrl(accessToken);
 
         // refresh 토큰 생성(refresh 토큰 없거나 유효하지 않을 경우)
