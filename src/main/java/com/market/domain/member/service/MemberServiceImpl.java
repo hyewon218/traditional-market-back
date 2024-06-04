@@ -1,5 +1,6 @@
 package com.market.domain.member.service;
 
+import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -147,17 +149,39 @@ public class MemberServiceImpl implements MemberService {
     ///////////////////////////////////////////////
     // OAuth2 인증 성공 후 추가 정보 수정 실행(memberNickname)
     @Override
-    public Member updateNickname(String memberId, MemberRequestDto memberRequestDto) {
-        Member member = memberRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberId));
+    @Transactional
+    public Member updateNickname(long memberNo, MemberNicknameRequestDto MemberNicknameRequestDto) {
+        Member member = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
 
-        if (memberRepository.existsByMemberNickname(memberRequestDto.getMemberNickname())) {
-            log.info("requestDto.getMemberNickname : " + memberRequestDto.getMemberNickname());
+        if (memberRepository.existsByMemberNickname(MemberNicknameRequestDto.getMemberNickname())) {
+            log.info("requestDto.getMemberNickname : " + MemberNicknameRequestDto.getMemberNickname());
             log.info("member.getMemberNickname : " + member.getMemberNickname());
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
         }
-        member.updateNickname(memberRequestDto.getMemberNickname());
+        member.updateNickname(MemberNicknameRequestDto.getMemberNickname());
         return member;
+    }
+
+    // 인증번호 확인(회원가입 시 입력한 인증번호와 redis에 저장된 인증번호 일치하는지 확인)
+    @Override
+    public boolean verifyCode(String memberEmail, String inputCode) {
+        String savedCode = redisUtils.getValues(memberEmail);
+        return inputCode.equals(savedCode);
+    }
+
+    // 임시비밀번호 발급(비밀번호 찾기에서 해당 이메일로 임시비밀번호 전송)
+    @Override
+    public void SetTempPassword(String memberEmail, String tempPassword) {
+        Optional<Member> optionalMember = memberRepository.findByMemberEmail(memberEmail);
+
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            member.setMemberPw(passwordEncoder.encode(tempPassword));
+            memberRepository.save(member);
+            log.info("해당 이메일에 임시비밀번호가 전송되었습니다: {}", memberEmail);
+        }
+        log.info("해당 이메일에 해당하는 회원을 찾을 수 없습니다: {}", memberEmail);
     }
     ///////////////////////////////////////////////
 }

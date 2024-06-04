@@ -1,7 +1,9 @@
 package com.market.domain.member.controller;
 
+import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MemberResponseDto;
+import com.market.domain.member.dto.VerifyCodeRequestDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.service.MemberServiceImpl;
@@ -98,7 +100,8 @@ public class MemberController {
 
     // 회원 수정
     @PutMapping("")
-    public ResponseEntity<Member> updateMember(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody MemberRequestDto memberRequestDto) {
+    public ResponseEntity<Member> updateMember(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                               @RequestBody MemberRequestDto memberRequestDto) {
         Member updatedMember = memberService.update(userDetails.getMember().getMemberNo(), memberRequestDto);
         return ResponseEntity.ok()
                 .body(updatedMember);
@@ -112,5 +115,22 @@ public class MemberController {
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 
+    // OAuth2 인증 성공 후 추가 정보 수정 실행(memberNickname)
+    @PutMapping("/addinfo")
+    public ResponseEntity<Member> addInfo(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                          @RequestBody MemberNicknameRequestDto memberNicknameRequestDto) {
+        Member updateOauth2Member = memberService.updateNickname(userDetails.getMember().getMemberNo(), memberNicknameRequestDto);
+        return ResponseEntity.ok()
+                .body(updateOauth2Member);
+    }
 
+    // 회원가입 시 인증번호 일치하는지 확인(검증)
+    @PostMapping("/verifycode")
+    public ResponseEntity<String> verifyCode(@RequestBody VerifyCodeRequestDto verifyCodeRequestDto) {
+        if (memberService.verifyCode(verifyCodeRequestDto.getMemberEmail(), verifyCodeRequestDto.getCode())) {
+            return ResponseEntity.ok("인증 성공");
+        } else {
+            return ResponseEntity.badRequest().body("인증 실패");
+        }
+    }
 }

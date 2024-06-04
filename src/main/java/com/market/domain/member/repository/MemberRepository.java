@@ -16,4 +16,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Boolean existsByMemberId(String memberId);
     Member findByMemberIdAndMemberPw(String memberId, String memberPw);
     Optional<Member> findByRole(Role role);
+
+    // 아이디 찾기(닉네임과 이메일 이용)
+    Member findByMemberNicknameAndMemberEmail(String memberNickname, String memberEmail);
+
+    // 비밀번호 찾기(아이디와 이메일 이용)
+    Member findByMemberIdAndMemberEmail(String memberId, String memberEmail);
 }

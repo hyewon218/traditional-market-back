@@ -1,5 +1,6 @@
 package com.market.domain.member.service;
 
+import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,14 +73,27 @@ public interface MemberService {
     void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
 
     /**
-     * memberId 수정
+     * OAuth2 최초 로그인 시 닉네임 수정
      *
-     * @param memberId : 수정할 회원 아이디
-     * @param memberRequestDto : 회원 수정 요청 정보
+     * @param memberNo : 수정할 회원 고유번호
+     * @param memberNicknameRequestDto : 회원 수정 요청 정보
      */
-    Member updateNickname(String memberId, MemberRequestDto memberRequestDto);
-    ///////////////////////////////////////////////
+    Member updateNickname(long memberNo, MemberNicknameRequestDto memberNicknameRequestDto);
 
+    /**
+     * 회원가입 시 인증번호 일치하는지 확인(검증)
+     *
+     * @param memberEmail : 해당 회원의 이메일
+     * @param inputCode : 입력한 인증번호
+     */
+    boolean verifyCode(String memberEmail, String inputCode);
 
+    /**
+     * 임시비밀번호 발급
+     *
+     * @param memberEmail : 해당 회원의 이메일
+     * @param tempPassword : 임시비밀번호
+     */
+    void SetTempPassword(String memberEmail, String tempPassword);
 
 }

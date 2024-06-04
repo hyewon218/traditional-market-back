@@ -31,6 +31,12 @@ public class MemberRequestDto {
         this.memberPw = modifiedMemberPw;
     }
 
+    public MemberRequestDto(String memberId, String memberEmail, String memberPw) {
+        this.memberId = memberId;
+        this.memberEmail = memberEmail;
+        this.memberPw = memberPw;
+    }
+
     public Member toEntity(PasswordEncoder passwordEncoder){
         return Member.builder()
                 .memberId(this.memberId)
