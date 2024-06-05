@@ -146,7 +146,6 @@ public class MemberServiceImpl implements MemberService {
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
     }
 
-    ///////////////////////////////////////////////
     // OAuth2 인증 성공 후 추가 정보 수정 실행(memberNickname)
     @Override
     @Transactional
@@ -183,5 +182,74 @@ public class MemberServiceImpl implements MemberService {
         }
         log.info("해당 이메일에 해당하는 회원을 찾을 수 없습니다: {}", memberEmail);
     }
+
+    ///////////////////////////////////////////////
+    // 아이디 찾기(닉네임, 이메일 이용)
+    @Override
+    public String findIdByNicknameEmail(String memberNickname, String memberEmail, String inputCode) {
+        Member member = memberRepository.findByMemberNicknameAndMemberEmail(memberNickname, memberEmail);
+        String savedCode = redisUtils.getValues(memberEmail);
+        if (member != null) {
+            if (inputCode.equals(savedCode)) {
+                return member.getMemberId();
+            } else {
+                log.info("인증번호가 일치하지않습니다");
+            }
+        }
+        return null;
+    }
+
+    // 아이디 찾기 시 닉네임, 이메일에 해당하는 회원이 있는지 검증
+    @Override
+    public boolean findMemberByNicknameAndEmail(String memberNickname, String memberEmail) {
+        Member member = memberRepository.findByMemberNicknameAndMemberEmail(memberNickname, memberEmail);
+        if (member != null) {
+            log.info("member : {}", member);
+            return true;
+        }
+        log.info("입력정보와 일치하는 회원이 존재하지않습니다");
+        return false;
+    }
+
+    // 비밀번호 찾기 시 아이디, 이메일에 해당하는 회원이 있는지 검증
+    @Override
+    public boolean findMemberByIdAndEmail(String memberId, String memberEmail) {
+        Member member = memberRepository.findByMemberIdAndMemberEmail(memberId, memberEmail);
+        if (member != null) {
+            log.info("member : {}", member);
+            return true;
+        }
+        log.info("입력정보와 일치하는 회원이 존재하지않습니다");
+        return false;
+    }
+
+    // 비밀번호 변경
+    @Override
+    public boolean changePassword(long memberNo, String currentPw, String changePw, String confirmPw) {
+        Optional<Member> optionalMember = memberRepository.findById(memberNo);
+        Member member = optionalMember.get();
+        if (member != null) {
+            log.info("member : {}", member);
+            // 현재 입력한 비밀번호와 DB에 저장된 비밀번호가 일치하는지 확인
+            if (passwordEncoder.matches(currentPw, member.getMemberPw())) {
+                // 변경할 비밀번호와 변경할 비밀번호 재확인 일치하는지 확인
+                if (changePw.equals(confirmPw)) {
+                    member.setMemberPw(passwordEncoder.encode(changePw));
+                    memberRepository.save(member);
+                    log.info("비밀번호 변경 성공");
+                    return true;
+
+                } else {
+                    log.info("변경할 비밀번호가 일치하지않습니다");
+                }
+            } else {
+                log.info("현재 비밀번호가 일치하지않습니다");
+            }
+        } else {
+            log.info("해당 회원이 존재하지않습니다.");
+        }
+        return false;
+    }
+
     ///////////////////////////////////////////////
 }

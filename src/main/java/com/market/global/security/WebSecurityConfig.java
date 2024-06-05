@@ -73,10 +73,10 @@ public class WebSecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
                     .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
-                    .requestMatchers("/api/members/verifycode", "/api/members/addinfo", "/",
-                        "/api/members/signup", "/members/login", "/api/members/login",
-                        "/api/oauth2/login", "/api/members/logout",
-                        "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
+                    .requestMatchers("/", "/api/members/signup", "/members/login", "/api/members/login",
+                        "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
+                            "/api/oauth2/login", "/api/send-mail/**", "/api/members/logout",
+                            "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
                         "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
                     .requestMatchers("/api/members/**").authenticated()
                     .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/auth/success").permitAll() // oauth2
@@ -122,7 +122,7 @@ public class WebSecurityConfig {
         public OAuth2SuccessHandler oAuth2SuccessHandler() {
             return new OAuth2SuccessHandler(tokenProvider,
                 oAuth2AuthorizationRequestBasedOnCookieRepository(),
-                memberRepository, redisUtils, objectMapper);
+                memberRepository, redisUtils);
         }
 
         @Bean
