@@ -25,13 +25,13 @@ import java.util.Optional;
 @Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    public static final String REDIRECT_PATH = "/auth/success"; // "/"로 바꾸기
+    public static final String FIRST_REDIRECT_PATH = "/auth/success"; // "/"로 바꾸기
+    public static final String REDIRECT_PATH = "/";
 
     private final TokenProvider tokenProvider;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
     private final MemberRepository memberRepository;
     private final RedisUtils redisUtils;
-    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -50,6 +50,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
         Member member = optionalMember.get();
 
+        // 닉네임 있는지 없는지 확인 후 Redirect 경로 설정
+        String redirectPath = (member.getMemberNickname() == null) ? FIRST_REDIRECT_PATH : REDIRECT_PATH;
+
         // 액세스토큰 생성
         String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
         log.info("access 토큰이 생성되었습니다 : " + accessToken);
@@ -59,7 +62,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             log.info("쿠키가 null입니다");
         }
         log.info("cookie : {}", cookie);
-        String targetUrl = getTargetUrl(accessToken);
+        String targetUrl = getTargetUrl(redirectPath, accessToken);
 
         // refresh 토큰 생성(refresh 토큰 없거나 유효하지 않을 경우)
         String findRefreshToken = redisUtils.getValues(member.getMemberId());
@@ -91,8 +94,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     // 토큰 기반으로 리디렉션할 URL 생성하는 메서드
-    private String getTargetUrl(String accessToken) {
-        return UriComponentsBuilder.fromUriString(REDIRECT_PATH)
+    private String getTargetUrl(String redirectPath, String accessToken) {
+        return UriComponentsBuilder.fromUriString(redirectPath)
 //                .queryParam("accessToken", accessToken) // JWT 액세스토큰값을 url에 추가, 주석처리 해야함, 테스트로 켜놓음
                 .build()
                 .toUriString();
