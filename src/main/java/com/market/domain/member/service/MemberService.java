@@ -96,4 +96,39 @@ public interface MemberService {
      */
     void SetTempPassword(String memberEmail, String tempPassword);
 
+    /**
+     * 아이디 찾기
+     *
+     * @param memberNickname : 해당 회원의 닉네임
+     * @param memberEmail : 해당 회원의 이메일
+     * @param inputCode : 입력한 인증번호
+     */
+    String findIdByNicknameEmail(String memberNickname, String memberEmail, String inputCode);
+
+    /**
+     * 아이디 찾기 시 아래 인자로 해당 회원 있는지 검증
+     *
+     * @param memberNickname : 해당 회원의 닉네임
+     * @param memberEmail : 해당 회원의 이메일
+     */
+    boolean findMemberByNicknameAndEmail(String memberNickname, String memberEmail);
+
+    /**
+     * 비밀번호 찾기 시 아래 인자로 해당 회원 있는지 검증
+     *
+     * @param memberId : 해당 회원의 아이디
+     * @param memberEmail : 해당 회원의 이메일
+     */
+    boolean findMemberByIdAndEmail(String memberId, String memberEmail);
+
+    /**
+     * 비밀번호 변경
+     *
+     * @param memberNo : 회원 있는지 확인할 memberNo
+     * @param currentPw : 현재 비밀번호
+     * @param changePw : 변경할 비밀번호
+     * @param confirmPw : 변경할 비밀번호 재확인
+     */
+    boolean changePassword(long memberNo, String currentPw, String changePw, String confirmPw);
+
 }

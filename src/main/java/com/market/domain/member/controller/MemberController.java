@@ -1,9 +1,6 @@
 package com.market.domain.member.controller;
 
-import com.market.domain.member.dto.MemberNicknameRequestDto;
-import com.market.domain.member.dto.MemberRequestDto;
-import com.market.domain.member.dto.MemberResponseDto;
-import com.market.domain.member.dto.VerifyCodeRequestDto;
+import com.market.domain.member.dto.*;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.service.MemberServiceImpl;
@@ -21,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -49,12 +47,12 @@ public class MemberController {
 
         apiLoginSuccessHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, authentication);
     }
-    
+
     // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse> logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-       memberService.logOut(httpRequest, httpResponse);
-       return ResponseEntity.ok(new ApiResponse("로그아웃 성공", HttpStatus.OK.value()));
+        memberService.logOut(httpRequest, httpResponse);
+        return ResponseEntity.ok(new ApiResponse("로그아웃 성공", HttpStatus.OK.value()));
     }
 
     // 전체 회원 조회
@@ -69,7 +67,7 @@ public class MemberController {
         return ResponseEntity.ok()
                 .body(members);
     }
-    
+
     // 특정 회원 조회
     @GetMapping("/myinfo")
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -120,6 +118,7 @@ public class MemberController {
     public ResponseEntity<Member> addInfo(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                           @RequestBody MemberNicknameRequestDto memberNicknameRequestDto) {
         Member updateOauth2Member = memberService.updateNickname(userDetails.getMember().getMemberNo(), memberNicknameRequestDto);
+        log.info("userDetails : {}", userDetails);
         return ResponseEntity.ok()
                 .body(updateOauth2Member);
     }
@@ -132,5 +131,33 @@ public class MemberController {
         } else {
             return ResponseEntity.badRequest().body("인증 실패");
         }
+    }
+
+    // 아이디 찾기
+    @PostMapping("/findid")
+    public ResponseEntity<String> findMemberId(@RequestBody FindIdRequestDto findIdRequestDto) {
+        String foundMemberId = memberService.findIdByNicknameEmail(
+                findIdRequestDto.getMemberNickname(), findIdRequestDto.getMemberEmail(), findIdRequestDto.getCode());
+        if (foundMemberId != null) {
+            return ResponseEntity.ok()
+                    .body("아이디 찾기 성공!, 찾은 아이디 : " + foundMemberId);
+        } else {
+            return ResponseEntity.badRequest().body("아이디 찾기 실패");
+        }
+    }
+
+    // 비밀번호 변경
+    @PostMapping("/changepw")
+    public ResponseEntity<String> changeMemberPw(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                 @RequestBody ChangePwRequestDto changePwRequestDto) {
+        Optional<Member> optionalMember = memberRepository.findById(userDetails.getMember().getMemberNo());
+        if (optionalMember.isPresent()) {
+            if (memberService.changePassword(userDetails.getMember().getMemberNo(), changePwRequestDto.getCurrentPw(),
+                    changePwRequestDto.getChangePw(), changePwRequestDto.getConfirmPw())) {
+                return ResponseEntity.ok()
+                        .body("비밀번호 변경 성공, 변경한 비밀번호 : " + changePwRequestDto.getChangePw());
+            }
+        }
+        return ResponseEntity.badRequest().body("비밀번호 변경 실패");
     }
 }
