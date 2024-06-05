@@ -42,6 +42,11 @@ public enum ErrorCode {
     NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "N001", "notification 연결 에러입니다."),
     // 관리자
     NOT_EXISTS_ADMIN(HttpStatus.BAD_REQUEST, "A002", "관리자가 존재하지 않습니다."),
+    //채팅
+    INVALID_AUTH_TOKEN(HttpStatus.BAD_REQUEST,"A002", "관리자가 존재하지 않습니다."),
+    NOT_FOUND_CHATROOM (HttpStatus. BAD_REQUEST, "C001", "존재하지 않는 채팅방입나다."),
+    ONLY_MASTER_EDIT(HttpStatus.BAD_REQUEST, "CO02", "채팅방 개설자만 수정할 수 있습니다."),
+    ONLY_MASTER_DELETE(HttpStatus. BAD_REQUEST, "C003", "채팅방 개설자만 삭제할 수 있습니다."),
     // aws s3
     EXISTED_FILE(HttpStatus.BAD_REQUEST, "AS001", "중복된 파일명입니다."),
     ;
