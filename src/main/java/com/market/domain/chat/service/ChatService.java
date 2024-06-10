@@ -1,7 +1,8 @@
 package com.market.domain.chat.service;
 
-import com.market.domain.chat.dto.ChatListResponseDto;
 import com.market.domain.chat.dto.ChatMessageDto;
+import com.market.domain.chat.dto.ChatResponseDto;
+import java.util.List;
 
 public interface ChatService {
 
@@ -11,7 +12,7 @@ public interface ChatService {
      * @param roomId 조회할 채팅 방 ID
      * @return       조회된 메세지 목록
      */
-    ChatListResponseDto getAllChatByRoomId(Long roomId);
+    List<ChatResponseDto> getAllChatByRoomId(Long roomId);
 
     /**
      * 채팅 메세지 저장

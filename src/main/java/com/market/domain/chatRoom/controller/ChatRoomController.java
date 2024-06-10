@@ -1,6 +1,6 @@
 package com.market.domain.chatRoom.controller;
 
-import com.market.domain.chat.dto.ChatListResponseDto;
+import com.market.domain.chat.dto.ChatResponseDto;
 import com.market.domain.chat.service.ChatService;
 import com.market.domain.chatRoom.dto.ChatRoomListResponseDto;
 import com.market.domain.chatRoom.dto.ChatRoomRequestDto;
@@ -9,6 +9,7 @@ import com.market.domain.chatRoom.service.ChatRoomService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +57,7 @@ public class ChatRoomController {
     }
 
     @GetMapping("/chatrooms/chat/{id}") // 채팅방 내 채팅 목록 조회
-    public ResponseEntity<ChatListResponseDto> getAllChatByRoomId(@PathVariable Long id) {
+    public ResponseEntity<List<ChatResponseDto>> getAllChatByRoomId(@PathVariable Long id) {
         return ResponseEntity.ok(chatService.getAllChatByRoomId(id));
     }
 

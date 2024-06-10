@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatRoomResponseDto {
 
-    private Long id;
+    private Long no;
 
     private String title;
 
@@ -20,7 +20,7 @@ public class ChatRoomResponseDto {
 
     public static ChatRoomResponseDto of(ChatRoom chatRoom) {
         return ChatRoomResponseDto.builder()
-            .id(chatRoom.getNo())
+            .no(chatRoom.getNo())
             .title(chatRoom.getTitle())
             .username(chatRoom.getMember().getMemberId())
             .build();
