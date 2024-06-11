@@ -6,14 +6,12 @@ import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.service.MemberServiceImpl;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
-import com.market.global.security.handler.ApiLoginSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +26,6 @@ public class MemberController {
 
     private final MemberServiceImpl memberService;
     private final MemberRepository memberRepository;
-    private final ApiLoginSuccessHandler apiLoginSuccessHandler;
 
     // 회원 가입
     @PostMapping("/signup")
@@ -38,14 +35,15 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedMember);
     }
-
-    // 로그인, ApiLoginSuccessHandler 클래스 통한 로그인 성공 후 처리
+    
+    // 로그인
     @PostMapping("/login")
-    public void logIn(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-                      @RequestBody MemberRequestDto requestDto) throws Exception {
-        Authentication authentication = memberService.logIn(httpServletRequest, httpServletResponse, requestDto);
+    public ResponseEntity<ApiResponse> logIn(HttpServletRequest httpServletRequest,
+                                             HttpServletResponse httpServletResponse,
+                                             @RequestBody MemberRequestDto requestDto) throws Exception {
 
-        apiLoginSuccessHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, authentication);
+        memberService.logIn(httpServletRequest, httpServletResponse, requestDto);
+        return ResponseEntity.ok().body(new ApiResponse("로그인 성공", HttpStatus.OK.value()));
     }
 
     // 로그아웃
@@ -61,7 +59,7 @@ public class MemberController {
 
         List<MemberResponseDto> members = memberService.findAll()
                 .stream()
-                .map(MemberResponseDto::new)
+                .map(MemberResponseDto::of) // 생성자 사용할때는 of 대신 new
                 .toList();
 
         return ResponseEntity.ok()
@@ -73,7 +71,7 @@ public class MemberController {
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Member member = memberService.findById(userDetails.getMember().getMemberNo());
         return ResponseEntity.ok()
-                .body(new MemberResponseDto(member));
+                .body(MemberResponseDto.of(member));
     }
 
     // admin 권한일 경우 다른 회원의 상세정보 열람 가능, 일반회원은 자신의 정보만 열람 가능

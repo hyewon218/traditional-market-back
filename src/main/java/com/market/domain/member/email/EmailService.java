@@ -51,7 +51,6 @@ public class EmailService {
             javaMailSender.send(mimeMessage);
             // redis에 저장
             redisUtils.setValues(emailMessageEntity.getTo(), authNum, Duration.ofMinutes(3));
-            String savedRedisCode = redisUtils.getValues(emailMessageEntity.getTo());
             return authNum;
 
         } catch (MessagingException e) {

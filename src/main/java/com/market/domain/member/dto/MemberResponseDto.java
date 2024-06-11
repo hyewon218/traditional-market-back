@@ -28,30 +28,30 @@ public class MemberResponseDto {
     private String accessToken;
     private String refreshToken; // 삭제할 것
 
-    public MemberResponseDto(Member member) {
-        this.memberNo = member.getMemberNo();
-        this.memberId = member.getMemberId();
-        this.memberEmail = member.getMemberEmail();
-        this.memberNickname = member.getMemberNickname();
-        this.memberPw = member.getMemberPw();
-        this.providerType = member.getProviderType();
-        this.role = member.getRole();
-        this.createTime = member.getCreateTime();
-        this.updateTime = member.getUpdateTime();
+    public static MemberResponseDto of(Member member){
+        return MemberResponseDto.builder()
+                .memberNo(member.getMemberNo())
+                .memberId(member.getMemberId())
+                .memberEmail(member.getMemberEmail())
+                .memberNickname(member.getMemberNickname())
+                .memberPw(member.getMemberPw())
+                .providerType(member.getProviderType())
+                .role(member.getRole())
+                .createTime(member.getCreateTime())
+                .updateTime(member.getUpdateTime())
+                .build();
     }
 
-//    public static MemberResponseDto of(Member member){
-//        return MemberResponseDto.builder()
-//                .memberNo(member.getMemberNo())
-//                .memberId(member.getMemberId())
-//                .memberEmail(member.getMemberEmail())
-//                .memberNickname(member.getMemberNickname())
-//                .memberPw(member.getMemberPw())
-//                .providerType(member.getProviderType())
-//                .role(member.getRole())
-//                .createTime(member.getCreateTime())
-//                .updateTime(member.getUpdateTime())
-//                .build();
+//    public MemberResponseDto(Member member) {
+//        this.memberNo = member.getMemberNo();
+//        this.memberId = member.getMemberId();
+//        this.memberEmail = member.getMemberEmail();
+//        this.memberNickname = member.getMemberNickname();
+//        this.memberPw = member.getMemberPw();
+//        this.providerType = member.getProviderType();
+//        this.role = member.getRole();
+//        this.createTime = member.getCreateTime();
+//        this.updateTime = member.getUpdateTime();
 //    }
 
 }

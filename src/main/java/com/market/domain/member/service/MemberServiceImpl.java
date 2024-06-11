@@ -5,7 +5,7 @@ import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenProvider;
-import com.market.global.jwt.repository.RefreshTokenRepository;
+import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.redis.RedisUtils;
 import com.market.global.security.CookieUtil;
 import com.market.global.security.UserDetailsImpl;
@@ -30,7 +30,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -43,38 +42,22 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
     }
 
-    // 로그인
+    // 회원 생성(아이디, 이메일 마스킹 처리)
 //    @Override
-//    public void logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-//                                MemberRequestDto request) throws Exception {
-//        Authentication authentication = authenticationConfiguration.getAuthenticationManager()
-//                .authenticate(
-//                        new UsernamePasswordAuthenticationToken(
-//                                request.getMemberId(),
-//                                request.getMemberPw(),
-//                                null
-//                        )
-//                );
+//    public Member createMember(MemberRequestDto memberRequestDto) {
+//        String maskedId = idMasking(memberRequestDto.getMemberId());
+//        String maskedEmail = emailMasking(memberRequestDto.getMemberEmail());
 //
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//        Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
-//
-//        // access 토큰 생성
-//        String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
-//
-//        // refresh 토큰 생성
-//        RefreshToken findRefreshToken = refreshTokenRepository.findByMemberNo(member.getMemberNo());
-//            if (findRefreshToken == null || !tokenProvider.validRefreshToken(findRefreshToken)) {
-//            RefreshToken refreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
-//            log.info("refresh 토큰이 생성되었습니다 : " + refreshToken)
-//        }
+//        Member member = memberRequestDto.toEntity(passwordEncoder);
+//        member.setMemberId(maskedId);
+//        member.setMemberEmail(maskedEmail);
+//        return memberRepository.save(member);
 //    }
 
-    // 로그인, access 토큰, refresh 토큰 모두 ApiLoginSuccessHandler에서 생성(포스트맨에서 해당 객체 보기 위해)
+    // 로그인
     @Override
-    public Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                      MemberRequestDto request) throws Exception {
+    public void logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+                                   MemberRequestDto request) throws Exception {
         try {
             Authentication authentication = authenticationConfiguration.getAuthenticationManager()
                     .authenticate(
@@ -88,7 +71,37 @@ public class MemberServiceImpl implements MemberService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
 
-            return authentication;
+            // access 토큰 생성
+            String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
+            log.info("access 토큰이 생성되었습니다 : " + accessToken);
+
+            // 쿠키 생성
+            tokenProvider.addTokenToCookie(httpRequest, httpResponse, accessToken);
+            String cookie = tokenProvider.getTokenFromCookie(httpRequest);
+            if (cookie == null) {
+                log.info("쿠키가 null입니다");
+            }
+            log.info("쿠키가 생성되었습니다 : " + cookie);
+
+            // refresh 토큰 생성(refresh 토큰 없거나 유효하지 않을 경우)
+            String findRefreshToken = redisUtils.getValues(member.getMemberId());
+
+            // refresh 토큰 없는 경우
+            if (findRefreshToken == null) {
+                RefreshToken refreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
+                redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
+                log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + refreshToken.getRefreshToken());
+                log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
+
+                // refresh 토큰이 유효하지않은 경우
+            } else if (!tokenProvider.validRefreshToken(findRefreshToken)) {
+                redisUtils.deleteValues(member.getMemberId());
+                RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
+                redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
+                log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + newRefreshToken.getRefreshToken());
+                log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
+            }
+
         } catch (AuthenticationException e) {
             log.info("아이디 또는 패스워드가 틀렸습니다");
             throw e;
@@ -180,7 +193,6 @@ public class MemberServiceImpl implements MemberService {
             memberRepository.save(member);
             log.info("해당 이메일에 임시비밀번호가 전송되었습니다: {}", memberEmail);
         }
-        log.info("해당 이메일에 해당하는 회원을 찾을 수 없습니다: {}", memberEmail);
     }
 
     ///////////////////////////////////////////////
@@ -250,6 +262,24 @@ public class MemberServiceImpl implements MemberService {
         }
         return false;
     }
+
+    // 회원 아이디 마스킹 처리
+    @Override
+    public String idMasking(String memberId) {
+        // 2 범위 뒤로는 모두 마스킹 처리
+        return memberId.replaceAll("(?<=.{2}).", "*");
+    }
+
+    // 회원 이메일 마스킹 처리
+    @Override
+    public String emailMasking(String memberEmail) {
+        // (?<=.{3}) : 앞의 3개 문자(어떤 문자든 상관없음) 뒤에 있는 문자들을 찾고
+        // (?<= : 찾으려는 패턴이 어떤 다른 패턴 뒤에 있어야 찾음)
+        // (?=[^@]*?@) : @ 앞에 있으면서 @가 나타나지 않는 문자들을 찾고
+        // (?= : 찾으려는 패턴이 어떤 다른 패턴 앞에 있어야 찾음)
+        return memberEmail.replaceAll("(?<=.{3}).(?=[^@]*?@)", "*");
+    }
+
 
     ///////////////////////////////////////////////
 }

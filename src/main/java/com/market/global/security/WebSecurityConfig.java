@@ -1,12 +1,9 @@
 package com.market.global.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenAuthenticationFilter;
 import com.market.global.jwt.config.TokenProvider;
-import com.market.global.jwt.repository.RefreshTokenRepository;
 import com.market.global.redis.RedisUtils;
-import com.market.global.security.handler.ApiLoginSuccessHandler;
 import com.market.global.security.handler.CustomAccessDeniedHandler;
 import com.market.global.security.handler.CustomAuthenticationEntryPoint;
 import com.market.global.security.oauth2.OAuth2AuthorizationRequestBasedOnCookieRepository;
@@ -14,6 +11,8 @@ import com.market.global.security.oauth2.OAuth2SuccessHandler;
 import com.market.global.security.oauth2.OAuth2UserCustomService;
 import java.util.Arrays;
 import java.util.List;
+
+import com.market.global.visitor.VisitorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,12 +43,11 @@ public class WebSecurityConfig {
     public static class MemberConfig {
 
         private final TokenProvider tokenProvider;
-        private final ObjectMapper objectMapper;
-        private final RefreshTokenRepository refreshTokenRepository;
         private final CustomAccessDeniedHandler customAccessDeniedHandler;
         private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
         private final RedisUtils redisUtils;
         private final MemberRepository memberRepository;
+        private final VisitorService visitorService;
 
         @Bean
         public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -73,7 +71,7 @@ public class WebSecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
                     .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
-                    .requestMatchers("/", "/api/members/signup", "/members/login", "/api/members/login",
+                    .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login", "/api/members/login",
                         "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
                             "/api/oauth2/login", "/api/send-mail/**", "/api/members/logout",
                             "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
@@ -127,7 +125,7 @@ public class WebSecurityConfig {
 
         @Bean
         public TokenAuthenticationFilter tokenAuthenticationFilter() {
-            return new TokenAuthenticationFilter(tokenProvider, redisUtils);
+            return new TokenAuthenticationFilter(tokenProvider, redisUtils, visitorService);
         }
 
         @Bean
@@ -142,11 +140,11 @@ public class WebSecurityConfig {
             return authenticationConfiguration.getAuthenticationManager();
         }
 
-        @Bean
-        public ApiLoginSuccessHandler apiLoginSuccessHandler() {
-            return new ApiLoginSuccessHandler(tokenProvider, refreshTokenRepository, objectMapper,
-                redisUtils);
-        }
+//        @Bean
+//        public ApiLoginSuccessHandler apiLoginSuccessHandler() {
+//            return new ApiLoginSuccessHandler(tokenProvider, refreshTokenRepository, objectMapper,
+//                redisUtils);
+//        }
 
         @Bean
         public OAuth2UserCustomService oAuth2UserCustomService() {
