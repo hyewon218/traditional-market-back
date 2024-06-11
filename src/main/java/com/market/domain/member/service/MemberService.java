@@ -5,7 +5,6 @@ import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -14,13 +13,15 @@ public interface MemberService {
     /**
      * 로그인
      *
-     * @param httpRequest :
+     * @param httpRequest  :
      * @param httpResponse :
-     * @param request : 입력 요청 정보
-     * @return : 회원 Entity
+     * @param request      : 입력 요청 정보
+     *                     //     * @return : 회원 Entity
      */
-    Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                         MemberRequestDto request) throws Exception;
+//    Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+//                         MemberRequestDto request) throws Exception;
+    void logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+                            MemberRequestDto request) throws Exception;
 
     /**
      * 로그아웃
@@ -130,5 +131,19 @@ public interface MemberService {
      * @param confirmPw : 변경할 비밀번호 재확인
      */
     boolean changePassword(long memberNo, String currentPw, String changePw, String confirmPw);
+
+    /**
+     * 회원 아이디 마스킹 처리
+     *
+     * @param memberId : 마스킹 처리 할 회원 아이디
+     */
+    String idMasking(String memberId);
+
+    /**
+     * 회원 이메일 마스킹 처리
+     *
+     * @param memberEmail : 마스킹 처리 할 회원 아이디
+     */
+    String emailMasking(String memberEmail);
 
 }

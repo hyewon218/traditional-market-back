@@ -90,7 +90,7 @@ spring:
         show_sql: true
         format_sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
   thymeleaf:
@@ -109,6 +109,6 @@ cloud:
       bucket: ${BUCKET}
 
 jwt:
-  issuer: songwc3@gmail.com
+  issuer: ${JWT_ISSUER}
   a_secret_key: ${A_KEY}
   r_secret_key: ${R_KEY}

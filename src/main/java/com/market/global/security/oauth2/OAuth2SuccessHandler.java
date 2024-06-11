@@ -1,6 +1,5 @@
 package com.market.global.security.oauth2;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenProvider;
@@ -25,7 +24,7 @@ import java.util.Optional;
 @Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    public static final String FIRST_REDIRECT_PATH = "/auth/success"; // "/"로 바꾸기
+    public static final String FIRST_REDIRECT_PATH = "/auth/success";
     public static final String REDIRECT_PATH = "/";
 
     private final TokenProvider tokenProvider;
@@ -61,7 +60,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (cookie == null) {
             log.info("쿠키가 null입니다");
         }
-        log.info("cookie : {}", cookie);
+        log.info("쿠키가 생성되었습니다 : " + cookie);
         String targetUrl = getTargetUrl(redirectPath, accessToken);
 
         // refresh 토큰 생성(refresh 토큰 없거나 유효하지 않을 경우)
@@ -100,5 +99,4 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build()
                 .toUriString();
     }
-
 }
