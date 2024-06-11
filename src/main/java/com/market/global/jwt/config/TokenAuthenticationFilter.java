@@ -3,6 +3,7 @@ package com.market.global.jwt.config;
 import com.market.domain.member.entity.Member;
 import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.redis.RedisUtils;
+import com.market.global.visitor.VisitorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,9 +22,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
     private final RedisUtils redisUtils;
+    private final VisitorService visitorService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         String uri = request.getRequestURI();
         if (uri.equals("/api/members/signup") || uri.equals("/auth/success") ||
@@ -31,6 +34,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 로그인, 비로그인 모두 방문자 쿠키 생성
+        visitorService.trackVisitor(request, response);
 
         // 요청 헤더와 Authorization 키의 값
         String authorizationHeader = request.getHeader(TokenProvider.HEADER_AUTHORIZATION);
