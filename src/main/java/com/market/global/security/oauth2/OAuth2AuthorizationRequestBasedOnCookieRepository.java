@@ -36,7 +36,7 @@ public class OAuth2AuthorizationRequestBasedOnCookieRepository implements Author
             return;
         }
         CookieUtil.addCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
-                CookieUtil.serialize(authorizationRequest), COOKE_EXPIRE_SECONDS);
+        CookieUtil.serialize(authorizationRequest), COOKE_EXPIRE_SECONDS);
         String redirectAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         if (StringUtils.isNotBlank(redirectAfterLogin)) {
             CookieUtil.addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME, redirectAfterLogin, COOKE_EXPIRE_SECONDS);
