@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,12 +39,9 @@ public class MemberController {
     
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> logIn(HttpServletRequest httpServletRequest,
-                                             HttpServletResponse httpServletResponse,
-                                             @RequestBody MemberRequestDto requestDto) throws Exception {
-
-        memberService.logIn(httpServletRequest, httpServletResponse, requestDto);
-        return ResponseEntity.ok().body(new ApiResponse("로그인 성공", HttpStatus.OK.value()));
+    public void logIn(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
+                      @RequestBody MemberRequestDto requestDto) throws Exception {
+        Authentication authentication = memberService.logIn(httpServletRequest, httpServletResponse, requestDto);
     }
 
     // 로그아웃
@@ -56,14 +54,8 @@ public class MemberController {
     // 전체 회원 조회
     @GetMapping("")
     public ResponseEntity<List<MemberResponseDto>> findAllMember() {
-
-        List<MemberResponseDto> members = memberService.findAll()
-                .stream()
-                .map(MemberResponseDto::of) // 생성자 사용할때는 of 대신 new
-                .toList();
-
-        return ResponseEntity.ok()
-                .body(members);
+        List<MemberResponseDto> members = memberService.findAll();
+        return ResponseEntity.ok().body(members);
     }
 
     // 특정 회원 조회

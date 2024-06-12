@@ -2,9 +2,11 @@ package com.market.domain.member.service;
 
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
+import com.market.domain.member.dto.MemberResponseDto;
 import com.market.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -16,12 +18,10 @@ public interface MemberService {
      * @param httpRequest  :
      * @param httpResponse :
      * @param request      : 입력 요청 정보
-     *                     //     * @return : 회원 Entity
+     * @return : 회원 authentication
      */
-//    Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-//                         MemberRequestDto request) throws Exception;
-    void logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                            MemberRequestDto request) throws Exception;
+    Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+                         MemberRequestDto request) throws Exception;
 
     /**
      * 로그아웃
@@ -42,9 +42,10 @@ public interface MemberService {
     /**
      * 전체 회원 조회
      *
-     * @return : 회원 Entity
+     * @return : 회원 responseDto
      */
-    List<Member> findAll();
+//    List<Member> findAll();
+    List<MemberResponseDto> findAll();
 
     /**
      * 특정 회원 조회
