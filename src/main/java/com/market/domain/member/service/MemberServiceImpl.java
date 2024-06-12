@@ -1,7 +1,9 @@
 package com.market.domain.member.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
+import com.market.domain.member.dto.MemberResponseDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenProvider;
@@ -35,6 +37,7 @@ public class MemberServiceImpl implements MemberService {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final TokenProvider tokenProvider;
     private final RedisUtils redisUtils;
+    private final ObjectMapper objectMapper;
 
     // 회원 생성
     @Override
@@ -56,8 +59,8 @@ public class MemberServiceImpl implements MemberService {
 
     // 로그인
     @Override
-    public void logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                                   MemberRequestDto request) throws Exception {
+    public Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+                                MemberRequestDto request) throws Exception {
         try {
             Authentication authentication = authenticationConfiguration.getAuthenticationManager()
                     .authenticate(
@@ -97,6 +100,29 @@ public class MemberServiceImpl implements MemberService {
                 log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
             }
 
+            MemberResponseDto memberResponseDto = MemberResponseDto.builder()
+                    .memberNo(member.getMemberNo())
+                    .memberId(member.getMemberId())
+                    .memberEmail(member.getMemberEmail())
+                    .memberNickname(member.getMemberNickname())
+                    .memberPw(member.getMemberPw())
+                    .providerType(member.getProviderType())
+                    .role(member.getRole())
+                    .createTime(member.getCreateTime())
+                    .updateTime(member.getUpdateTime())
+                    .accessToken(accessToken)
+                    .refreshToken(redisUtils.getValues(member.getMemberId())) // 삭제할 것
+                    .build();
+
+            // memberResponseDto 객체를 JSON 문자열로 직렬화
+            String jsonResponse = objectMapper.writeValueAsString(memberResponseDto);
+            // HTTP 응답 헤더 설정, 클라이언트에게 반환되는 데이터 json 타입
+            httpResponse.setContentType("application/json");
+            // HTTP 응답 본문에 json 문자열 작성, json 데이터를 클라이언트에게 전송
+            httpResponse.getWriter().write(jsonResponse);
+
+            return authentication;
+
         } catch (AuthenticationException e) {
             log.info("아이디 또는 패스워드가 틀렸습니다");
             throw e;
@@ -119,8 +145,13 @@ public class MemberServiceImpl implements MemberService {
 
     // 전체 회원 조회
     @Override
-    public List<Member> findAll() {
-        return memberRepository.findAll();
+    public List<MemberResponseDto> findAll() {
+        List<Member> members = memberRepository.findAll();
+        List<MemberResponseDto> memberResponseDtos = members
+                .stream()
+                .map(MemberResponseDto::of)
+                .toList();
+        return memberResponseDtos;
     }
 
     // 특정 회원 조회
