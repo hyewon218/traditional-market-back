@@ -77,11 +77,6 @@ public class MemberServiceImpl implements MemberService {
 
             // 쿠키 생성
             tokenProvider.addTokenToCookie(httpRequest, httpResponse, accessToken);
-            String cookie = tokenProvider.getTokenFromCookie(httpRequest);
-            if (cookie == null) {
-                log.info("쿠키가 null입니다");
-            }
-            log.info("쿠키가 생성되었습니다 : " + cookie);
 
             // refresh 토큰 생성(refresh 토큰 없거나 유효하지 않을 경우)
             String findRefreshToken = redisUtils.getValues(member.getMemberId());
@@ -112,7 +107,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void logOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
 
-        String authorizationHeader = httpRequest.getHeader(TokenProvider.HEADER_AUTHORIZATION);
+        String authorizationHeader = tokenProvider.getTokenFromCookie(httpRequest);
         String accessToken = tokenProvider.getAccessToken(authorizationHeader);
         String memberId = tokenProvider.getMemberId(accessToken);
         // 사용자 아이디 이용해서 리프레시 토큰 삭제

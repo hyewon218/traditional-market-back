@@ -19,8 +19,7 @@ public class MemberRequestDto {
 
     @NotBlank(message = "이메일은 반드시 입력해주세요")
     private String memberEmail;
-    
-    @NotBlank(message = "닉네임은 반드시 입력해주세요")
+
     private String memberNickname;
 
     @NotBlank(message = "비밀번호는 반드시 입력해주세요")

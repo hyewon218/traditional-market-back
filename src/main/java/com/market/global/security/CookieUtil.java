@@ -3,21 +3,37 @@ package com.market.global.security;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Base64;
 import java.util.Optional;
 
+@Slf4j
 public class CookieUtil {
 
     // 요청값(이름, 값, 만료기간)을 바탕으로 HTTP 응답에 쿠키 추가
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
+        if (cookie != null) {
+            log.info("쿠키가 생성되었습니다 : " + cookie.getValue());
+        } else {
+            log.info("쿠키가 null입니다");
+        }
     }
+
+//    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge,
+//                                 boolean httpOnly, boolean secure) {
+//        Cookie cookie = new Cookie(name, value);
+//        cookie.setPath("/");
+//        cookie.setMaxAge(maxAge);
+//        cookie.setHttpOnly(httpOnly); // JavaScript에서 쿠키를 사용하여 세션 관리를 해야 할 경우에는 HTTPOnly를 사용할 수 없음
+//        cookie.setSecure(secure); // https에서만 동작
+//        response.addCookie(cookie);
+//    }
 
     // 쿠키의 이름을 입력받아 쿠키 삭제(실제로는 삭제할 수 없어서 빈값으로 바꾸고 만료시간 0으로 설정해 재생성 되자마자 만료 처리)
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {

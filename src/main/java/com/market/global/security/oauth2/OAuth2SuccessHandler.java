@@ -55,12 +55,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 액세스토큰 생성
         String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
         log.info("access 토큰이 생성되었습니다 : " + accessToken);
+        
+        // 쿠키 생성
         tokenProvider.addTokenToCookie(request, response, accessToken);
-        String cookie = tokenProvider.getTokenFromCookie(request);
-        if (cookie == null) {
-            log.info("쿠키가 null입니다");
-        }
-        log.info("쿠키가 생성되었습니다 : " + cookie);
+
+        // redirect url 설정
         String targetUrl = getTargetUrl(redirectPath, accessToken);
 
         // refresh 토큰 생성(refresh 토큰 없거나 유효하지 않을 경우)
