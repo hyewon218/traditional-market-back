@@ -42,7 +42,7 @@ public interface MemberService {
     /**
      * 전체 회원 조회
      *
-     * @return : 회원 responseDto
+     * @return : 회원 전체 목록
      */
 //    List<Member> findAll();
     List<MemberResponseDto> findAll();
