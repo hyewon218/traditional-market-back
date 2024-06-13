@@ -22,13 +22,13 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @GetMapping(value = "/notifications/subscribe")
+    @GetMapping(value = "/notifications/subscribe") // 알람 구독
     public SseEmitter subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         log.info("subscribe");
         return notificationService.connectNotification(userDetails.getMember().getMemberNo());
     }
 
-    @GetMapping("/alarm") // 알람 목록
+    @GetMapping("/notifications") // 알람 목록
     public ResponseEntity<Page<NotificationResponseDto>> alarm(Pageable pageable,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(notificationService.alarmList(

@@ -11,7 +11,7 @@ import lombok.Getter;
 @Builder
 public class NotificationResponseDto {
 
-    private Long id;
+    private Long no;
 
     private NotificationType notificationType;
 
@@ -23,7 +23,7 @@ public class NotificationResponseDto {
 
     public static NotificationResponseDto of(Notification notification) {
         return NotificationResponseDto.builder()
-            .id(notification.getNo())
+            .no(notification.getNo())
             .notificationType(notification.getNotificationType())
             .args(notification.getArgs())
             .createdAt(notification.getCreateTime())
