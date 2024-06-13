@@ -2,10 +2,14 @@ package com.market.domain.member.entity;
 
 import com.market.domain.base.BaseEntity;
 import com.market.domain.cart.entity.Cart;
+import com.market.domain.inquiry.entity.Inquiry;
 import com.market.domain.member.constant.Role;
 import com.market.global.security.oauth2.ProviderType;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -41,6 +45,9 @@ public class Member extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_no")
     private Cart cart;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+    private List<Inquiry> inquiries = new ArrayList<>();
 
     public Member(String memberId, String memberEmail, String memberNickname, String memberPw, ProviderType providerType, Role role) {
         this.memberId = memberId;

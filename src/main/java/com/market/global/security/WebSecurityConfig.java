@@ -61,6 +61,9 @@ public class WebSecurityConfig {
             http
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.GET, "/api/members").hasAnyRole("ADMIN") // 전체 회원 목록 조회
+                    .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyRole("ADMIN") // 공지사항 생성
+                    .requestMatchers(HttpMethod.PUT, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 수정
+                    .requestMatchers(HttpMethod.DELETE, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 삭제
                     .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/markets").hasAnyRole("ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/api/markets/**").hasAnyRole("ADMIN")
@@ -76,8 +79,11 @@ public class WebSecurityConfig {
                             "/api/oauth2/login", "/api/send-mail/**", "/api/members/logout",
                             "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
                         "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
+                    .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/api/inquiries", 
+                         "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications").authenticated()
+                    .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/auth/success").permitAll() // oauth2
                     .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**",
-                        "/api/notifications/subscribe", "/api/notifications").authenticated()
+                        ).authenticated()
                     .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/auth/success" ).permitAll() // oauth2
                     .anyRequest().permitAll() // authenticated로 바꾸기
                 )
