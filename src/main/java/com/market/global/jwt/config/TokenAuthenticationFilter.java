@@ -25,12 +25,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final VisitorService visitorService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain)
+        throws ServletException, IOException {
 
         String uri = request.getRequestURI();
         if (uri.equals("/api/members/signup") || uri.equals("/auth/success") ||
-                uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") || uri.equals("/api/send-mail/email")) {
+            uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") || uri.equals(
+            "/api/send-mail/email")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -38,9 +40,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         // 로그인, 비로그인 모두 방문자 쿠키 생성
         visitorService.trackVisitor(request, response);
 
+        final String authorizationHeader;
         // 요청 헤더와 Authorization 키의 값
-//        String authorizationHeader = request.getHeader(TokenProvider.HEADER_AUTHORIZATION);
-        String authorizationHeader = tokenProvider.getTokenFromCookie(request);
+        if (uri.equals("/api/notifications/subscribe")) {
+            authorizationHeader = request.getHeader(TokenProvider.HEADER_AUTHORIZATION);
+        } else {
+            authorizationHeader = tokenProvider.getTokenFromCookie(request);
+        }
 
         // 가져온 값에서 접두사 제거
         String accessToken = tokenProvider.getAccessToken(authorizationHeader);
@@ -61,11 +67,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
                 if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
                     // 새로운 액세스토큰 생성
-                    String newAccessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
-                    
+                    String newAccessToken = tokenProvider.generateToken(member,
+                        TokenProvider.ACCESS_TOKEN_DURATION);
+
                     // 쿠키에 새로운 액세스토큰 설정
                     tokenProvider.addTokenToCookie(request, response, newAccessToken);
-                    
+
                     // 새로운 인증정보 저장
                     Authentication newAuth = tokenProvider.getAuthentication(newAccessToken);
                     SecurityContextHolder.getContext().setAuthentication(newAuth);
@@ -73,7 +80,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     // 기존 refresh 토큰 삭제 후 다시 발급, 저장
                     redisUtils.deleteValues(member.getMemberId());
                     RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(
-                            member, TokenProvider.REFRESH_TOKEN_DURATION);
+                        member, TokenProvider.REFRESH_TOKEN_DURATION);
                     redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken());
                     // 쿠키에 액세스토큰 담아서 사용하므로 필요없음
 //                    response.setHeader(TokenProvider.HEADER_AUTHORIZATION, TokenProvider.TOKEN_PREFIX + " " + newAccessToken);
