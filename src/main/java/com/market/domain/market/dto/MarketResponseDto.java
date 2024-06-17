@@ -13,13 +13,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class MarketResponseDto {
+    private Long marketNo;
+
     private String marketName;
 
     private String marketAddr;
 
     private String marketDetail;
 
-    private Integer like;
+    private Integer likes;
 
     private List<ShopResponseDto> shopList;
 
@@ -29,10 +31,11 @@ public class MarketResponseDto {
 
     public static MarketResponseDto of(Market market) {
         return MarketResponseDto.builder()
+            .marketNo(market.getNo())
             .marketName(market.getMarketName())
             .marketAddr(market.getMarketAddr())
             .marketDetail(market.getMarketDetail())
-            .like(market.getMarketLikeList().size())
+            .likes(market.getMarketLikeList().size())
             .shopList(market.getShopList().stream().map(ShopResponseDto::of).toList())
             .imageList(market.getImageList().stream().map(ImageResponseDto::of).toList())
             .commentList(market.getMarketCommentList().stream().map(MarketCommentResponseDto::of).toList())
