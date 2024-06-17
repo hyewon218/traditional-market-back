@@ -7,6 +7,7 @@ import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MarketService {
@@ -24,7 +25,7 @@ public interface MarketService {
      *
      * @return : 조회된 시장들 정보
      */
-    Page<MarketResponseDto> getMarkets(int page, int size, String sortBy, boolean isAsc);
+    Page<MarketResponseDto> getMarkets(Pageable pageable);
 
     /**
      * 시장 단건 조회

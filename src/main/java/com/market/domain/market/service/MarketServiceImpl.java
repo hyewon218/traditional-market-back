@@ -17,10 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,9 +57,7 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional(readOnly = true) // 시장 목록 조회
-    public Page<MarketResponseDto> getMarkets(int page, int size, String sortBy, boolean isAsc) {
-        Direction direction = isAsc ? Direction.DESC : Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+    public Page<MarketResponseDto> getMarkets(Pageable pageable) {
         Page<Market> marketList = marketRepository.findAll(pageable);
         return marketList.map(MarketResponseDto::of);
     }
