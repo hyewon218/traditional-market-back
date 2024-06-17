@@ -8,11 +8,11 @@ import lombok.Getter;
 @Getter
 public class ImageResponseDto {
 
-    private String imageUrlList;
+    private String imageUrl;
 
     public static ImageResponseDto of(Image image) {
         return ImageResponseDto.builder()
-            .imageUrlList(image.getImageUrl())
+            .imageUrl(image.getImageUrl())
             .build();
     }
 }
