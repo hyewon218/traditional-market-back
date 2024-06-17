@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,11 +42,8 @@ public class MarketController {
     }
 
     @GetMapping("/markets") // 시장 목록 조회
-    public ResponseEntity<Page<MarketResponseDto>> getMarkets(@RequestParam("page") int page,
-                                                              @RequestParam("size") int size,
-                                                              @RequestParam("sortBy") String sortBy,
-                                                              @RequestParam("isAsc") boolean isAsc) {
-        Page<MarketResponseDto> result = marketService.getMarkets(page, size, sortBy, isAsc);
+    public ResponseEntity<Page<MarketResponseDto>> getMarkets(Pageable pageable) {
+        Page<MarketResponseDto> result = marketService.getMarkets(pageable);
         return ResponseEntity.ok().body(result);
     }
 
@@ -73,16 +70,22 @@ public class MarketController {
         return ResponseEntity.ok().body(new ApiResponse("시장 삭제 완료!", HttpStatus.OK.value()));
     }
 
-    @PostMapping("/markets/{marketNo}/like")
-    public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
+    @PostMapping("/markets/{marketNo}/likes")
+    public ResponseEntity<ApiResponse> createMarketLike( // 좋아요 생성
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         marketService.createMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 시장에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
 
-    @DeleteMapping("/markets/{marketNo}/like")
-    public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
+    @GetMapping("/markets/{marketNo}/likes")
+    public ResponseEntity<Integer> getMarketLike( // 좋아요 갯수 조회
+        @PathVariable Long marketNo) {
+        return ResponseEntity.ok(marketService.getMarket(marketNo).getLikes());
+    }
+
+    @DeleteMapping("/markets/{marketNo}/likes")
+    public ResponseEntity<ApiResponse> deleteMarketLike( // 좋아요 삭제
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         marketService.deleteMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.ok()

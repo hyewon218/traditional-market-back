@@ -2,6 +2,7 @@ package com.market.domain.market.marketComment.service;
 
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.marketComment.dto.MarketCommentRequestDto;
+import com.market.domain.market.marketComment.dto.MarketCommentResponseDto;
 import com.market.domain.market.marketComment.entity.MarketComment;
 import com.market.domain.market.marketComment.repository.MarketCommentRepository;
 import com.market.domain.market.repository.MarketRepository;
@@ -9,6 +10,8 @@ import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,14 @@ public class MarketCommentServiceImpl implements MarketCommentService {
 
         marketCommentRepository.save(marketCommentRequestDto.toEntity(market, member));
     }
+
+    @Override
+    @Transactional(readOnly = true) // 시장 댓글 목록 조회
+    public Page<MarketCommentResponseDto> getMarketComments(Long marketNo, Pageable pageable) {
+        Page<MarketComment> marketList = marketCommentRepository.findAllByMarket_No(marketNo, pageable);
+        return marketList.map(MarketCommentResponseDto::of);
+    }
+
 
     @Override
     @Transactional

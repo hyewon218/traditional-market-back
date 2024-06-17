@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MarketCommentRequestDto {
 
-    private long marketNo; // 댓글 남길 상품 no
+    private long marketNo; // 댓글 남길 시장 no
     private String comment;
 
     public MarketComment toEntity(Market market, Member member) {
