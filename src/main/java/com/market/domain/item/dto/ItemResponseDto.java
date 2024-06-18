@@ -13,6 +13,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ItemResponseDto {
+    private Long itemNo;
 
     private String itemName;
 
@@ -22,7 +23,7 @@ public class ItemResponseDto {
 
     private String itemDetail;
 
-    private Integer like;
+    private Integer likes;
 
     private ItemSellStatus itemSellStatus;
 
@@ -32,12 +33,13 @@ public class ItemResponseDto {
 
     public static ItemResponseDto of(Item item) {
         return ItemResponseDto.builder()
+            .itemNo(item.getNo())
             .itemName(item.getItemName())
             .price(item.getPrice())
             .stockNumber(item.getStockNumber())
             .itemDetail(item.getItemDetail())
             .itemSellStatus(item.getItemSellStatus())
-            .like(item.getItemLikeList().size())
+            .likes(item.getItemLikeList().size())
             .imageList(item.getImageList().stream().map(ImageResponseDto::of).toList())
             .itemCommentList(
                 item.getItemCommentList().stream().map(ItemCommentResponseDto::of).toList())

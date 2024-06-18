@@ -24,10 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,9 +68,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true) // 상품 목록 조회
-    public Page<ItemResponseDto> getItems(int page, int size, String sortBy, boolean isAsc) {
-        Direction direction = isAsc ? Direction.DESC : Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+    public Page<ItemResponseDto> getItems(Pageable pageable) {
         Page<Item> itemList = itemRepository.findAll(pageable);
         return itemList.map(ItemResponseDto::of);
     }
