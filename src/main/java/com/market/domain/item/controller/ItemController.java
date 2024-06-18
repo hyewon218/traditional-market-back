@@ -73,7 +73,7 @@ public class ItemController {
         return ResponseEntity.ok().body(new ApiResponse("상품 삭제 완료!", HttpStatus.OK.value()));
     }
 
-    @PostMapping("/items/{itemNo}/like")
+    @PostMapping("/items/{itemNo}/likes")
     public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
         @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         itemService.createItemLike(itemNo, userDetails.getMember());
@@ -81,7 +81,7 @@ public class ItemController {
             .body(new ApiResponse("해당 상품에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
 
-    @DeleteMapping("/items/{itemNo}/like")
+    @DeleteMapping("/items/{itemNo}/likes")
     public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
         @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         itemService.deleteItemLike(itemNo, userDetails.getMember());
