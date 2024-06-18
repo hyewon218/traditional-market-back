@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,11 +42,8 @@ public class ShopController {
     }
 
     @GetMapping("/shops") // 상점 목록 조회
-    public ResponseEntity<Page<ShopResponseDto>> getShops(@RequestParam("page") int page,
-        @RequestParam("size") int size,
-        @RequestParam("sortBy") String sortBy,
-        @RequestParam("isAsc") boolean isAsc) {
-        Page<ShopResponseDto> result = shopService.getShops(page, size, sortBy, isAsc);
+    public ResponseEntity<Page<ShopResponseDto>> getShops(Pageable pageable) {
+        Page<ShopResponseDto> result = shopService.getShops(pageable);
         return ResponseEntity.ok().body(result);
     }
 
@@ -79,6 +76,12 @@ public class ShopController {
         shopService.createShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 상점에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
+    }
+
+    @GetMapping("/shops/{shopNo}/likes")
+    public ResponseEntity<Integer> getShopLike( // 좋아요 갯수 조회
+        @PathVariable Long shopNo) {
+        return ResponseEntity.ok(shopService.getShop(shopNo).getLikes());
     }
 
     @DeleteMapping("/shops/{shopNo}/likes")
