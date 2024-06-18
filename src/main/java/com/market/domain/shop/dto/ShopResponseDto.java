@@ -13,6 +13,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ShopResponseDto {
+    private Long shopNo;
 
     private String shopName;
 
@@ -26,7 +27,7 @@ public class ShopResponseDto {
 
     private String detailAddr;
 
-    private Integer like;
+    private Integer likes;
 
     private List<ImageResponseDto> imageList;
 
@@ -36,13 +37,14 @@ public class ShopResponseDto {
 
     public static ShopResponseDto of(Shop shop) { // TODO : member 정보 추가
         return ShopResponseDto.builder()
+            .shopNo(shop.getNo())
             .shopName(shop.getShopName())
             .tel(shop.getTel())
             .sellerName(shop.getSellerName())
             .postCode(shop.getPostCode())
             .streetAddr(shop.getStreetAddr())
             .detailAddr(shop.getDetailAddr())
-            .like(shop.getShopLikeList().size())
+            .likes(shop.getShopLikeList().size())
             .imageList(shop.getImageList().stream().map(ImageResponseDto::of).toList())
             .itemList(shop.getItemList().stream().map(ItemResponseDto::of).toList())
             .shopCommentList(
