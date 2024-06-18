@@ -73,7 +73,7 @@ public class ShopController {
         return ResponseEntity.ok().body(new ApiResponse("상점 삭제 완료!", HttpStatus.OK.value()));
     }
 
-    @PostMapping("/shops/{shopNo}/like")
+    @PostMapping("/shops/{shopNo}/likes")
     public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         shopService.createShopLike(shopNo, userDetails.getMember());
@@ -81,7 +81,7 @@ public class ShopController {
             .body(new ApiResponse("해당 상점에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
 
-    @DeleteMapping("/shops/{shopNo}/like")
+    @DeleteMapping("/shops/{shopNo}/likes")
     public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         shopService.deleteShopLike(shopNo, userDetails.getMember());

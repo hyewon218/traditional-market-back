@@ -1,14 +1,18 @@
 package com.market.domain.shop.shopComment.controller;
 
 import com.market.domain.shop.shopComment.dto.ShopCommentRequestDto;
+import com.market.domain.shop.shopComment.dto.ShopCommentResponseDto;
 import com.market.domain.shop.shopComment.service.ShopCommentService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,6 +34,13 @@ public class ShopCommentController {
         shopCommentService.createShopComment(shopCommentRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("댓글 생성 완료!", HttpStatus.CREATED.value()));
+    }
+
+    @GetMapping("/{shopNo}/comments")
+    public ResponseEntity<Page<ShopCommentResponseDto>> getShopComment(
+        @PathVariable Long shopNo, Pageable pageable) {
+        Page<ShopCommentResponseDto> result = shopCommentService.getShopComments(shopNo, pageable);
+        return ResponseEntity.ok().body(result);
     }
 
     @PutMapping("/comments/{commentNo}")
