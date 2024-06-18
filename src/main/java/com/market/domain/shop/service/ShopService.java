@@ -7,6 +7,7 @@ import com.market.domain.shop.entity.Shop;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ShopService {
@@ -24,7 +25,7 @@ public interface ShopService {
      *
      * @return : 조회된 상점들 정보
      */
-    Page<ShopResponseDto> getShops(int page, int size, String sortBy, boolean isAsc);
+    Page<ShopResponseDto> getShops(Pageable pageable);
 
     /**
      * 상점 단건 조회

@@ -7,6 +7,7 @@ import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ItemService {
@@ -24,7 +25,7 @@ public interface ItemService {
      *
      * @return : 조회된 상품들 정보
      */
-    Page<ItemResponseDto> getItems(int page, int size, String sortBy, boolean isAsc);
+    Page<ItemResponseDto> getItems(Pageable pageable);
 
     /**
      * 상점 단건 조회
