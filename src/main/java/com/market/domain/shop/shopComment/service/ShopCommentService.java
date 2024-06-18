@@ -11,7 +11,7 @@ public interface ShopCommentService {
 
     void createShopComment(ShopCommentRequestDto shopCommentRequestsDto, Member member);
 
-    Page<ShopCommentResponseDto> getShopComments(Long marketNo, Pageable pageable);
+    Page<ShopCommentResponseDto> getShopComments(Long shopNo, Pageable pageable);
 
     void updateShopComment(Long commentNo, ShopCommentRequestDto shopCommentRequestsDto,
         Member member);

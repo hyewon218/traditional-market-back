@@ -56,8 +56,8 @@ public class ShopCommentServiceImpl implements ShopCommentService {
 
     @Override
     @Transactional(readOnly = true) // 상점 댓글 목록 조회
-    public Page<ShopCommentResponseDto> getShopComments(Long marketNo, Pageable pageable) {
-        Page<ShopComment> shopList = shopCommentRepository.findAllByShop_No(marketNo, pageable);
+    public Page<ShopCommentResponseDto> getShopComments(Long shopNo, Pageable pageable) {
+        Page<ShopComment> shopList = shopCommentRepository.findAllByShop_No(shopNo, pageable);
         return shopList.map(ShopCommentResponseDto::of);
     }
 

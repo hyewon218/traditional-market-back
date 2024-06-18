@@ -2,6 +2,7 @@ package com.market.domain.item.itemComment.service;
 
 import com.market.domain.item.entity.Item;
 import com.market.domain.item.itemComment.dto.ItemCommentRequestDto;
+import com.market.domain.item.itemComment.dto.ItemCommentResponseDto;
 import com.market.domain.item.itemComment.entity.ItemComment;
 import com.market.domain.item.itemComment.repository.ItemCommentRepository;
 import com.market.domain.item.repository.ItemRepository;
@@ -14,6 +15,8 @@ import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +52,13 @@ public class ItemCommentServiceImpl implements ItemCommentService {
         notificationService.send(
             NotificationType.NEW_COMMENT_ON_SHOP,
             new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 상품 댓글 목록 조회
+    public Page<ItemCommentResponseDto> getItemComments(Long shopNo, Pageable pageable) {
+        Page<ItemComment> itemList = itemCommentRepository.findAllByItem_No(shopNo, pageable);
+        return itemList.map(ItemCommentResponseDto::of);
     }
 
     @Override
