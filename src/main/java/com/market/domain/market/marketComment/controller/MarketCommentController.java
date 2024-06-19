@@ -31,7 +31,6 @@ public class MarketCommentController {
     public ResponseEntity<ApiResponse> createMarketComment(
         @RequestBody MarketCommentRequestDto marketCommentRequestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         marketCommentService.createMarketComment(marketCommentRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("댓글 생성 완료!", HttpStatus.CREATED.value()));

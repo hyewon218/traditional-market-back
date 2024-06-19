@@ -9,7 +9,12 @@ import com.market.domain.market.entity.Market;
 import com.market.domain.market.marketLike.entity.MarketLike;
 import com.market.domain.market.marketLike.repository.MarketLikeRepository;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
@@ -30,6 +35,8 @@ public class MarketServiceImpl implements MarketService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final MarketLikeRepository marketLikeRepository;
+    private final NotificationService notificationService;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional // 시장 생성
@@ -104,6 +111,13 @@ public class MarketServiceImpl implements MarketService {
             throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
         });
         marketLikeRepository.save(new MarketLike(market, member));
+
+        // create alarm
+        Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
+        notificationService.send(
+            NotificationType.NEW_LIKE_ON_MARKET,
+            new NotificationArgs(member.getMemberNo(), market.getNo()), receiver);
     }
 
     @Override

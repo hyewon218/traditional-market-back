@@ -6,7 +6,12 @@ import com.market.domain.market.marketComment.dto.MarketCommentResponseDto;
 import com.market.domain.market.marketComment.entity.MarketComment;
 import com.market.domain.market.marketComment.repository.MarketCommentRepository;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +26,8 @@ public class MarketCommentServiceImpl implements MarketCommentService {
 
     private final MarketCommentRepository marketCommentRepository;
     private final MarketRepository marketRepository;
+    private final NotificationService notificationService;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
@@ -31,8 +38,14 @@ public class MarketCommentServiceImpl implements MarketCommentService {
             .orElseThrow(
                 () -> new BusinessException(ErrorCode.NOT_FOUND_MARKET)
             );
-
         marketCommentRepository.save(marketCommentRequestDto.toEntity(market, member));
+
+        // create alarm
+        Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
+        notificationService.send(
+            NotificationType.NEW_COMMENT_ON_MARKET,
+            new NotificationArgs(member.getMemberNo(), market.getNo()), receiver);
     }
 
     @Override
