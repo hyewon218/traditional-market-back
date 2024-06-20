@@ -37,4 +37,7 @@ public class Chat extends BaseEntity {
 
     @Column(nullable = false)
     private String message;
+
+    @Column(nullable = false)
+    private String createdAt;
 }
