@@ -14,15 +14,18 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageDto {
+
     private Long roomId;
     private String sender;
     private String message;
+    private String createdAt;
 
     public Chat toEntity(ChatRoom chatRoom) {
         return Chat.builder()
             .chatRoom(chatRoom)
             .sender(this.sender)
             .message(this.message)
+            .createdAt(this.createdAt)
             .build();
     }
 }
