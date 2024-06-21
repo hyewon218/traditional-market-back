@@ -3,6 +3,7 @@ package com.market.domain.item.service;
 import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.dto.ItemResponseDto;
 import com.market.domain.item.entity.Item;
+import com.market.domain.item.repository.ItemSearchCond;
 import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
@@ -26,6 +27,14 @@ public interface ItemService {
      * @return : 조회된 상품들 정보
      */
     Page<ItemResponseDto> getItems(Pageable pageable);
+
+    /**
+     * 키워드 검색 상품 목록 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 상품 목록 조회
+     */
+    Page<ItemResponseDto> searchItems(ItemSearchCond cond, Pageable pageable);
 
     /**
      * 상점 단건 조회
