@@ -55,15 +55,19 @@ public class Shop extends BaseEntity {
     @JoinColumn(name="member_no")
     private Member seller;
 
+    @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<Item> itemList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<Image> imageList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<ShopLike> shopLikeList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<ShopComment> shopCommentList = new ArrayList<>();
 

@@ -46,6 +46,7 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "cart_no")
     private Cart cart;
 
+    @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
     private List<Inquiry> inquiries = new ArrayList<>();
 

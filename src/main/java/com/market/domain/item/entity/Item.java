@@ -59,12 +59,15 @@ public class Item extends BaseEntity {
     @JoinColumn(name = "shop_no")
     private Shop shop;
 
+    @Builder.Default
     @OneToMany(mappedBy = "item", orphanRemoval = true)
     private List<Image> imageList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "item", orphanRemoval = true)
     private List<ItemLike> itemLikeList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "item", orphanRemoval = true)
     private List<ItemComment> itemCommentList = new ArrayList<>();
 
