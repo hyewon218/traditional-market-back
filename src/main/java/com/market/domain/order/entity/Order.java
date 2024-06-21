@@ -37,6 +37,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "member_no")
     private Member member;
 
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList = new ArrayList<>(); // 장바구니 페이지에서 한 번에 여러개 주문 가능
 
