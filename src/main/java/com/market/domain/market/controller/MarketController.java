@@ -2,6 +2,7 @@ package com.market.domain.market.controller;
 
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
+import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.market.service.MarketService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
@@ -44,6 +45,12 @@ public class MarketController {
     @GetMapping("/markets") // 시장 목록 조회
     public ResponseEntity<Page<MarketResponseDto>> getMarkets(Pageable pageable) {
         Page<MarketResponseDto> result = marketService.getMarkets(pageable);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/markets/search") // 키워드 검색 시장 목록 조회
+    public ResponseEntity<Page<MarketResponseDto>> searchMarkets(MarketSearchCond cond, Pageable pageable){
+        Page<MarketResponseDto> result = marketService.searchMarkets(cond, pageable);
         return ResponseEntity.ok().body(result);
     }
 

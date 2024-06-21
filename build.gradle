@@ -49,9 +49,39 @@ dependencies {
     //implementation 'org.springframework:spring-webmvc:6.0.9' // SSE
     implementation('com.vladmihalcea:hibernate-types-60:2.21.1') // @Type
     implementation 'org.springframework.boot:spring-boot-starter-websocket:3.2.2' // websocket
-
+    // QueryDSL 적용을 위한 의존성 (SpringBoot3.0 부터는 jakarta 사용해야함)
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+/**
+ * QueryDSL Build Options
+ */
+def querydslDir = "src/main/generated"
+
+sourceSets {
+    main.java.srcDirs += [ querydslDir ]
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
+}
+
+clean.doLast {
+    file(querydslDir).deleteDir()
+}
+
+// 에러 해결
+tasks.withType(JavaCompile) {
+    options.compilerArgs -= ["--enable-preview"]
+}
+
+tasks.withType(Test) {
+    jvmArgs -= ["--enable-preview"]
 }
