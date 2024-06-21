@@ -46,15 +46,19 @@ public class Market extends BaseEntity {
     @Column(nullable = false)
     private String marketDetail; // 시장 상세 설명
 
+    @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<Image> imageList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<Shop> shopList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<MarketLike> marketLikeList = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<MarketComment> marketCommentList = new ArrayList<>();
 

@@ -3,6 +3,7 @@ package com.market.domain.market.service;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.entity.Market;
+import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
@@ -26,6 +27,15 @@ public interface MarketService {
      * @return : 조회된 시장들 정보
      */
     Page<MarketResponseDto> getMarkets(Pageable pageable);
+
+    /**
+     * 키워드 검색 시장 목록 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 시장 목록 조회
+     */
+    Page<MarketResponseDto> searchMarkets(MarketSearchCond cond, Pageable pageable);
+
 
     /**
      * 시장 단건 조회

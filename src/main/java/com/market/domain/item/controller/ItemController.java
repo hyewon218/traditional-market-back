@@ -2,6 +2,7 @@ package com.market.domain.item.controller;
 
 import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.dto.ItemResponseDto;
+import com.market.domain.item.repository.ItemSearchCond;
 import com.market.domain.item.service.ItemService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
@@ -44,6 +45,12 @@ public class ItemController {
     @GetMapping("/items") // 상품 목록 조회
     public ResponseEntity<Page<ItemResponseDto>> getItems(Pageable pageable) {
         Page<ItemResponseDto> result = itemService.getItems(pageable);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/items/search") // 키워드 검색 상품 목록 조회
+    public ResponseEntity<Page<ItemResponseDto>> searchItems(ItemSearchCond cond, Pageable pageable){
+        Page<ItemResponseDto> result = itemService.searchItems(cond, pageable);
         return ResponseEntity.ok().body(result);
     }
 

@@ -9,6 +9,8 @@ import com.market.domain.market.entity.Market;
 import com.market.domain.market.marketLike.entity.MarketLike;
 import com.market.domain.market.marketLike.repository.MarketLikeRepository;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.market.repository.MarketRepositoryQuery;
+import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
@@ -37,6 +39,7 @@ public class MarketServiceImpl implements MarketService {
     private final MarketLikeRepository marketLikeRepository;
     private final NotificationService notificationService;
     private final MemberRepository memberRepository;
+    private final MarketRepositoryQuery marketRepositoryQuery;
 
     @Override
     @Transactional // 시장 생성
@@ -67,6 +70,12 @@ public class MarketServiceImpl implements MarketService {
     public Page<MarketResponseDto> getMarkets(Pageable pageable) {
         Page<Market> marketList = marketRepository.findAll(pageable);
         return marketList.map(MarketResponseDto::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 키워드 검색 게시글 목록 조회
+    public Page<MarketResponseDto> searchMarkets(MarketSearchCond cond, Pageable pageable) {
+        return marketRepositoryQuery.searchMarkets(cond, pageable).map(MarketResponseDto::of);
     }
 
     @Transactional(readOnly = true) // 시장 단건 조회

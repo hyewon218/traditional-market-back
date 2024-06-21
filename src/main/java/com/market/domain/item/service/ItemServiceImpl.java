@@ -9,6 +9,8 @@ import com.market.domain.item.entity.Item;
 import com.market.domain.item.itemLike.entity.ItemLike;
 import com.market.domain.item.itemLike.repository.ItemLikeRepository;
 import com.market.domain.item.repository.ItemRepository;
+import com.market.domain.item.repository.ItemRepositoryQuery;
+import com.market.domain.item.repository.ItemSearchCond;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
@@ -40,6 +42,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemLikeRepository itemLikeRepository;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
+    private final ItemRepositoryQuery itemRepositoryQuery;
 
     @Override
     @Transactional // 상품 생성
@@ -71,6 +74,12 @@ public class ItemServiceImpl implements ItemService {
     public Page<ItemResponseDto> getItems(Pageable pageable) {
         Page<Item> itemList = itemRepository.findAll(pageable);
         return itemList.map(ItemResponseDto::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 키워드 검색 상품 목록 조회
+    public Page<ItemResponseDto> searchItems(ItemSearchCond cond, Pageable pageable) {
+        return itemRepositoryQuery.searchItems(cond, pageable).map(ItemResponseDto::of);
     }
 
     @Transactional(readOnly = true) // 상품 단건 조회
