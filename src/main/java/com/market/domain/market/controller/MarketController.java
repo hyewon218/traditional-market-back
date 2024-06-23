@@ -56,7 +56,7 @@ public class MarketController {
 
     @GetMapping("/markets/{marketNo}") // 시장 단건 조회
     public ResponseEntity<MarketResponseDto> getMarket(
-        @PathVariable Long marketNo) {
+        @PathVariable("marketNo") Long marketNo) {
         return ResponseEntity.ok(marketService.getMarket(marketNo));
     }
 
