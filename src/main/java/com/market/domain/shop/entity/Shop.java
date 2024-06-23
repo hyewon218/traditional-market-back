@@ -47,6 +47,9 @@ public class Shop extends BaseEntity {
     @Column(nullable = false)
     private String detailAddr; // 주소 찾기 api 이용 시 필요, 상세 주소
 
+    @Column(nullable = false)
+    private CategoryEnum category;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_no")
     private Market market;
@@ -79,6 +82,7 @@ public class Shop extends BaseEntity {
         this.postCode = requestDto.getPostCode();
         this.streetAddr = requestDto.getStreetAddr();
         this.detailAddr = requestDto.getDetailAddr();
+        this.category = requestDto.getCategory();
     }
     public void updateShopSeller(ShopRequestDto requestDto, Member seller) {
         this.seller = seller;
@@ -88,5 +92,6 @@ public class Shop extends BaseEntity {
         this.postCode = requestDto.getPostCode();
         this.streetAddr = requestDto.getStreetAddr();
         this.detailAddr = requestDto.getDetailAddr();
+        this.category = requestDto.getCategory();
     }
 }
