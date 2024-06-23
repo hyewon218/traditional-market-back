@@ -90,7 +90,7 @@ spring:
         show_sql: true
         format_sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
   thymeleaf:
@@ -112,3 +112,7 @@ jwt:
   issuer: ${JWT_ISSUER}
   a_secret_key: ${A_KEY}
   r_secret_key: ${R_KEY}
+
+kakaopay:
+  secret_key: ${KAKAOPAY_SECRET_KEY_DEV}
+  cid: TC0ONETIME

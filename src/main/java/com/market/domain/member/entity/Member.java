@@ -4,6 +4,7 @@ import com.market.domain.base.BaseEntity;
 import com.market.domain.cart.entity.Cart;
 import com.market.domain.inquiry.entity.Inquiry;
 import com.market.domain.member.constant.Role;
+import com.market.domain.order.entity.Order;
 import com.market.global.security.oauth2.ProviderType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,6 +49,9 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
     private List<Inquiry> inquiries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+    private List<Order> orders = new ArrayList<>();
 
     public Member(String memberId, String memberEmail, String memberNickname, String memberPw, ProviderType providerType, Role role) {
         this.memberId = memberId;

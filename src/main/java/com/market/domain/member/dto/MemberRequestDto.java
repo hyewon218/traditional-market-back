@@ -46,5 +46,4 @@ public class MemberRequestDto {
                 .providerType(ProviderType.LOCAL)
                 .build();
     }
-
 }

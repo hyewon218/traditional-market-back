@@ -31,7 +31,6 @@ public class MemberController {
     // 회원 가입
     @PostMapping("/signup")
     public ResponseEntity<Member> createMember(@RequestBody MemberRequestDto memberRequestDto) {
-
         Member savedMember = memberService.createMember(memberRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedMember);
@@ -62,8 +61,7 @@ public class MemberController {
     @GetMapping("/myinfo")
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Member member = memberService.findById(userDetails.getMember().getMemberNo());
-        return ResponseEntity.ok()
-                .body(MemberResponseDto.of(member));
+        return ResponseEntity.ok().body(MemberResponseDto.of(member));
     }
 
     // admin 권한일 경우 다른 회원의 상세정보 열람 가능, 일반회원은 자신의 정보만 열람 가능
@@ -109,8 +107,7 @@ public class MemberController {
                                           @RequestBody MemberNicknameRequestDto memberNicknameRequestDto) {
         Member updateOauth2Member = memberService.updateNickname(userDetails.getMember().getMemberNo(), memberNicknameRequestDto);
         log.info("userDetails : {}", userDetails);
-        return ResponseEntity.ok()
-                .body(updateOauth2Member);
+        return ResponseEntity.ok().body(updateOauth2Member);
     }
 
     // 회원가입 시 인증번호 일치하는지 확인(검증)
