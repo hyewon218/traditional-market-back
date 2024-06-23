@@ -37,6 +37,14 @@ public interface ItemService {
     Page<ItemResponseDto> searchItems(ItemSearchCond cond, Pageable pageable);
 
     /**
+     * 상품별 가격 랭킹 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 상품별 가격 랭킹 조회
+     */
+    List<ItemResponseDto> searchRankingFiveItems(ItemSearchCond cond);
+
+    /**
      * 상점 단건 조회
      *
      * @param itemNo : 조회 할 상품 no

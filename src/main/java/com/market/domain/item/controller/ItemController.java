@@ -54,6 +54,12 @@ public class ItemController {
         return ResponseEntity.ok().body(result);
     }
 
+    @GetMapping("/items/ranking") // 상품 가격 랭킹 조회
+    public ResponseEntity<List<ItemResponseDto>> searchPriceRankFiveItems(ItemSearchCond cond){
+        List<ItemResponseDto> result = itemService.searchRankingFiveItems(cond);
+        return ResponseEntity.ok().body(result);
+    }
+
     @GetMapping("/items/{itemNo}") // 상품 단건 조회
     public ResponseEntity<ItemResponseDto> getItem(
         @PathVariable Long itemNo) {

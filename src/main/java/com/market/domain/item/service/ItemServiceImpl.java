@@ -82,6 +82,13 @@ public class ItemServiceImpl implements ItemService {
         return itemRepositoryQuery.searchItems(cond, pageable).map(ItemResponseDto::of);
     }
 
+    @Override
+    @Transactional(readOnly = true) // 상품별 가격 랭킹 조회 (5위까지)
+    public List<ItemResponseDto> searchRankingFiveItems(ItemSearchCond cond) {
+        return itemRepositoryQuery.searchRankingFiveItems(cond).stream().map(ItemResponseDto::of)
+            .toList();
+    }
+
     @Transactional(readOnly = true) // 상품 단건 조회
     public ItemResponseDto getItem(Long itemNo) {
         Item item = findItem(itemNo);
