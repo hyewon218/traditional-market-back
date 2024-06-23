@@ -3,6 +3,7 @@ package com.market.domain.shop.service;
 import com.market.domain.member.entity.Member;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
+import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import java.io.IOException;
 import java.util.List;
@@ -26,6 +27,13 @@ public interface ShopService {
      * @return : 조회된 상점들 정보
      */
     Page<ShopResponseDto> getShops(Pageable pageable);
+
+    /**
+     * 상점 카테고리별 목록 조회
+     *
+     * @return : 조회된 상점들 정보
+     */
+    Page<ShopResponseDto> getCategoryShop(CategoryEnum category, Pageable pageable);
 
     /**
      * 상점 단건 조회

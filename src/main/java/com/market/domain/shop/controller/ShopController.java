@@ -2,6 +2,7 @@ package com.market.domain.shop.controller;
 
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
+import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.service.ShopService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +46,14 @@ public class ShopController {
     @GetMapping("/shops") // 상점 목록 조회
     public ResponseEntity<Page<ShopResponseDto>> getShops(Pageable pageable) {
         Page<ShopResponseDto> result = shopService.getShops(pageable);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/shops/category")
+    public ResponseEntity<Page<ShopResponseDto>> getCategoryShop(
+        @RequestParam("category") CategoryEnum category,
+        Pageable pageable) {
+        Page<ShopResponseDto> result = shopService.getCategoryShop(category, pageable);
         return ResponseEntity.ok().body(result);
     }
 

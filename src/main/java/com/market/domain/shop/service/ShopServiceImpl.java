@@ -13,6 +13,7 @@ import com.market.domain.notification.entity.NotificationArgs;
 import com.market.domain.notification.service.NotificationService;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
+import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.domain.shop.shopLike.entity.ShopLike;
@@ -76,6 +77,13 @@ public class ShopServiceImpl implements ShopService {
     @Transactional(readOnly = true) // 상점 목록 조회
     public Page<ShopResponseDto> getShops(Pageable pageable) {
         Page<Shop> shopList = shopRepository.findAll(pageable);
+        return shopList.map(ShopResponseDto::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 상점 목록 조회
+    public Page<ShopResponseDto> getCategoryShop(CategoryEnum category, Pageable pageable) {
+        Page<Shop> shopList = shopRepository.findByCategoryOrderByCategoryDesc(category, pageable);
         return shopList.map(ShopResponseDto::of);
     }
 
