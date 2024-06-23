@@ -1,5 +1,6 @@
 package com.market.domain.order.repository;
 
+import com.market.domain.member.entity.Member;
 import com.market.domain.order.entity.Order;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -27,4 +28,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         "where o.no = :orderNo " +
         "order by o.orderDate desc ")
     Optional<Order> findByOrderNoWithMemberAndOrderItemListAndItem(@Param("orderNo") Long orderNo);
+
+    // BaseEntity의 createTime 필드를 이용하여 가장 최근 주문을 조회하는 메서드
+    Optional<Order> findFirstByMemberOrderByCreateTimeDesc(Member member);
 }
