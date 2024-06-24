@@ -51,7 +51,8 @@ public class MarketCommentServiceImpl implements MarketCommentService {
     @Override
     @Transactional(readOnly = true) // 시장 댓글 목록 조회
     public Page<MarketCommentResponseDto> getMarketComments(Long marketNo, Pageable pageable) {
-        Page<MarketComment> marketList = marketCommentRepository.findAllByMarket_No(marketNo, pageable);
+        Page<MarketComment> marketList = marketCommentRepository.findAllByMarket_NoOrderByCreateTimeDesc(
+            marketNo, pageable);
         return marketList.map(MarketCommentResponseDto::of);
     }
 

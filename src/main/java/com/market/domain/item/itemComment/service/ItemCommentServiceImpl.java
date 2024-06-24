@@ -56,8 +56,9 @@ public class ItemCommentServiceImpl implements ItemCommentService {
 
     @Override
     @Transactional(readOnly = true) // 상품 댓글 목록 조회
-    public Page<ItemCommentResponseDto> getItemComments(Long shopNo, Pageable pageable) {
-        Page<ItemComment> itemList = itemCommentRepository.findAllByItem_No(shopNo, pageable);
+    public Page<ItemCommentResponseDto> getItemComments(Long itemNo, Pageable pageable) {
+        Page<ItemComment> itemList = itemCommentRepository.findAllByItem_NoOrderByCreateTimeDesc(
+            itemNo, pageable);
         return itemList.map(ItemCommentResponseDto::of);
     }
 

@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ItemCommentRepository extends JpaRepository<ItemComment, Long> {
-    Page<ItemComment> findAllByItem_No(Long no, Pageable pageable);
+    Page<ItemComment> findAllByItem_NoOrderByCreateTimeDesc(Long no, Pageable pageable);
 }

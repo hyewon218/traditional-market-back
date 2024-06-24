@@ -38,7 +38,7 @@ public class ShopCommentController {
 
     @GetMapping("/{shopNo}/comments")
     public ResponseEntity<Page<ShopCommentResponseDto>> getShopComment(
-        @PathVariable Long shopNo, Pageable pageable) {
+        @PathVariable("shopNo") Long shopNo, Pageable pageable) {
         Page<ShopCommentResponseDto> result = shopCommentService.getShopComments(shopNo, pageable);
         return ResponseEntity.ok().body(result);
     }

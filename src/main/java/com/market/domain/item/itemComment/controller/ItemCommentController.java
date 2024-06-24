@@ -39,7 +39,7 @@ public class ItemCommentController {
 
     @GetMapping("/{itemNo}/comments")
     public ResponseEntity<Page<ItemCommentResponseDto>> getItemComment(
-        @PathVariable Long itemNo, Pageable pageable) {
+        @PathVariable("itemNo") Long itemNo, Pageable pageable) {
         Page<ItemCommentResponseDto> result = itemCommentService.getItemComments(itemNo, pageable);
         return ResponseEntity.ok().body(result);
     }
