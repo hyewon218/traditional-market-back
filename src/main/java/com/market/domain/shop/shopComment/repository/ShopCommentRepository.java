@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ShopCommentRepository extends JpaRepository<ShopComment, Long> {
-    Page<ShopComment> findAllByShop_No(Long no, Pageable pageable);
+    Page<ShopComment> findAllByShop_NoOrderByCreateTimeDesc(Long no, Pageable pageable);
 }

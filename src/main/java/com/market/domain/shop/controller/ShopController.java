@@ -49,7 +49,7 @@ public class ShopController {
         return ResponseEntity.ok().body(result);
     }
 
-    @GetMapping("/shops/category")
+    @GetMapping("/shops/category") // 상점 카테고리별 조회
     public ResponseEntity<Page<ShopResponseDto>> getCategoryShop(
         @RequestParam("category") CategoryEnum category,
         Pageable pageable) {
