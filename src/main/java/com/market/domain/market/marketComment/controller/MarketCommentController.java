@@ -38,7 +38,7 @@ public class MarketCommentController {
 
     @GetMapping("/{marketNo}/comments")
     public ResponseEntity<Page<MarketCommentResponseDto>> getMarketComment(
-        @PathVariable Long marketNo, Pageable pageable) {
+        @PathVariable("marketNo") Long marketNo, Pageable pageable) {
         Page<MarketCommentResponseDto> result = marketCommentService.getMarketComments(marketNo,
             pageable);
         return ResponseEntity.ok().body(result);
