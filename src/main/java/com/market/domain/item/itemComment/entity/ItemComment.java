@@ -1,10 +1,12 @@
 package com.market.domain.item.itemComment.entity;
 
+import com.market.domain.base.BaseEntity;
 import com.market.domain.item.entity.Item;
 import com.market.domain.item.itemComment.dto.ItemCommentRequestDto;
 import com.market.domain.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Builder
 @Getter
@@ -24,7 +27,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="item_comment")
-public class ItemComment {
+@EntityListeners(AuditingEntityListener.class)
+public class ItemComment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
