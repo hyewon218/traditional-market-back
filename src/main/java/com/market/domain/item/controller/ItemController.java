@@ -43,19 +43,28 @@ public class ItemController {
     }
 
     @GetMapping("/items") // 상품 목록 조회
-    public ResponseEntity<Page<ItemResponseDto>> getItems(Pageable pageable) {
+    public ResponseEntity<Page<ItemResponseDto>> getItemsByShopNo(Pageable pageable) {
         Page<ItemResponseDto> result = itemService.getItems(pageable);
         return ResponseEntity.ok().body(result);
     }
 
+    @GetMapping("/{shopNo}/items") // 상점 내 상품 목록 조회
+    public ResponseEntity<Page<ItemResponseDto>> getItems(@PathVariable("shopNo") Long shopNo,
+        Pageable pageable) {
+        Page<ItemResponseDto> result = itemService.getItemsByShopNo(shopNo, pageable);
+        return ResponseEntity.ok().body(result);
+    }
+
+
     @GetMapping("/items/search") // 키워드 검색 상품 목록 조회
-    public ResponseEntity<Page<ItemResponseDto>> searchItems(ItemSearchCond cond, Pageable pageable){
+    public ResponseEntity<Page<ItemResponseDto>> searchItems(ItemSearchCond cond,
+        Pageable pageable) {
         Page<ItemResponseDto> result = itemService.searchItems(cond, pageable);
         return ResponseEntity.ok().body(result);
     }
 
     @GetMapping("/items/ranking") // 상품 가격 랭킹 조회
-    public ResponseEntity<List<ItemResponseDto>> searchPriceRankFiveItems(ItemSearchCond cond){
+    public ResponseEntity<List<ItemResponseDto>> searchPriceRankFiveItems(ItemSearchCond cond) {
         List<ItemResponseDto> result = itemService.searchRankingFiveItems(cond);
         return ResponseEntity.ok().body(result);
     }

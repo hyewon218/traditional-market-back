@@ -77,6 +77,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true) // 상점 내 상품 목록 조회
+    public Page<ItemResponseDto> getItemsByShopNo(Long shopNo, Pageable pageable) {
+        Page<Item> itemList = itemRepository.findAllByShop_No(shopNo, pageable);
+        return itemList.map(ItemResponseDto::of);
+    }
+
+    @Override
     @Transactional(readOnly = true) // 키워드 검색 상품 목록 조회
     public Page<ItemResponseDto> searchItems(ItemSearchCond cond, Pageable pageable) {
         return itemRepositoryQuery.searchItems(cond, pageable).map(ItemResponseDto::of);

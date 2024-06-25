@@ -22,11 +22,18 @@ public interface ItemService {
     void createItem(ItemRequestDto requestDto, List<MultipartFile> files) throws IOException;
 
     /**
-     * 상점 목록 조회
+     * 상품 목록 조회
      *
      * @return : 조회된 상품들 정보
      */
     Page<ItemResponseDto> getItems(Pageable pageable);
+
+    /**
+     * 상점 내 상품 목록 조회
+     *
+     * @return : 조회된 상품들 정보
+     */
+    Page<ItemResponseDto> getItemsByShopNo(Long shopNo, Pageable pageable);
 
     /**
      * 키워드 검색 상품 목록 조회
