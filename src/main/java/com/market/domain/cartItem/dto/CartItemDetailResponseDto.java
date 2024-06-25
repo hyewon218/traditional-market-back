@@ -7,7 +7,9 @@ import lombok.Setter;
 @Setter
 public class CartItemDetailResponseDto {
 
-    private Long cartItemId; //장바구니 상품 아이디
+    private Long cartItemNo; //장바구니 상품 아이디
+
+    private Long itemNo; //상품 no
 
     private String itemName; //상품명
 
@@ -15,10 +17,14 @@ public class CartItemDetailResponseDto {
 
     private int count; //수량
 
-    public CartItemDetailResponseDto(Long cartItemId, String itemName, int price, int count) {
-        this.cartItemId = cartItemId;
+    private String imageUrl;
+
+    public CartItemDetailResponseDto(Long cartItemNo, Long itemNo, String itemName, int price, int count, String imageUrl) {
+        this.cartItemNo = cartItemNo;
+        this.itemNo = itemNo;
         this.itemName = itemName;
         this.price = price;
         this.count = count;
+        this.imageUrl = imageUrl;
     }
 }
