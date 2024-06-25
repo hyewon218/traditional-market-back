@@ -81,6 +81,13 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    @Transactional(readOnly = true) // 시장 내 상점 목록 조회
+    public Page<ShopResponseDto> getShopsByMarketNo(Long marketNo, Pageable pageable) {
+        Page<Shop> shopList = shopRepository.findAllByMarket_No(marketNo, pageable);
+        return shopList.map(ShopResponseDto::of);
+    }
+
+    @Override
     @Transactional(readOnly = true) // 상점 목록 조회
     public Page<ShopResponseDto> getCategoryShop(CategoryEnum category, Pageable pageable) {
         Page<Shop> shopList = shopRepository.findByCategoryOrderByCategoryDesc(category, pageable);

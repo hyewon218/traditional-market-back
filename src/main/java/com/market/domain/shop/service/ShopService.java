@@ -29,6 +29,13 @@ public interface ShopService {
     Page<ShopResponseDto> getShops(Pageable pageable);
 
     /**
+     * 시장 내 상점 목록 조회
+     *
+     * @return : 조회된 상점들 정보
+     */
+    Page<ShopResponseDto> getShopsByMarketNo(Long marketNo, Pageable pageable);
+
+    /**
      * 상점 카테고리별 목록 조회
      *
      * @return : 조회된 상점들 정보
