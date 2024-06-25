@@ -24,7 +24,7 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional(readOnly = true)
     public List<CartItemDetailResponseDto> getCartItemList(Member member) {
-        Cart cart = cartService.getCartByMemberNo(member.getMemberNo());
+        Cart cart = cartService.getCartByMemberNo(member.getMemberNo()); // 로그인한 member 정보로 cart 정보 가져오기
         return cartItemRepository.findCartDetailDtoList(cart.getNo());
     }
 

@@ -79,8 +79,9 @@ public class WebSecurityConfig {
                             "/api/oauth2/login", "/api/send-mail/**", "/api/members/logout",
                             "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
                         "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
-                    .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/api/inquiries", 
-                         "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**").authenticated()
+                    .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/api/inquiries",
+                         "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
+                        "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
                     .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/auth/success").permitAll() // oauth2
                     .anyRequest().permitAll() // authenticated로 바꾸기
                 )

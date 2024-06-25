@@ -27,31 +27,30 @@ public class CartController {
     private final CartService cartService;
     private final CartItemService cartItemService;
 
-    @PostMapping(value = "/carts")
+    @PostMapping(value = "/carts") // 장바구니에 추가
     public ResponseEntity<Long> addOrModify(@RequestBody CartItemRequestDto cartItemDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long cartItemId = cartService.addCart(cartItemDto, userDetails.getMember());
         return ResponseEntity.ok().body(cartItemId);
     }
 
-    @PostMapping(value = "/carts/order")
+    @PostMapping(value = "/carts/order") // 장바구니 상품 주문
     public ResponseEntity<Long> orderCartItem(@RequestBody CartItemOrderRequestDto cartOrderDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         List<CartItemOrderRequestDto> cartOrderDtoList = cartOrderDto.getCartOrderDtoList();
-
 
         Long orderNo = cartService.orderCartItems(cartOrderDtoList,
             userDetails.getMember());
         return ResponseEntity.ok().body(orderNo);
     }
 
-    @GetMapping(value = "/cartItems")
+    @GetMapping(value = "/cartitems") // 장바구니 상품 목록 조회
     public ResponseEntity<List<CartItemDetailResponseDto>> getCartItemList(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(cartItemService.getCartItemList(userDetails.getMember()));
     }
 
-    @PatchMapping(value = "/cartItems/{cartItemId}")
+    @PatchMapping(value = "/cartitems/{cartItemId}") // 장바구니 특정 상품 주문 갯수 수정
     public ResponseEntity<Long> updateCartItem(@RequestBody CartItemRequestDto cartItemRequestDto,
         @PathVariable Long cartItemId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         cartItemService.updateCartItemCount(cartItemId, cartItemRequestDto,
@@ -59,7 +58,7 @@ public class CartController {
         return ResponseEntity.ok().body(cartItemId);
     }
 
-    @DeleteMapping(value = "/cartItems/{cartItemId}")
+    @DeleteMapping(value = "/cartitems/{cartItemId}") // 장바구니 특정 상품 주문 삭제
     public ResponseEntity<Long> deleteCartItem(@PathVariable Long cartItemId,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         cartItemService.deleteCartItem(cartItemId, userDetails.getMember());
