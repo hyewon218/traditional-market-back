@@ -72,7 +72,7 @@ public class MarketController {
 
     @DeleteMapping("/markets/{marketNo}")
     public ResponseEntity<ApiResponse> deleteMarket( // 시장 삭제
-        @PathVariable Long marketNo) {
+        @PathVariable("marketNo") Long marketNo) {
         marketService.deleteMarket(marketNo);
         return ResponseEntity.ok().body(new ApiResponse("시장 삭제 완료!", HttpStatus.OK.value()));
     }
