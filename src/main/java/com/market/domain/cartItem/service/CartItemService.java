@@ -7,14 +7,13 @@ import com.market.domain.member.entity.Member;
 import java.util.List;
 
 public interface CartItemService {
-    CartItem getCartItemById(Long cartItemId);
+    CartItem getCartItemById(Long cartItemNo);
 
     List<CartItemDetailResponseDto> getCartItemList(Member member);
 
-    void updateCartItemCount(Long cartItemId, CartItemRequestDto cartItemRequestDto,
-        Member member);
+    void updateCartItemCount(Long cartItemNo, CartItemRequestDto cartItemRequestDto, Member member);
 
-    void deleteCartItem(Long cartItemId, Member member);
+    void deleteCartItem(Long cartItemNo, Member member);
 
-    boolean validateCartItem(Long cartItemId, Member member);
+    boolean validateCartItem(Long cartItemNo, Member member);
 }

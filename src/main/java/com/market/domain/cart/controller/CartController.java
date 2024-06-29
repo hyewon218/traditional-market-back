@@ -50,12 +50,12 @@ public class CartController {
         return ResponseEntity.ok(cartItemService.getCartItemList(userDetails.getMember()));
     }
 
-    @PatchMapping(value = "/cartitems/{cartItemId}") // 장바구니 특정 상품 주문 갯수 수정
+    @PatchMapping(value = "/cartitems/{cartItemNo}") // 장바구니 특정 상품 주문 갯수 수정
     public ResponseEntity<Long> updateCartItem(@RequestBody CartItemRequestDto cartItemRequestDto,
-        @PathVariable Long cartItemId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        cartItemService.updateCartItemCount(cartItemId, cartItemRequestDto,
+        @PathVariable("cartItemNo") Long cartItemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        cartItemService.updateCartItemCount(cartItemNo, cartItemRequestDto,
             userDetails.getMember());
-        return ResponseEntity.ok().body(cartItemId);
+        return ResponseEntity.ok().body(cartItemNo);
     }
 
     @DeleteMapping(value = "/cartitems/{cartItemId}") // 장바구니 특정 상품 주문 삭제
