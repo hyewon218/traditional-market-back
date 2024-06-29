@@ -15,7 +15,7 @@ public class CartItemDetailResponseDto {
 
     private int price; //상품 금액
 
-    private int count; //수량
+    private int initialCount; //수량
 
     private String imageUrl;
 
@@ -24,7 +24,7 @@ public class CartItemDetailResponseDto {
         this.itemNo = itemNo;
         this.itemName = itemName;
         this.price = price;
-        this.count = count;
+        this.initialCount = count;
         this.imageUrl = imageUrl;
     }
 }
