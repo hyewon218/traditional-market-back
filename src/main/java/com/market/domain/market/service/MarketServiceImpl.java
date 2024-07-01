@@ -41,6 +41,8 @@ public class MarketServiceImpl implements MarketService {
     private final MemberRepository memberRepository;
     private final MarketRepositoryQuery marketRepositoryQuery;
 
+    String defaultImageUrl = "https://upgrade-aws-config-storage.s3.ap-northeast-2.amazonaws.com/%E1%84%89%E1%85%B5%E1%84%8C%E1%85%A1%E1%86%BC%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.jpg";
+
     @Override
     @Transactional // 시장 생성
     public void createMarket(MarketRequestDto requestDto, List<MultipartFile> files)
@@ -91,6 +93,26 @@ public class MarketServiceImpl implements MarketService {
         Market market = findMarket(marketNo);
 
         market.update(requestDto);
+
+        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
+        List<Image> existingImages = imageRepository.findByMarket_No(marketNo); // DB
+
+        // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
+        if (imageUrls != null) {
+            // 이미지 URL 비교 및 삭제
+            for (Image existingImage : existingImages) {
+                if (!imageUrls.contains(existingImage.getImageUrl())) {
+                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
+                }
+            }
+        } else { // 기존 이미지 전부 삭제 시(imageUrls = null) 기존 DB image 삭제
+            imageRepository.deleteAll(existingImages);
+
+            // 기본 이미지 추가
+            if (!imageRepository.existsByImageUrlAndNo(defaultImageUrl, market.getNo())) {
+                imageRepository.save(new Image(market, defaultImageUrl));
+            }
+        }
 
         if (files != null) {
             for (MultipartFile file : files) {

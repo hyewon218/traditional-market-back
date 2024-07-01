@@ -62,7 +62,7 @@ public class MarketController {
 
     @PutMapping("/markets/{marketNo}")
     public ResponseEntity<ApiResponse> updateMarket( // 시장 수정
-        @PathVariable Long marketNo,
+        @PathVariable("marketNo") Long marketNo,
         @ModelAttribute MarketRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
