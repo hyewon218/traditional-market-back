@@ -6,6 +6,7 @@ import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,6 +46,8 @@ public class ShopRequestDto {
 
     @NotBlank(message = "카테고리는 필수 입력 값입니다.")
     private CategoryEnum category;
+
+    private List<String> imageUrls; // 상점 수정 화면에서 남은 기존 이미지들
 
 
     public Shop toEntity(Market market) {
