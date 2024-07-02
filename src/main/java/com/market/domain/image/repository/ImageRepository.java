@@ -8,5 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findByMarket_No(Long marketNo);
+    List<Image> findByShop_No(Long shopNo);
+    List<Image> findByItem_No(Long item);
     Boolean existsByImageUrlAndNo(String fileUrl, Long no);
 }

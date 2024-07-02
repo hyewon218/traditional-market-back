@@ -1,6 +1,7 @@
 package com.market.domain.market.service;
 
 import com.market.domain.image.config.AwsS3upload;
+import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.market.dto.MarketRequestDto;
@@ -41,8 +42,6 @@ public class MarketServiceImpl implements MarketService {
     private final MemberRepository memberRepository;
     private final MarketRepositoryQuery marketRepositoryQuery;
 
-    String defaultImageUrl = "https://upgrade-aws-config-storage.s3.ap-northeast-2.amazonaws.com/%E1%84%89%E1%85%B5%E1%84%8C%E1%85%A1%E1%86%BC%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.jpg";
-
     @Override
     @Transactional // 시장 생성
     public void createMarket(MarketRequestDto requestDto, List<MultipartFile> files)
@@ -63,6 +62,12 @@ public class MarketServiceImpl implements MarketService {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(market, fileUrl));
+            }
+        } else {
+            // 시장 기본 이미지 추가
+            if (!imageRepository.existsByImageUrlAndNo(ImageConfig.DEFAULT_IMAGE_URL,
+                market.getNo())) {
+                imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
             }
         }
     }
@@ -108,9 +113,10 @@ public class MarketServiceImpl implements MarketService {
         } else { // 기존 이미지 전부 삭제 시(imageUrls = null) 기존 DB image 삭제
             imageRepository.deleteAll(existingImages);
 
-            // 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndNo(defaultImageUrl, market.getNo())) {
-                imageRepository.save(new Image(market, defaultImageUrl));
+            // 시장 기본 이미지 추가
+            if (!imageRepository.existsByImageUrlAndNo(ImageConfig.DEFAULT_IMAGE_URL,
+                market.getNo())) {
+                imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
             }
         }
 
