@@ -43,9 +43,9 @@ public class MainController {
         return "kakaomap/map";
     }
 
-    @GetMapping("/navermap")
-    public String naverMap() {
-        return "navermap/map";
+    @GetMapping("/map")
+    public String naverMapAndWeather() {
+        return "navermapandweather/mapWeather";
     }
 
 }
