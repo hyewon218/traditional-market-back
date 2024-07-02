@@ -110,6 +110,21 @@ public class ItemServiceImpl implements ItemService {
 
         item.updateItem(requestDto);
 
+        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
+        List<Image> existingImages = imageRepository.findByItem_No(itemNo); // DB
+
+        // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
+        if (imageUrls != null) {
+            // 이미지 URL 비교 및 삭제
+            for (Image existingImage : existingImages) {
+                if (!imageUrls.contains(existingImage.getImageUrl())) {
+                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
+                }
+            }
+        } else { // 기존 이미지 전부 삭제 시(imageUrls = null) 기존 DB image 삭제
+            imageRepository.deleteAll(existingImages);
+        }
+
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "item " + item.getNo());

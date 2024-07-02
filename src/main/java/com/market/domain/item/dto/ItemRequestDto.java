@@ -4,6 +4,7 @@ import com.market.domain.item.constant.ItemSellStatus;
 import com.market.domain.item.entity.Item;
 import com.market.domain.shop.entity.Shop;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,6 +33,8 @@ public class ItemRequestDto {
     private int stockNumber;
 
     private ItemSellStatus itemSellStatus;
+
+    private List<String> imageUrls; // 상품 수정 화면에서 남은 기존 이미지들
 
     public Item toEntity(Shop shop) {
         return Item.builder()
