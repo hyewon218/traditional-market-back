@@ -33,13 +33,12 @@ public class MarketController {
     private final MarketService marketService;
 
     @PostMapping("/markets")
-    public ResponseEntity<ApiResponse> createMarket( // 시장 생성
+    public ResponseEntity<MarketResponseDto> createMarket( // 시장 생성
         @ModelAttribute MarketRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
-        marketService.createMarket(requestDto, files);
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new ApiResponse("시장 생성 성공!", HttpStatus.CREATED.value()));
+        MarketResponseDto result = marketService.createMarket(requestDto, files);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/markets") // 시장 목록 조회
@@ -61,13 +60,13 @@ public class MarketController {
     }
 
     @PutMapping("/markets/{marketNo}")
-    public ResponseEntity<ApiResponse> updateMarket( // 시장 수정
+    public ResponseEntity<MarketResponseDto> updateMarket( // 시장 수정
         @PathVariable("marketNo") Long marketNo,
         @ModelAttribute MarketRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
-        marketService.updateMarket(marketNo, requestDto, files);
-        return ResponseEntity.ok().body(new ApiResponse("시장 수정 성공!", HttpStatus.OK.value()));
+        MarketResponseDto result = marketService.updateMarket(marketNo, requestDto, files);
+        return ResponseEntity.ok().body(result);
     }
 
     @DeleteMapping("/markets/{marketNo}")

@@ -44,7 +44,7 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional // 시장 생성
-    public void createMarket(MarketRequestDto requestDto, List<MultipartFile> files)
+    public MarketResponseDto createMarket(MarketRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
 
         Market market = requestDto.toEntity();
@@ -58,18 +58,18 @@ public class MarketServiceImpl implements MarketService {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
 
-                if (imageRepository.existsByImageUrlAndNo(fileUrl, market.getNo())) {
+                if (imageRepository.existsByImageUrlAndMarket_No(fileUrl, market.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(market, fileUrl));
             }
         } else {
             // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndNo(ImageConfig.DEFAULT_IMAGE_URL,
-                market.getNo())) {
+            if (!imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
                 imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
             }
         }
+        return MarketResponseDto.of(market);
     }
 
     @Override
@@ -93,7 +93,8 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional // 시장 수정
-    public void updateMarket(Long marketNo, MarketRequestDto requestDto, List<MultipartFile> files)
+    public MarketResponseDto updateMarket(Long marketNo, MarketRequestDto requestDto,
+        List<MultipartFile> files)
         throws IOException {
         Market market = findMarket(marketNo);
 
@@ -102,34 +103,34 @@ public class MarketServiceImpl implements MarketService {
         List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
         List<Image> existingImages = imageRepository.findByMarket_No(marketNo); // DB
 
-        // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
-        if (imageUrls != null) {
+        if (files != null) {
+            for (MultipartFile file : files) {
+                String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
+
+                if (imageRepository.existsByImageUrlAndMarket_No(fileUrl, market.getNo())) {
+                    throw new BusinessException(ErrorCode.EXISTED_FILE);
+                }
+                imageRepository.save(new Image(market, fileUrl));
+            }
+            // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
+            if (imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
+                imageRepository.deleteByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo());
+            }
+        } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
             // 이미지 URL 비교 및 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
                     imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
                 }
             }
-        } else { // 기존 이미지 전부 삭제 시(imageUrls = null) 기존 DB image 삭제
+        } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
+            imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
+        }
+
+        if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
             imageRepository.deleteAll(existingImages);
-
-            // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndNo(ImageConfig.DEFAULT_IMAGE_URL,
-                market.getNo())) {
-                imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
-            }
         }
-
-        if (files != null) {
-            for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
-
-                if (imageRepository.existsByImageUrlAndNo(fileUrl, market.getNo())) {
-                    throw new BusinessException(ErrorCode.EXISTED_FILE);
-                }
-                imageRepository.save(new Image(market, fileUrl));
-            }
-        }
+        return MarketResponseDto.of(market);
     }
 
     @Override
@@ -161,8 +162,7 @@ public class MarketServiceImpl implements MarketService {
     @Transactional
     public void deleteMarketLike(Long marketNo, Member member) { // 좋아요 삭제
         Market market = findMarket(marketNo);
-        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market,
-            member);
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market, member);
 
         if (marketLike.isPresent()) {
             marketLikeRepository.delete(marketLike.get());
