@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+// 사용 안함
 public class TokenController {
 
     private final TokenService tokenService;
 
     @PostMapping("/api/token")
-    public ResponseEntity<CreateAccessTokenResponseDto> createNewAccessToken(@RequestBody CreateAccessTokenRequestDto request) {
+    public ResponseEntity<CreateAccessTokenResponseDto> createNewAccessToken(
+            @RequestBody CreateAccessTokenRequestDto request) {
 
         String newAccessToken = tokenService.createNewAccessToken(request.getRefreshToken());
 

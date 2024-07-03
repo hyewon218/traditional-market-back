@@ -88,14 +88,16 @@ public class MemberServiceImpl implements MemberService {
             if (findRefreshToken == null) {
                 RefreshToken refreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
                 redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
+                tokenProvider.addRefreshTokenToCookie(httpRequest, httpResponse, refreshToken.getRefreshToken());
                 log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + refreshToken.getRefreshToken());
                 log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
 
-                // refresh 토큰이 유효하지않은 경우
+            // refresh 토큰이 유효하지않은 경우
             } else if (!tokenProvider.validRefreshToken(findRefreshToken)) {
                 redisUtils.deleteValues(member.getMemberId());
                 RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
                 redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
+                tokenProvider.addRefreshTokenToCookie(httpRequest, httpResponse, newRefreshToken.getRefreshToken());
                 log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + newRefreshToken.getRefreshToken());
                 log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
             }
@@ -141,6 +143,7 @@ public class MemberServiceImpl implements MemberService {
         redisUtils.setBlackList(memberId, "logout", tokenProvider.getExpiration(accessToken));
         // 쿠키 삭제
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME);
     }
 
     // 전체 회원 조회
@@ -221,7 +224,6 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    ///////////////////////////////////////////////
     // 아이디 찾기(닉네임, 이메일 이용)
     @Override
     public String findIdByNicknameEmail(String memberNickname, String memberEmail, String inputCode) {
@@ -307,5 +309,4 @@ public class MemberServiceImpl implements MemberService {
     }
 
 
-    ///////////////////////////////////////////////
 }

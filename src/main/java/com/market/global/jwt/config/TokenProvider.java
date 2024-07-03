@@ -1,8 +1,8 @@
 package com.market.global.jwt.config;
 
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.entity.RefreshToken;
-import com.market.global.jwt.repository.RefreshTokenRepository;
 import com.market.global.redis.RedisUtils;
 import com.market.global.security.CookieUtil;
 import com.market.global.security.UserDetailsServiceImpl;
@@ -32,13 +32,13 @@ import java.util.Set;
 public class TokenProvider {
 
     private final UserDetailsServiceImpl userDetailsService;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final MemberRepository memberRepository;
     private final JwtProperties jwtProperties;
     private final RedisUtils redisUtils;
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
-    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(15);
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(30);
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofHours(12); // 보통 14일, 수정하기
 
     public String generateToken(Member member, Duration expiredAt) {
@@ -160,7 +160,6 @@ public class TokenProvider {
         return claims.get("no", Long.class);
     }
 
-    // 테스트용, 지우기
     public Long getRefreshMemberNo(String token) {
         Claims claims = getRefreshClaims(token);
         return claims.get("no", Long.class);
@@ -214,8 +213,8 @@ public class TokenProvider {
     }
 
 
-    // 생성된 refresh 토큰을 쿠키에 저장, 가능하면 사용 안하기(액세스토큰만 쿠키에 추가하고 리프레시토큰은 redis에 저장하기)
-    private void addRefreshTokenToCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken)
+    // 생성된 refresh 토큰을 쿠키에 저장 // 관련해서 보안 설정 할거있는지 확인해야함
+    public void addRefreshTokenToCookie(HttpServletRequest request, HttpServletResponse response, String refreshToken)
             throws UnsupportedEncodingException {
         int cookieMaxAge = (int) REFRESH_TOKEN_DURATION.toSeconds();
         String encodeCode = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
@@ -255,5 +254,32 @@ public class TokenProvider {
             }
         }
         return null;
+    }
+
+    // 액세스토큰, 리프레시토큰 재발급
+    public String createNewAccessToken(String refreshToken, HttpServletRequest request, HttpServletResponse response)
+            throws UnsupportedEncodingException {
+        // 토큰 유효성 검사에 실패하면 예외 발생
+        if(!validRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException("토큰이 유효하지않습니다.");
+        }
+        Long memberNo = getRefreshMemberNo(refreshToken);
+        Member member = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
+
+        // 액세스토큰 생성
+        String newAccessToken = generateToken(member, ACCESS_TOKEN_DURATION);
+
+        // 액세스토큰 쿠키에 설정
+        addTokenToCookie(request, response, newAccessToken);
+
+        // 리프레시토큰 재발급
+        RefreshToken newRefreshToken = generateRefreshToken(member, REFRESH_TOKEN_DURATION);
+        redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(), REFRESH_TOKEN_DURATION);
+
+        // 리프레시토큰 쿠키에 설정 // 관련해서 보안 설정 할거있는지 확인해야함
+        addRefreshTokenToCookie(request, response, newRefreshToken.getRefreshToken());
+
+        return newAccessToken;
     }
 }

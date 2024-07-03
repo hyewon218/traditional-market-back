@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// 사용 안함
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
