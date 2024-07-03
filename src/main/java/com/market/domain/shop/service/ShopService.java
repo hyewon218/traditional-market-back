@@ -18,8 +18,9 @@ public interface ShopService {
      *
      * @param requestDto : 상점 생성 요청정보
      * @param files      : 상점 생성 첨부파일
+     * @return ShopResponseDto : 생성된 상점 정보
      */
-    void createShop(ShopRequestDto requestDto, List<MultipartFile> files) throws IOException;
+    ShopResponseDto createShop(ShopRequestDto requestDto, List<MultipartFile> files) throws IOException;
 
     /**
      * 상점 목록 조회
@@ -55,8 +56,9 @@ public interface ShopService {
      *
      * @param shopNo     : 수정할 상점 no
      * @param requestDto : 상점 수정 요청정보
+     * @return ShopResponseDto : 수정된 상점 정보
      */
-    void updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
+    ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
         throws IOException;
 
     /**

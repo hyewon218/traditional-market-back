@@ -18,8 +18,9 @@ public interface ItemService {
      *
      * @param requestDto : 상품 생성 요청정보
      * @param files      : 상품 생성 첨부파일
+     * @return ItemResponseDto : 생성된 상품 정보
      */
-    void createItem(ItemRequestDto requestDto, List<MultipartFile> files) throws IOException;
+    ItemResponseDto createItem(ItemRequestDto requestDto, List<MultipartFile> files) throws IOException;
 
     /**
      * 상품 목록 조회
@@ -65,8 +66,9 @@ public interface ItemService {
      * @param itemNo   : 수정할 상품 no
      * @param requestDto : 상품 수정 요청정보
      * @param files      : 상품 수정 첨부파일
+     * @return ItemResponseDto : 생성된 상품 정보
      */
-    void updateItem(Long itemNo, ItemRequestDto requestDto, List<MultipartFile> files)
+    ItemResponseDto updateItem(Long itemNo, ItemRequestDto requestDto, List<MultipartFile> files)
         throws IOException;
 
     /**

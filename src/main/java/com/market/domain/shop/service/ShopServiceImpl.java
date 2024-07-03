@@ -45,7 +45,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 생성
-    public void createShop(ShopRequestDto requestDto, List<MultipartFile> files)
+    public ShopResponseDto createShop(ShopRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
         // 선택한 시장에 상점 등록
         Market market = marketRepository.findById(requestDto.getMarketNo()).orElseThrow(
@@ -66,17 +66,18 @@ public class ShopServiceImpl implements ShopService {
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "shop " + shop.getNo());
-                if (imageRepository.existsByImageUrlAndNo(fileUrl, shop.getNo())) {
+                if (imageRepository.existsByImageUrlAndShop_No(fileUrl, shop.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(shop, fileUrl));
             }
         } else {
             // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndNo(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
+            if (!imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
                 imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
             }
         }
+        return ShopResponseDto.of(shop);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 수정
-    public void updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
+    public ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
         Shop shop = findShop(shopNo);
 
@@ -125,34 +126,34 @@ public class ShopServiceImpl implements ShopService {
         List<Image> existingImages = imageRepository.findByShop_No(shopNo); // DB
 
 
-        // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
-        if (imageUrls != null) {
+        if (files != null) {
+            for (MultipartFile file : files) {
+                String fileUrl = awsS3upload.upload(file, "market " + shop.getNo());
+
+                if (imageRepository.existsByImageUrlAndShop_No(fileUrl, shop.getNo())) {
+                    throw new BusinessException(ErrorCode.EXISTED_FILE);
+                }
+                imageRepository.save(new Image(shop, fileUrl));
+            }
+            // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
+            if (imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shop.getNo())) {
+                imageRepository.deleteByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shop.getNo());
+            }
+        } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
             // 이미지 URL 비교 및 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
                     imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
                 }
             }
-        } else { // 기존 이미지 전부 삭제 시(imageUrls = null) 기존 DB image 삭제
+        } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
+            imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
+        }
+
+        if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
             imageRepository.deleteAll(existingImages);
-
-            // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndNo(ImageConfig.DEFAULT_IMAGE_URL,
-                shop.getNo())) {
-                imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
-            }
         }
-
-        if (files != null) {
-            for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "shop " + shop.getNo());
-
-                if (imageRepository.existsByImageUrlAndNo(fileUrl, shop.getNo())) {
-                    throw new BusinessException(ErrorCode.EXISTED_FILE);
-                }
-                imageRepository.save(new Image(shop, fileUrl));
-            }
-        }
+        return ShopResponseDto.of(shop);
     }
 
     @Override

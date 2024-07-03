@@ -46,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional // 상품 생성
-    public void createItem(ItemRequestDto requestDto, List<MultipartFile> files)
+    public ItemResponseDto createItem(ItemRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
         // 선택한 상점에 상품 등록
         Shop shop = shopRepository.findById(requestDto.getShopNo()).orElseThrow(
@@ -61,12 +61,13 @@ public class ItemServiceImpl implements ItemService {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
 
-                if (imageRepository.existsByImageUrlAndNo(fileUrl, item.getNo())) {
+                if (imageRepository.existsByImageUrlAndItem_No(fileUrl, item.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(item, fileUrl));
             }
         }
+        return ItemResponseDto.of(item);
     }
 
     @Override
@@ -104,7 +105,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional // 상품 수정
-    public void updateItem(Long itemNo, ItemRequestDto requestDto, List<MultipartFile> files)
+    public ItemResponseDto updateItem(Long itemNo, ItemRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
         Item item = findItem(itemNo);
 
@@ -129,12 +130,13 @@ public class ItemServiceImpl implements ItemService {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
 
-                if (imageRepository.existsByImageUrlAndNo(fileUrl, item.getNo())) {
+                if (imageRepository.existsByImageUrlAndItem_No(fileUrl, item.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(item, fileUrl));
             }
         }
+        return ItemResponseDto.of(item);
     }
 
     @Override

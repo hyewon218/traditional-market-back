@@ -34,13 +34,12 @@ public class ShopController {
     private final ShopService shopService;
 
     @PostMapping("/shops")
-    public ResponseEntity<ApiResponse> createShop( // 상점 생성
+    public ResponseEntity<ShopResponseDto> createShop( // 상점 생성
         @ModelAttribute ShopRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
-        shopService.createShop(requestDto, files);
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new ApiResponse("상점 생성 성공!", HttpStatus.CREATED.value()));
+        ShopResponseDto result = shopService.createShop(requestDto, files);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/shops") // 상점 목록 조회
@@ -72,13 +71,13 @@ public class ShopController {
     }
 
     @PutMapping("/shops/{shopNo}")
-    public ResponseEntity<ApiResponse> updateShopName( // 상점 수정
+    public ResponseEntity<ShopResponseDto> updateShopName( // 상점 수정
         @PathVariable Long shopNo,
         @ModelAttribute ShopRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
-        shopService.updateShop(shopNo, requestDto, files);
-        return ResponseEntity.ok().body(new ApiResponse("상점명 수정 성공!", HttpStatus.OK.value()));
+        ShopResponseDto result = shopService.updateShop(shopNo, requestDto, files);
+        return ResponseEntity.ok().body(result);
     }
 
     @DeleteMapping("/shops/{shopNo}")

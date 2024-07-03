@@ -18,8 +18,9 @@ public interface MarketService {
      *
      * @param requestDto : 시장 생성 요청정보
      * @param files      : 시장 생성 첨부파일
+     * @return MarketResponseDto : 생성된 시장 정보
      */
-    void createMarket(MarketRequestDto requestDto, List<MultipartFile> files) throws IOException;
+    MarketResponseDto createMarket(MarketRequestDto requestDto, List<MultipartFile> files) throws IOException;
 
     /**
      * 시장 목록 조회
@@ -51,8 +52,9 @@ public interface MarketService {
      * @param marketNo   : 수정할 시장 no
      * @param requestDto : 시장 수정 요청정보
      * @param files      : 시장 수정 첨부파일
+     * @return MarketResponseDto : 수정된 시장 정보
      */
-    void updateMarket(Long marketNo, MarketRequestDto requestDto, List<MultipartFile> files)
+    MarketResponseDto updateMarket(Long marketNo, MarketRequestDto requestDto, List<MultipartFile> files)
         throws IOException;
 
     /**
