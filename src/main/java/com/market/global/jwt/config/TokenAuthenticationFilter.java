@@ -1,7 +1,7 @@
 package com.market.global.jwt.config;
 
 import com.market.domain.member.entity.Member;
-import com.market.global.jwt.entity.RefreshToken;
+import com.market.domain.member.repository.MemberRepository;
 import com.market.global.redis.RedisUtils;
 import com.market.global.visitor.VisitorService;
 import jakarta.servlet.FilterChain;
@@ -21,7 +21,6 @@ import java.io.IOException;
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
-    private final RedisUtils redisUtils;
     private final VisitorService visitorService;
 
     @Override
@@ -32,7 +31,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         if (uri.equals("/api/members/signup") || uri.equals("/auth/success") ||
             uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") || uri.equals(
-            "/api/send-mail/email")) {
+            "/api/send-mail/email") || uri.equals("/api/members/login")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -56,50 +55,26 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // 액세스토큰 만료 시 리프레시토큰 이용해 새로운 액세스토큰 발급
         } else {
-            // access 토큰이 만료되었을 경우, refresh 토큰을 사용하여 새로운 access 토큰 발급
-            // 이후 기존 refresh 토큰 삭제 후 재발급
-            Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+            String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
 
-            if (currentAuth != null && currentAuth.isAuthenticated()) {
-                Member member = (Member) currentAuth.getPrincipal();
-                String refreshToken = getRefreshTokenFromLoggedInMember();
+            if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
+                // 새로운 액세스토큰 발급과 동시에 리프레시토큰도 재발급
+                String newAccessToken = tokenProvider.createNewAccessToken(refreshToken, request, response);
+                String realNewAccessToken = tokenProvider.getAccessToken(newAccessToken); // Bearer 제거
 
-                if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
-                    // 새로운 액세스토큰 생성
-                    String newAccessToken = tokenProvider.generateToken(member,
-                        TokenProvider.ACCESS_TOKEN_DURATION);
+                // 새로운 인증정보 저장
+                Authentication newAuth = tokenProvider.getAuthentication(realNewAccessToken);
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+                Member member = (Member) newAuth.getPrincipal();
 
-                    // 쿠키에 새로운 액세스토큰 설정
-                    tokenProvider.addTokenToCookie(request, response, newAccessToken);
-
-                    // 새로운 인증정보 저장
-                    Authentication newAuth = tokenProvider.getAuthentication(newAccessToken);
-                    SecurityContextHolder.getContext().setAuthentication(newAuth);
-
-                    // 기존 refresh 토큰 삭제 후 다시 발급, 저장
-                    redisUtils.deleteValues(member.getMemberId());
-                    RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(
-                        member, TokenProvider.REFRESH_TOKEN_DURATION);
-                    redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken());
-                    // 쿠키에 액세스토큰 담아서 사용하므로 필요없음
-//                    response.setHeader(TokenProvider.HEADER_AUTHORIZATION, TokenProvider.TOKEN_PREFIX + " " + newAccessToken);
-//                    response.setHeader(TokenProvider.HEADER_AUTHORIZATION, newAccessToken);
-                }
+            } else if (refreshToken == null || tokenProvider.validRefreshToken(refreshToken)) {
+                log.info("리프레시토큰이 null이거나 유효하지않습니다. 다시 로그인 해주세요");
             }
         }
         filterChain.doFilter(request, response);
     }
-
-    // 현재 로그인중인 회원의 refresh 토큰을 가져오는 메서드
-    private String getRefreshTokenFromLoggedInMember() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            Member member = (Member) authentication.getPrincipal();
-            return redisUtils.getValues(member.getMemberId());
-        }
-        return null;
-    }
 }
+
 

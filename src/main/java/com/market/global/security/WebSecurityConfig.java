@@ -130,7 +130,7 @@ public class WebSecurityConfig {
 
         @Bean
         public TokenAuthenticationFilter tokenAuthenticationFilter() {
-            return new TokenAuthenticationFilter(tokenProvider, redisUtils, visitorService);
+            return new TokenAuthenticationFilter(tokenProvider, visitorService);
         }
 
         @Bean

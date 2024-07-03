@@ -10,12 +10,14 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
+// 사용 안함
 public class TokenService {
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final MemberServiceImpl memberService;
 
+    // tokenProvider로 옮김
     public String createNewAccessToken(String refreshToken) {
         // 토큰 유효성 검사에 실패하면 예외 발생
         if(!tokenProvider.validToken(refreshToken)) {
