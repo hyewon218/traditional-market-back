@@ -33,13 +33,12 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping("/items")
-    public ResponseEntity<ApiResponse> createItem( // 상품 생성
+    public ResponseEntity<ItemResponseDto> createItem( // 상품 생성
         @ModelAttribute ItemRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
-        itemService.createItem(requestDto, files);
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new ApiResponse("상품 생성 성공!", HttpStatus.CREATED.value()));
+        ItemResponseDto result = itemService.createItem(requestDto, files);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/items") // 상품 목록 조회
@@ -76,13 +75,13 @@ public class ItemController {
     }
 
     @PutMapping("/items/{itemNo}")
-    public ResponseEntity<ApiResponse> updateItem( // 상품 수정
+    public ResponseEntity<ItemResponseDto> updateItem( // 상품 수정
         @PathVariable Long itemNo,
         @ModelAttribute ItemRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
-        itemService.updateItem(itemNo, requestDto, files);
-        return ResponseEntity.ok().body(new ApiResponse("상품 수정 성공!", HttpStatus.OK.value()));
+        ItemResponseDto result = itemService.updateItem(itemNo, requestDto, files);
+        return ResponseEntity.ok().body(result);
     }
 
     @DeleteMapping("/items/{itemNo}")
