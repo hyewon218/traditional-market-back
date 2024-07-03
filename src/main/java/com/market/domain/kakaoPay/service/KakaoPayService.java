@@ -21,7 +21,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -33,38 +33,79 @@ public class KakaoPayService {
 
     private String tid;
 
-    // 우선 order 빼고 임의값 넣어서 테스트 해보기
     // 결제 요청
     @Transactional
     public ReadyResponseDto kakaoPayReady(Member member, Order order) {
 
-        String itemName = null;
-        int quantity = 0;
-        int total_amount = 0;
-
+        // 주문 상품 목록 가져오기
         List<OrderItem> orderItems = order.getOrderItemList();
-        if(orderItems != null) {
-            for(OrderItem orderItem : orderItems) {
-                itemName = orderItem.getItem().getItemName();
-                quantity = orderItem.getCount();
-                total_amount = orderItem.getTotalPrice();
-            }
+
+        // 주문 상품이 없을 경우 예외 처리
+        if (orderItems == null || orderItems.isEmpty()) {
+            throw new IllegalArgumentException("주문할 상품이 존재하지 않습니다.");
         }
 
         String orderId = member.getMemberId() + order.getNo();
 
-        // 카카오 요청
+        // 카카오 결제 요청 파라미터 설정
         MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
-        param.add("cid", kakaoPayProperties.getCid());
-        param.add("partner_order_id", orderId);
-        param.add("partner_user_id", member.getMemberId());
-        param.add("item_name", itemName);
-        param.add("quantity", quantity);
-        param.add("total_amount", total_amount);
-        param.add("tax_free_amount", 0);
-        param.add("approval_url", "http://localhost:8080/api/payment/success");
-        param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
-        param.add("fail_url", "http://localhost:8080/api/payment/fail");
+
+        // 주문 상품이 1개 이상일 경우(한 상품의 갯수 말고 각각 다른 상품이 1개 이상일 경우)
+        if (orderItems.size() > 1) {
+            // 상품 정보 리스트 초기화
+            List<Map<String, Object>> itemList = new ArrayList<>();
+            int totalPrice = 0;
+            int totalQuantity = 0;
+
+            for (OrderItem orderItem : orderItems) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                // 각 상품의 코드, 이름, 수량, 가격 추가
+                item.put("item_name", orderItem.getItem().getItemName());
+                item.put("item_code", orderItem.getItem().getNo());
+                item.put("quantity", orderItem.getCount());
+                item.put("total_amount", orderItem.getTotalPrice());
+
+                // 총 합계 금액 및 수량 계산
+                totalPrice += orderItem.getTotalPrice();
+                totalQuantity += orderItem.getCount();
+
+                // 상품 정보 리스트에 추가
+                itemList.add(item);
+            }
+            param.add("cid", kakaoPayProperties.getCid());
+            param.add("partner_order_id", orderId);
+            param.add("partner_user_id", member.getMemberId());
+            param.add("item_name", itemList.get(0).get("item_name") + " 외 " + (orderItems.size() - 1) + "개");
+
+            // 개별 상품 코드 추가 (StringJoiner를 사용하여 모든 item_code를 하나의 문자열로 합침)
+            StringJoiner itemCodes = new StringJoiner(", ");
+            for (Map<String, Object> item : itemList) {
+                itemCodes.add(item.get("item_code").toString());
+            }
+            param.add("item_code", itemCodes.toString());
+
+            param.add("quantity", totalQuantity);
+            param.add("total_amount", totalPrice);
+            param.add("tax_free_amount", 0);
+            param.add("approval_url", "http://localhost:8080/api/payment/success");
+            param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
+            param.add("fail_url", "http://localhost:8080/api/payment/fail");
+
+        // 주문 상품이 1개일 경우
+        } else if(orderItems.size() == 1){
+            OrderItem orderItem = orderItems.get(0);
+            param.add("cid", kakaoPayProperties.getCid());
+            param.add("partner_order_id", orderId);
+            param.add("partner_user_id", member.getMemberId());
+            param.add("item_name", orderItem.getItem().getItemName());
+            param.add("item_code", orderItem.getItem().getNo()); // 없어도 됨
+            param.add("quantity", orderItem.getCount());
+            param.add("total_amount", orderItem.getTotalPrice());
+            param.add("tax_free_amount", 0);
+            param.add("approval_url", "http://localhost:8080/api/payment/success");
+            param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
+            param.add("fail_url", "http://localhost:8080/api/payment/fail");
+        }
 
         // 파라미터, 헤더
         HttpEntity<String> requestEntity = new HttpEntity<>(convertMultiValueMapToJson(param), this.getHeaders());
@@ -75,56 +116,17 @@ public class KakaoPayService {
         // 외부에 보낼 url
         RestTemplate restTemplate = new RestTemplate();
         ReadyResponseDto readyResponseDto = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/ready", // 안되면 이걸로 해보기 "https://kapi.kakao.com/v1/payment/ready"
+                "https://open-api.kakaopay.com/online/v1/payment/ready",
                 requestEntity,
                 ReadyResponseDto.class);
 
-        // tid 추출해서 필드에 저장
-//        this.tid = readyResponseDto.getTid();
-
         // tid 추출해서 Order에 저장
-        if (readyResponseDto.getTid() != null) {
+        if (readyResponseDto != null && readyResponseDto.getTid() != null) {
             order.setTid(readyResponseDto.getTid());
             orderRepository.save(order);
         }
-
         return readyResponseDto;
     }
-
-//    @Transactional
-//    public ReadyResponseDto kakaoPayReady(Member member) {
-//
-//        // 카카오 요청
-//        MultiValueMap<String, Object> param = new LinkedMultiValueMap<>();
-//        param.add("cid", kakaoPayProperties.getCid());
-//        param.add("partner_order_id", "partner_order_id");
-//        param.add("partner_user_id", "paytest");
-//        param.add("item_name", "소고기");
-//        param.add("quantity", 1); // 예시로 상품 수량을 정수로 전달
-//        param.add("total_amount", 10000); // 예시로 가격을 정수로 전달
-//        param.add("tax_free_amount", 0); // 예시로 비과세금액을 정수로 전달
-//        param.add("approval_url", "http://localhost:8080/api/payment/success");
-//        param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
-//        param.add("fail_url", "http://localhost:8080/api/payment/fail");
-//
-//        // 파라미터, 헤더
-//        HttpEntity<String> requestEntity = new HttpEntity<>(convertMultiValueMapToJson(param), this.getHeaders());
-//
-//        // 파라미터 로그
-//        log.info("카카오페이 요청 파라미터 : " + convertMultiValueMapToJson(param));
-//
-//        // 외부에 보낼 url
-//        RestTemplate restTemplate = new RestTemplate();
-//        ReadyResponseDto readyResponseDto = restTemplate.postForObject(
-//                "https://open-api.kakaopay.com/online/v1/payment/ready",
-//                requestEntity,
-//                ReadyResponseDto.class);
-//
-//        // tid 추출해서 필드에 저장
-//        this.tid = readyResponseDto.getTid();
-//
-//        return readyResponseDto;
-//    }
 
     // 결제 승인
     @Transactional
@@ -155,14 +157,14 @@ public class KakaoPayService {
 
     // 결제 환불
     @Transactional
-    public CancelResponseDto kakaoPayRefund(Member member, Order order) {
+    public CancelResponseDto kakaoPayCancel(Member member, Order order) {
 
         int total_amount = 0;
 
         List<OrderItem> orderItems = order.getOrderItemList();
         if(orderItems != null) {
             for(OrderItem orderItem : orderItems) {
-                total_amount = orderItem.getTotalPrice();
+                total_amount += orderItem.getTotalPrice();
             }
         }
 
