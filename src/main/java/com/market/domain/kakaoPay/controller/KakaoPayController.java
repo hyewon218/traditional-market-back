@@ -34,12 +34,6 @@ public class KakaoPayController {
 
         return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(member, order));
     }
-//    @PostMapping("/ready")
-//    public ResponseEntity<ReadyResponseDto> readyToKakaoPay(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-//        Member member = userDetails.getMember();
-//        ReadyResponseDto readyResponseDto = kakaoPayService.kakaoPayReady(member);
-//        return ResponseEntity.ok().body(readyResponseDto);
-//    }
 
     // 결제 성공
     @GetMapping("/success")
@@ -71,13 +65,13 @@ public class KakaoPayController {
 
     // 결제 취소
     @PostMapping("/cancel/{orderNo}")
-    public ResponseEntity<CancelResponseDto> refundOrder(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<CancelResponseDto> cancelOrder(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                          @PathVariable long orderNo) {
         Member member = userDetails.getMember();
         Order order = orderRepository.findById(orderNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다"));
 
-        CancelResponseDto cancelResponseDto = kakaoPayService.kakaoPayRefund(member, order);
+        CancelResponseDto cancelResponseDto = kakaoPayService.kakaoPayCancel(member, order);
         return ResponseEntity.ok().body(cancelResponseDto);
     }
 }
