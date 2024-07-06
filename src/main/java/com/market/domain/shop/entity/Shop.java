@@ -48,6 +48,7 @@ public class Shop extends BaseEntity {
     private String detailAddr; // 주소 찾기 api 이용 시 필요, 상세 주소
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private CategoryEnum category;
 
     @ManyToOne(fetch = FetchType.LAZY)
