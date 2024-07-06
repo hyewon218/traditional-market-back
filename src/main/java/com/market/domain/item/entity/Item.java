@@ -53,6 +53,10 @@ public class Item extends BaseEntity {
     private String itemDetail; // 상품 상세 설명
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ItemCategoryEnum itemCategory; // 상품 분류
+
+    @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus; // 상품 판매 상태
 
     @ManyToOne

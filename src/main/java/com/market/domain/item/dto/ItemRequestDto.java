@@ -2,6 +2,7 @@ package com.market.domain.item.dto;
 
 import com.market.domain.item.constant.ItemSellStatus;
 import com.market.domain.item.entity.Item;
+import com.market.domain.item.entity.ItemCategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -32,6 +33,9 @@ public class ItemRequestDto {
     @NotBlank(message = "재고는 필수 입력 값입니다.")
     private int stockNumber;
 
+    @NotBlank(message = "상품 분류는 필수 입력 값입니다.")
+    private ItemCategoryEnum itemCategory; // 프론트에서 드롭다운으로 구현하기
+
     private ItemSellStatus itemSellStatus;
 
     private List<String> imageUrls; // 상품 수정 화면에서 남은 기존 이미지들
@@ -43,6 +47,7 @@ public class ItemRequestDto {
             .price(this.price)
             .stockNumber(this.stockNumber)
             .itemDetail(this.itemDetail)
+            .itemCategory(this.itemCategory)
             .itemSellStatus(this.itemSellStatus)
             .build();
     }
