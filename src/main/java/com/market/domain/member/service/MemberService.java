@@ -2,7 +2,7 @@ package com.market.domain.member.service;
 
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
-import com.market.domain.member.dto.MemberResponseDto;
+import com.market.domain.member.dto.MyInfoResponseDto;
 import com.market.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -44,8 +44,7 @@ public interface MemberService {
      *
      * @return : 회원 전체 목록
      */
-//    List<Member> findAll();
-    List<MemberResponseDto> findAll();
+    List<MyInfoResponseDto> findAll();
 
     /**
      * 특정 회원 조회

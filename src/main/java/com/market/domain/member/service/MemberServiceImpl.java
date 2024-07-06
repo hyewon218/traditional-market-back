@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MemberResponseDto;
+import com.market.domain.member.dto.MyInfoResponseDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.jwt.config.TokenProvider;
@@ -148,13 +149,13 @@ public class MemberServiceImpl implements MemberService {
 
     // 전체 회원 조회
     @Override
-    public List<MemberResponseDto> findAll() {
+    public List<MyInfoResponseDto> findAll() {
         List<Member> members = memberRepository.findAll();
-        List<MemberResponseDto> memberResponseDtos = members
+        List<MyInfoResponseDto> myInfoResponseDtos = members
                 .stream()
-                .map(MemberResponseDto::of)
+                .map(MyInfoResponseDto::of)
                 .toList();
-        return memberResponseDtos;
+        return myInfoResponseDtos;
     }
 
     // 특정 회원 조회
