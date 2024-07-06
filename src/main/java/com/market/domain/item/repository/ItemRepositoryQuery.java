@@ -9,4 +9,5 @@ public interface ItemRepositoryQuery {
 
     Page<Item> searchItems(ItemSearchCond cond, Pageable pageable);
     List<Item> searchRankingFiveItems(ItemSearchCond cond);
+    List<Item> searchItemsByShopNoAndItemName(Long shopNo, String itemName);
 }

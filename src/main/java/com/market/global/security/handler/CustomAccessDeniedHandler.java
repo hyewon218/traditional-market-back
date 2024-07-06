@@ -16,7 +16,8 @@ import java.io.OutputStream;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
-    private static final ApiResponse apiResponse = new ApiResponse(HttpStatus.FORBIDDEN.getReasonPhrase(), HttpStatus.FORBIDDEN.value());
+    private static final ApiResponse apiResponse =
+            new ApiResponse(HttpStatus.FORBIDDEN.getReasonPhrase(), HttpStatus.FORBIDDEN.value());
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
@@ -24,6 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.sendRedirect("/forbidden");
 
         try (OutputStream os = response.getOutputStream()) {
             ObjectMapper objectMapper = new ObjectMapper();

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>401 Unauthorized Access</title>
+</head>
+<body>
+<div class="unContainer">
+  <h2>401.Unauthorized Access</h2>
+  <div class="message">
+    <p>인증되지않았습니다</p>
+    <p>다시 로그인 해주세요</p>
+    <a th:href="@{/members/login}">로그인</a>
+  </div>
+</div>
+</body>
+</html>

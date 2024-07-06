@@ -1,7 +1,10 @@
 package com.market.domain.item.controller;
 
+import com.market.domain.item.dto.ItemCategoryResponseDto;
 import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.dto.ItemResponseDto;
+import com.market.domain.item.dto.ItemTop5ResponseDto;
+import com.market.domain.item.entity.ItemCategoryEnum;
 import com.market.domain.item.repository.ItemSearchCond;
 import com.market.domain.item.service.ItemService;
 import com.market.global.response.ApiResponse;
@@ -14,15 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -111,5 +106,20 @@ public class ItemController {
         itemService.deleteItemLike(itemNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 상품에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
+    }
+
+    @GetMapping("/itemcategory/{marketNo}")
+    public ResponseEntity<List<ItemCategoryResponseDto>> getItemsByCategory(
+            @PathVariable Long marketNo, ItemCategoryEnum itemCategory) {
+        List<ItemCategoryResponseDto> categories = itemService.getItemsByCategory(marketNo, itemCategory);
+        return ResponseEntity.ok().body(categories);
+    }
+
+    // 상품 저렴한 순으로 5개 조회
+    @GetMapping("/rank/{marketNo}")
+    public ResponseEntity<?> getTop5ItemsInMarketByCategory(
+            @PathVariable Long marketNo, String itemName) {
+        List<ItemTop5ResponseDto> top5Items = itemService.getTop5ItemsInMarketByItemName(marketNo, itemName);
+        return ResponseEntity.ok().body(top5Items);
     }
 }

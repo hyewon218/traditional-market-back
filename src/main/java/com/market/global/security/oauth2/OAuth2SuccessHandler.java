@@ -24,7 +24,7 @@ import java.util.Optional;
 @Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    public static final String FIRST_REDIRECT_PATH = "/auth/success";
+    public static final String FIRST_REDIRECT_PATH = "/oauth/success";
     public static final String REDIRECT_PATH = "/";
 
     private final TokenProvider tokenProvider;

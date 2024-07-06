@@ -11,4 +11,6 @@ public interface MarketRepository extends JpaRepository<Market, Long> {
 
     Page<Market> findAll(Pageable pageable);
     boolean existsMarketByMarketName(String marketName);
+
+    Market findByMarketName(String marketName);
 }

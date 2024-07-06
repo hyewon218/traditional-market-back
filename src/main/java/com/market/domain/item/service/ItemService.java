@@ -1,8 +1,11 @@
 package com.market.domain.item.service;
 
+import com.market.domain.item.dto.ItemCategoryResponseDto;
 import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.dto.ItemResponseDto;
+import com.market.domain.item.dto.ItemTop5ResponseDto;
 import com.market.domain.item.entity.Item;
+import com.market.domain.item.entity.ItemCategoryEnum;
 import com.market.domain.item.repository.ItemSearchCond;
 import com.market.domain.member.entity.Member;
 import java.io.IOException;
@@ -101,4 +104,22 @@ public interface ItemService {
      * @return : 상품 Entity
      */
     Item findItem(Long itemNo);
+
+    /**
+     * 상품 카테고리에 해당하는 상품 조회
+     *
+     * @param marketNo : 찾을 시장 고유번호
+     * @param itemCategory : 찾을 상품 카테고리
+     * @return ItemCategoryResponseDto : 특정 카테고리에 해당하는 상품 목록
+     */
+    List<ItemCategoryResponseDto> getItemsByCategory(Long marketNo, ItemCategoryEnum itemCategory);
+
+    /**
+     * 상품 저렴한 순으로 5개 조회
+     *
+     * @param marketNo : 찾을 시장 고유번호
+     * @param itemName : 찾을 상품명
+     * @return ItemTop5ResponseDto : 상품 가격 오름차순으로 정렬한 5개 상품의 목록
+     */
+    List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo, String itemName);
 }

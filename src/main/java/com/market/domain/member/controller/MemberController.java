@@ -52,8 +52,8 @@ public class MemberController {
 
     // 전체 회원 조회
     @GetMapping("")
-    public ResponseEntity<List<MemberResponseDto>> findAllMember() {
-        List<MemberResponseDto> members = memberService.findAll();
+    public ResponseEntity<List<MyInfoResponseDto>> findAllMember() {
+        List<MyInfoResponseDto> members = memberService.findAll();
         return ResponseEntity.ok().body(members);
     }
 
@@ -61,7 +61,7 @@ public class MemberController {
     @GetMapping("/myinfo")
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Member member = memberService.findById(userDetails.getMember().getMemberNo());
-        return ResponseEntity.ok().body(MemberResponseDto.of(member));
+        return ResponseEntity.ok().body(MyInfoResponseDto.of(member));
     }
 
     // admin 권한일 경우 다른 회원의 상세정보 열람 가능, 일반회원은 자신의 정보만 열람 가능

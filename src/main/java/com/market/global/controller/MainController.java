@@ -48,4 +48,15 @@ public class MainController {
         return "navermapandweather/mapWeather";
     }
 
+    // 401 에러
+    @GetMapping("/unauthorized")
+    public String unauthorized() {
+        return "main";
+    }
+
+    // 403 에러
+    @GetMapping("/forbidden")
+    public String forbidden() {
+        return "forbidden";
+    }
 }
