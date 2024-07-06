@@ -67,7 +67,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 // 새로운 인증정보 저장
                 Authentication newAuth = tokenProvider.getAuthentication(realNewAccessToken);
                 SecurityContextHolder.getContext().setAuthentication(newAuth);
-                Member member = (Member) newAuth.getPrincipal();
 
             } else if (refreshToken == null || tokenProvider.validRefreshToken(refreshToken)) {
                 log.info("리프레시토큰이 null이거나 유효하지않습니다. 다시 로그인 해주세요");
