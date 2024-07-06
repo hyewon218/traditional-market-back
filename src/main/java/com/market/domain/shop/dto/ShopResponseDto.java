@@ -2,6 +2,7 @@ package com.market.domain.shop.dto;
 
 import com.market.domain.image.dto.ImageResponseDto;
 import com.market.domain.item.dto.ItemResponseDto;
+import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.shopComment.dto.ShopCommentResponseDto;
 import java.util.List;
@@ -27,6 +28,8 @@ public class ShopResponseDto {
 
     private String detailAddr;
 
+    private CategoryEnum category;
+
     private Integer likes;
 
     private List<ImageResponseDto> imageList;
@@ -44,6 +47,7 @@ public class ShopResponseDto {
             .postCode(shop.getPostCode())
             .streetAddr(shop.getStreetAddr())
             .detailAddr(shop.getDetailAddr())
+            .category(shop.getCategory())
             .likes(shop.getShopLikeList().size())
             .imageList(shop.getImageList().stream().map(ImageResponseDto::of).toList())
             .itemList(shop.getItemList().stream().map(ItemResponseDto::of).toList())

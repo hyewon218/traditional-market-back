@@ -74,7 +74,7 @@ public class ShopServiceImpl implements ShopService {
         } else {
             // 시장 기본 이미지 추가
             if (!imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
-                imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
+                imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
             }
         }
         return ShopResponseDto.of(shop);
