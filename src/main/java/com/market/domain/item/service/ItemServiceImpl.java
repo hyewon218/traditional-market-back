@@ -137,9 +137,9 @@ public class ItemServiceImpl implements ItemService {
             .collect(Collectors.toList());
     }
 
-    private void validateItems(List<Item> items) { // 상품을 찾지 못한 경우 예외 처리
+    private void validateItems(List<Item> items) { // 상품 카테고리 내 상품 목록을 찾지 못한 경우 예외 처리
         if (items.isEmpty()) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_CATEGORY_ITEM);
+            throw new BusinessException(ErrorCode.NOT_FOUND_CATEGORY_ITEMS);
         }
     }
 
@@ -184,27 +184,29 @@ public class ItemServiceImpl implements ItemService {
         Market market = marketRepository.findByMarketName(marketName);
         List<Item> findItems = itemRepository.findByShopMarketNoAndItemName(market.getNo(),
             itemName);
+
         if (findItems.isEmpty()) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ITEM);
+            throw new BusinessException(ErrorCode.NOT_FOUND_ITEMS);
         } else {
             for (Item item : findItems) {
                 findItemName = item.getItemName();
             }
+
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String key = marketName + "_" + findItemName + "_" + today;
+
+            // redis 에 데이터를 저장할 때 사용할 객체
+            ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
+            valueOps.set(key, top5ItemsResponse);
+
+            // 현재 시간에서 자정까지의 시간 간격을 계산하여 만료 시간을 설정
+            LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
+            long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight)
+                .getSeconds();
+            redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
+
+            return valueOps.get(key);
         }
-
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String key = marketName + "_" + findItemName + "_" + today;
-
-        // redis 에 데이터를 저장할 때 사용할 객체
-        ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
-        valueOps.set(key, top5ItemsResponse);
-
-        // 현재 시간에서 자정까지의 시간 간격을 계산하여 만료 시간을 설정
-        LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
-        long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight).getSeconds();
-        redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
-
-        return valueOps.get(key);
     }
 
     @Override

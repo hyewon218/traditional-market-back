@@ -69,6 +69,22 @@ public class ItemController {
         return ResponseEntity.ok(itemService.getItem(itemNo));
     }
 
+    @GetMapping("/{marketNo}/items/category") // 시장 번호와 상품 카테고리로 해당하는 상품 목록 조회
+    public ResponseEntity<List<ItemCategoryResponseDto>> getItemsByCategory(
+        @PathVariable Long marketNo, ItemCategoryEnum itemCategory) {
+        List<ItemCategoryResponseDto> categories = itemService.getItemsByCategory(marketNo,
+            itemCategory);
+        return ResponseEntity.ok().body(categories);
+    }
+
+    @GetMapping("/{marketNo}/items/rank") // 상품 저렴한 순으로 5개 조회
+    public ResponseEntity<?> getTop5ItemsInMarketByCategory(
+        @PathVariable Long marketNo, String itemName) {
+        List<ItemTop5ResponseDto> top5Items = itemService.getTop5ItemsInMarketByItemName(marketNo,
+            itemName);
+        return ResponseEntity.ok().body(top5Items);
+    }
+
     @PutMapping("/items/{itemNo}")
     public ResponseEntity<ItemResponseDto> updateItem( // 상품 수정
         @PathVariable Long itemNo,
@@ -106,20 +122,5 @@ public class ItemController {
         itemService.deleteItemLike(itemNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 상품에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
-    }
-
-    @GetMapping("/itemcategory/{marketNo}")
-    public ResponseEntity<List<ItemCategoryResponseDto>> getItemsByCategory(
-            @PathVariable Long marketNo, ItemCategoryEnum itemCategory) {
-        List<ItemCategoryResponseDto> categories = itemService.getItemsByCategory(marketNo, itemCategory);
-        return ResponseEntity.ok().body(categories);
-    }
-
-    // 상품 저렴한 순으로 5개 조회
-    @GetMapping("/rank/{marketNo}")
-    public ResponseEntity<?> getTop5ItemsInMarketByCategory(
-            @PathVariable Long marketNo, String itemName) {
-        List<ItemTop5ResponseDto> top5Items = itemService.getTop5ItemsInMarketByItemName(marketNo, itemName);
-        return ResponseEntity.ok().body(top5Items);
     }
 }
