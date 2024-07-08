@@ -23,4 +23,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     void deleteByImageUrlAndMarket_No(String defaultImageUrl, Long marketNo);
 
     void deleteByImageUrlAndShop_No(String defaultImageUrl, Long shopNo);
+
+    void deleteByImageUrlAndItem_No(String defaultImageUrl, Long itemNo);
 }

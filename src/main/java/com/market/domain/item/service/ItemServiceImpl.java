@@ -1,6 +1,7 @@
 package com.market.domain.item.service;
 
 import com.market.domain.image.config.AwsS3upload;
+import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.item.dto.ItemCategoryResponseDto;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -121,8 +123,96 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true) // 상품 카테고리별 조회
+    public List<ItemCategoryResponseDto> getItemsByCategory(Long marketNo,
+        ItemCategoryEnum itemCategory) {
+        List<Item> items = itemRepository.findByShopMarketNoAndItemCategory(marketNo, itemCategory);
+
+        validateItems(items);
+
+        List<Item> distinctItems = distinctByItemName(items);
+
+        return distinctItems.stream()
+            .map(ItemCategoryResponseDto::of)
+            .collect(Collectors.toList());
+    }
+
+    private void validateItems(List<Item> items) { // 상품 카테고리 내 상품 목록을 찾지 못한 경우 예외 처리
+        if (items.isEmpty()) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_CATEGORY_ITEMS);
+        }
+    }
+
+    private List<Item> distinctByItemName(List<Item> items) {  // 상품명이 같은 경우 중복을 제거하는 메서드
+        return new ArrayList<>(items.stream()
+            .collect(Collectors.toMap(
+                Item::getItemName,
+                item -> item,
+                (existing, replacement) -> existing // 이미 있는 상품명이면 기존 것을 유지
+            ))
+            .values());
+    }
+
+    @Override
+    @Transactional(readOnly = true)  // 상품 저렴한 순으로 5개 조회(redis 로 저장하고 반환)
+    public List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo,
+        String itemName) {
+        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery.searchItemsByShopNoAndItemName(
+                marketNo, itemName)
+            .stream().map(ItemTop5ResponseDto::of).toList();
+
+        // 각 상품에 rank 추가
+        for (int i = 0; i < top5Items.size(); i++) {
+            top5Items.get(i).setRank(i + 1);
+        }
+
+        // redis 에 저장할 때 필요한 정보
+        Market market = marketRepository.findById(marketNo).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
+        String marketName = market.getMarketName();
+
+        // redis 에 저장 후 반환
+        return saveRedisAndReturn(marketName, itemName, top5Items);
+    }
+
+    // redis 저장 후 반환하는 메서드
+    private List<ItemTop5ResponseDto> saveRedisAndReturn(String marketName, String itemName,
+        List<ItemTop5ResponseDto> top5ItemsResponse) {
+
+        // 시장 고유번호와 상품 이름으로 상품을 찾아서 만약 해당하는 상품이 없다면 오류 출력하고 redis 에 저장하지 않음
+        String findItemName = "";
+        Market market = marketRepository.findByMarketName(marketName);
+        List<Item> findItems = itemRepository.findByShopMarketNoAndItemName(market.getNo(),
+            itemName);
+
+        if (findItems.isEmpty()) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ITEMS);
+        } else {
+            for (Item item : findItems) {
+                findItemName = item.getItemName();
+            }
+
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String key = marketName + "_" + findItemName + "_" + today;
+
+            // redis 에 데이터를 저장할 때 사용할 객체
+            ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
+            valueOps.set(key, top5ItemsResponse);
+
+            // 현재 시간에서 자정까지의 시간 간격을 계산하여 만료 시간을 설정
+            LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
+            long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight)
+                .getSeconds();
+            redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
+
+            return valueOps.get(key);
+        }
+    }
+
+    @Override
     @Transactional // 상품 수정
-    public ItemResponseDto updateItem(Long itemNo, ItemRequestDto requestDto, List<MultipartFile> files)
+    public ItemResponseDto updateItem(Long itemNo, ItemRequestDto requestDto,
+        List<MultipartFile> files)
         throws IOException {
         Item item = findItem(itemNo);
 
@@ -131,27 +221,34 @@ public class ItemServiceImpl implements ItemService {
         List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
         List<Image> existingImages = imageRepository.findByItem_No(itemNo); // DB
 
-        // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
-        if (imageUrls != null) {
-            // 이미지 URL 비교 및 삭제
-            for (Image existingImage : existingImages) {
-                if (!imageUrls.contains(existingImage.getImageUrl())) {
-                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
-                }
-            }
-        } else { // 기존 이미지 전부 삭제 시(imageUrls = null) 기존 DB image 삭제
-            imageRepository.deleteAll(existingImages);
-        }
-
         if (files != null) {
             for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
+                String fileUrl = awsS3upload.upload(file, "market " + item.getNo());
 
                 if (imageRepository.existsByImageUrlAndItem_No(fileUrl, item.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(item, fileUrl));
             }
+            // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
+            if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_IMAGE_URL,
+                item.getNo())) {
+                imageRepository.deleteByImageUrlAndItem_No(ImageConfig.DEFAULT_IMAGE_URL,
+                    item.getNo());
+            }
+        } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
+            // 이미지 URL 비교 및 삭제
+            for (Image existingImage : existingImages) {
+                if (!imageUrls.contains(existingImage.getImageUrl())) {
+                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
+                }
+            }
+        } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
+            imageRepository.save(new Image(item, ImageConfig.DEFAULT_IMAGE_URL));
+        }
+
+        if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
+            imageRepository.deleteAll(existingImages);
         }
         return ItemResponseDto.of(item);
     }
@@ -183,7 +280,7 @@ public class ItemServiceImpl implements ItemService {
             receiver = item.getShop().getSeller();
         }
         notificationService.send(
-            NotificationType.NEW_LIKE_ON_SHOP,
+            NotificationType.NEW_LIKE_ON_ITEM,
             new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
     }
 
@@ -200,94 +297,11 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    @Override // 시장 찾기
+    @Override // 상품 찾기
     public Item findItem(Long itemNo) {
         return itemRepository.findById(itemNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ITEM));
     }
 
-    // 상품 카테고리별 조회
-    @Override
-    @Transactional(readOnly = true)
-    public List<ItemCategoryResponseDto> getItemsByCategory(Long marketNo, ItemCategoryEnum itemCategory) {
-        // 시장 고유번호와 상품 카테고리로 해당하는 상품 조회
-        List<Item> items = itemRepository.findByShopMarketNoAndItemCategory(marketNo, itemCategory);
 
-        // 아이템을 찾지 못한 경우 예외 처리
-        if (items.isEmpty()) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ITEM);
-        }
-
-        // 상품명이 같은 경우 중복을 제거하기 위해 distinctByItemName 메서드 사용
-        List<Item> distinctItems = distinctByItemName(items);
-
-        return distinctItems.stream()
-                .map(ItemCategoryResponseDto::of)
-                .collect(Collectors.toList());
-    }
-
-    // 상품명이 같은 경우 중복을 제거하는 메서드
-    private List<Item> distinctByItemName(List<Item> items) {
-        return items.stream()
-                .collect(Collectors.toMap(
-                        Item::getItemName,
-                        item -> item,
-                        (existing, replacement) -> existing // 이미 있는 상품명이면 기존 것을 유지
-                ))
-                .values()
-                .stream()
-                .collect(Collectors.toList());
-    }
-
-    // 상품 저렴한 순으로 5개 조회(redis로 저장하고 반환)
-    @Override
-    @Transactional(readOnly = true)
-    public List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo, String itemName) {
-
-        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery.searchItemsByShopNoAndItemName(marketNo, itemName)
-                .stream().map(ItemTop5ResponseDto::of).toList();
-
-        // 각 상품에 rank 추가
-        for (int i = 0; i < top5Items.size(); i++) {
-            top5Items.get(i).setRank(i + 1);
-        }
-
-        // redis에 저장할때 필요한 정보
-        Market market = marketRepository.findById(marketNo).orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
-        String marketName = market.getMarketName();
-
-        // redis에 저장 후 반환
-        return saveRedisAndReturn(marketName, itemName, top5Items);
-    }
-
-    // redis 저장 후 반환하는 메서드
-    private List<ItemTop5ResponseDto> saveRedisAndReturn(String marketName, String itemName, List<ItemTop5ResponseDto> top5ItemsResponse) {
-
-        // 시장 고유번호와 상품 이름으로 상품을 찾아서 만약 해당하는 상품이 없다면 오류 출력하고 redis에 저장하지않음.
-        String findItemName = "";
-        Market market = marketRepository.findByMarketName(marketName);
-        List<Item> findItems = itemRepository.findByShopMarketNoAndItemName(market.getNo(), itemName);
-        if(findItems.isEmpty()) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ITEM);
-        } else {
-            for(Item item : findItems) {
-                findItemName = item.getItemName();
-            }
-        }
-
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String key = marketName + "_" + findItemName + "_" + today;
-
-        // redis에 데이터를 저장할 때 사용할 객체
-        ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
-        valueOps.set(key, top5ItemsResponse);
-
-        // 현재 시간에서 자정까지의 시간 간격을 계산하여 만료 시간을 설정
-        LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
-        long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight).getSeconds();
-        redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
-
-        return valueOps.get(key);
-    }
 }

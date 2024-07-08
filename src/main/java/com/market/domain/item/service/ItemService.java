@@ -108,7 +108,7 @@ public interface ItemService {
     /**
      * 상품 카테고리에 해당하는 상품 조회
      *
-     * @param marketNo : 찾을 시장 고유번호
+     * @param marketNo : 찾을 시장 no
      * @param itemCategory : 찾을 상품 카테고리
      * @return ItemCategoryResponseDto : 특정 카테고리에 해당하는 상품 목록
      */
@@ -117,7 +117,7 @@ public interface ItemService {
     /**
      * 상품 저렴한 순으로 5개 조회
      *
-     * @param marketNo : 찾을 시장 고유번호
+     * @param marketNo : 찾을 시장 no
      * @param itemName : 찾을 상품명
      * @return ItemTop5ResponseDto : 상품 가격 오름차순으로 정렬한 5개 상품의 목록
      */

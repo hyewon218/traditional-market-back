@@ -30,6 +30,8 @@ public enum ErrorCode {
     NOT_USER_ITEM_UPDATE(HttpStatus.BAD_REQUEST,"I005","작성자만 수정할 수 있습니다."),
     NOT_USER_ITEM_DELETE(HttpStatus.BAD_REQUEST,"I006","작성자만 삭제할 수 있습니다."),
     NOT_FOUND_ITEM_COMMENT(HttpStatus.BAD_REQUEST,"I007","존재하지 않는 댓글입니다."),
+    NOT_FOUND_CATEGORY_ITEMS(HttpStatus.NOT_FOUND, "I008", "카테고리에 대한 시장 내 상품 목록이 존재하지 않습니다."),
+    NOT_FOUND_ITEMS(HttpStatus.NOT_FOUND, "I009", "해당 상품명에 대한 시장 내 상품 목록이 존재하지 않습니다."),
     // 주문
     OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "O001", "재고가 존재하지 않습니다."),
     ORDER_NOT_EXISTS(HttpStatus.BAD_REQUEST, "O002", "해당 주문이 존재하지 않습니다."),
