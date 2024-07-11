@@ -22,14 +22,15 @@ public class InquiryServiceImpl implements InquiryService {
 
     // 문의사항 생성
     @Override
+    @Transactional
     public Inquiry createInquiry(InquiryRequestDto inquiryRequestDto, Member member) {
         return inquiryRepository.save(inquiryRequestDto.toEntity(member));
     }
 
     // 문의사항 전체 조회(해당 회원의 문의사항만 조회)
     @Override
-    public List<InquiryResponseDto> findAll(String memberId) {
-        List<Inquiry> inquiries = inquiryRepository.findAllByInquiryWriter(memberId);
+    public List<InquiryResponseDto> findAll(long memberNo) {
+        List<Inquiry> inquiries = inquiryRepository.findAllByMemberNo(memberNo);
         List<InquiryResponseDto> inquiryResponseDtos = inquiries
                 .stream()
                 .map(InquiryResponseDto::of)
@@ -57,19 +58,20 @@ public class InquiryServiceImpl implements InquiryService {
 
     // 문의사항 개별 삭제
     @Override
+    @Transactional
     public void delete(long inquiryNo) {
         Inquiry inquiry = inquiryRepository.findById(inquiryNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 문의사항 조회 실패 : " + inquiryNo));
-        inquiryRepository.deleteById(inquiryNo);
+        inquiryRepository.deleteById(inquiry.getInquiryNo());
     }
 
     // 문의사항 전체 삭제
     @Override
     @Transactional
-    public void deleteAll(String memberId) {
-        List<Inquiry> inquiries = inquiryRepository.findAllByInquiryWriter(memberId);
+    public void deleteAll(long memberNo) {
+        List<Inquiry> inquiries = inquiryRepository.findAllByMemberNo(memberNo);
         if (!inquiries.isEmpty()) {
-            inquiryRepository.deleteAllByInquiryWriter(memberId);
+            inquiryRepository.deleteAllByMemberNo(memberNo);
         }
     }
 

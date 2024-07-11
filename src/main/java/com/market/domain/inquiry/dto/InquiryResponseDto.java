@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class InquiryResponseDto {
 
     private Long inquiryNo;
+    private Long memberNo;
     private String inquiryWriter;
     private String inquiryTitle;
     private String inquiryContent;
@@ -24,6 +25,7 @@ public class InquiryResponseDto {
     public static InquiryResponseDto of(Inquiry inquiry) {
         return InquiryResponseDto.builder()
                 .inquiryNo(inquiry.getInquiryNo())
+                .memberNo(inquiry.getMemberNo())
                 .inquiryWriter(inquiry.getInquiryWriter())
                 .inquiryTitle(inquiry.getInquiryTitle())
                 .inquiryContent(inquiry.getInquiryContent())

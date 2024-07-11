@@ -27,7 +27,7 @@ public class InquiryController {
     private final InquiryServiceImpl inquiryService;
     private final InquiryRepository inquiryRepository;
     
-    // 공지사항 생성
+    // 문의사항 생성
     @PostMapping("")
     public ResponseEntity<InquiryResponseDto> createInquiry(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @RequestBody InquiryRequestDto inquiryRequestDto) {
@@ -39,8 +39,8 @@ public class InquiryController {
     // 전체 문의사항 조회(본인의 문의사항만 조회)
     @GetMapping("")
     public ResponseEntity<?> findInquiries(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String memberId = userDetails.getMember().getMemberId();
-        List<InquiryResponseDto> inquiries = inquiryService.findAll(memberId);
+        Long memberNo = userDetails.getMember().getMemberNo();
+        List<InquiryResponseDto> inquiries = inquiryService.findAll(memberNo);
 
         if (!inquiries.isEmpty()) {
             return ResponseEntity.ok().body(inquiries);
@@ -53,10 +53,10 @@ public class InquiryController {
     @GetMapping("{inquiryNo}")
     public ResponseEntity<?> findInquiry(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                          @PathVariable long inquiryNo) {
-        String memberId = userDetails.getMember().getMemberId();
+        Long memberNo = userDetails.getMember().getMemberNo();
         Inquiry inquiry = inquiryService.findById(inquiryNo);
 
-        if (memberId.equals(inquiry.getMember().getMemberId())) {
+        if (memberNo == inquiry.getMemberNo()) {
             return ResponseEntity.ok().body(InquiryResponseDto.of(inquiry));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디가 일치하지않습니다");
@@ -68,10 +68,10 @@ public class InquiryController {
     public ResponseEntity<?> updateInquiry(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                            @PathVariable long inquiryNo,
                                            @RequestBody InquiryUpdateRequestDto updateRequestDto) {
-        String memberId = userDetails.getMember().getMemberId();
+        Long memberNo = userDetails.getMember().getMemberNo();
         Inquiry inquiry = inquiryService.findById(inquiryNo);
 
-        if (memberId.equals(inquiry.getMember().getMemberId())) {
+        if (memberNo == inquiry.getMemberNo()) {
             Inquiry updatedInquiry = inquiryService.update(inquiryNo, updateRequestDto);
             return ResponseEntity.ok().body(InquiryResponseDto.of(updatedInquiry));
         } else {
@@ -83,10 +83,10 @@ public class InquiryController {
     @DeleteMapping("{inquiryNo}")
     public ResponseEntity<?> deleteInquiry(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                            @PathVariable long inquiryNo) {
-        String memberId = userDetails.getMember().getMemberId();
+        Long memberNo = userDetails.getMember().getMemberNo();
         Inquiry inquiry = inquiryService.findById(inquiryNo);
 
-        if (memberId.equals(inquiry.getMember().getMemberId())) {
+        if (memberNo == inquiry.getMemberNo()) {
             inquiryService.delete(inquiryNo);
             return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
         } else {
@@ -97,8 +97,8 @@ public class InquiryController {
     // 문의사항 전체 삭제
     @DeleteMapping("")
     public ResponseEntity<?> deleteAllInquiry(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String memberId = userDetails.getMember().getMemberId();
-        inquiryService.deleteAll(memberId);
+        Long memberNo = userDetails.getMember().getMemberNo();
+        inquiryService.deleteAll(memberNo);
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 
