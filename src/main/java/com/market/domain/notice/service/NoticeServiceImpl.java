@@ -21,6 +21,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     // 공지사항 글 생성
     @Override
+    @Transactional
     public Notice createNotice(NoticeRequestDto noticeRequestDto) {
         return noticeRepository.save(noticeRequestDto.toEntity());
     }
@@ -55,10 +56,10 @@ public class NoticeServiceImpl implements NoticeService {
     
     // 공지사항 삭제
     @Override
+    @Transactional
     public void delete(long noticeNo) {
         Notice notice = noticeRepository.findById(noticeNo)
                         .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));
-        noticeRepository.deleteById(noticeNo);
+        noticeRepository.deleteById(notice.getNoticeNo());
     }
-
 }

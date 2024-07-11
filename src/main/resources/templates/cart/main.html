@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>장바구니</title>
+    <link rel="stylesheet" th:href="@{/css/cart/cart.css}">
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div class="market-find">
+    <h2>장바구니 목록</h2>
+    <div id="cartItemList">
+
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+    // 페이지 로딩 후 실행될 JavaScript 코드
+    $.ajax({
+        url: "/api/cartitems",
+        type: "GET",
+        contentType: 'application/json',
+        success: function(data) {
+            console.log(data);
+            var cartItemListDiv = $('#cartItemList');
+            $.each(data, function(index, CartItemDetailResponseDto) {
+            var cartItemDiv = $('<div class="cart-item"></div>');
+            cartItemDiv.append('<h3>' + CartItemDetailResponseDto.itemName + '</h3>');
+            <!--가게이름도 가져오기-->
+            cartItemDiv.append('<p><strong>가격:</strong> ' + CartItemDetailResponseDto.price + '원</p>');
+            cartItemDiv.append('<p><strong>수량:</strong> ' + CartItemDetailResponseDto.initialCount + '</p>');
+            cartItemDiv.append('<img src="' + CartItemDetailResponseDto.imageUrl + '" alt="' + CartItemDetailResponseDto.itemName + '">');
+            cartItemListDiv.append(cartItemDiv);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("장바구니 목록을 불러오는 중 오류 발생: " + error);
+        }
+    });
+});
+</script>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>

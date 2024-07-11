@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>401 Unauthorized Access</title>
+  <link rel="stylesheet" th:href="@{/css/unauthorized.css}">
 </head>
 <body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
 <div class="unContainer">
   <h2>401.Unauthorized Access</h2>
   <div class="message">
@@ -14,4 +16,5 @@
   </div>
 </div>
 </body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
 </html>

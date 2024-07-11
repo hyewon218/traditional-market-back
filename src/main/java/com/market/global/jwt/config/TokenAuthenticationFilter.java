@@ -29,7 +29,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        if (uri.equals("/api/members/signup") || uri.equals("/auth/success") ||
+        if (uri.equals("/api/members/signup") || uri.equals("/members/signup") || uri.equals("/auth/success") ||
             uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") || uri.equals(
             "/api/send-mail/email") || uri.equals("/api/members/login")) {
             filterChain.doFilter(request, response);

@@ -1,0 +1,29 @@
+@import url(/css/common/reset.css);
+@import url(/css/common/header.css);
+@import url(/css/common/footer.css);
+/*body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }*/
+        .unContainer {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffe0e0;
+            border-left: 4px solid #f44336;
+        }
+        .unContainer a {
+            color: #1976d2;
+            text-decoration: none;
+        }
+        .unContainer a:hover {
+            text-decoration: underline;
+        }

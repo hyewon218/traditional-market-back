@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>메인 페이지</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<p>메인 페이지 입니다</p>
+<th:block sec:authorize="isAnonymous()">
+    <li><a th:href="@{/members/login}">로그인</a></li>
+    <li><a th:href="@{/members/testLogin}">테스트로그인</a></li>
+    <li><a th:href="@{/api/members/signup}">회원가입</a></li>
+</th:block>
+<th:block sec:authorize="isAuthenticated()">
+    <li><a href="javascript:void(0);" onclick="logout()">로그아웃</a></li>
+</th:block>
+<th:block sec:authorize="isAuthenticated()">
+    <li><a th:href="@{/inquiry/list}">문의하기</a></li>
+</th:block>
+<th:block sec:authorize="hasAnyRole('ADMIN')">
+    <li><a th:href="@{/api/admins}">관리자페이지</a></li>
+</th:block>
+<li><a th:href="@{/kakaomap}">카카오 지도</a></li>
+<li><a th:href="@{/map}">네이버 지도</a></li>
+<!--로그아웃 버튼 누르면 실행되는 함수-->
+<script>
+    function logout() {
+        $.ajax({
+            type: 'post',
+            url: '/api/members/logout',
+            contentType: 'application/json',
+            success: function(response) {
+                alert("로그아웃 성공");
+                // 로그아웃 성공하면 페이지 새로고침
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error("로그아웃 실패:", error)
+            }
+        });
+    }
+</script>
+</body>
+</html>

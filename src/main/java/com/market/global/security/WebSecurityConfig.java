@@ -76,13 +76,13 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
                     .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login", "/api/members/login",
                         "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
-                            "/api/oauth2/login", "/api/send-mail/**", "/api/members/logout",
+                            "/api/oauth2/login", "/api/send-mail/**", "/api/members/checkEmail", "/api/members/checkId",
                             "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
                         "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
                     .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/api/inquiries",
                          "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
                         "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
-                    .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/auth/success").permitAll() // oauth2
+                    .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
                     .anyRequest().permitAll() // authenticated로 바꾸기
                 )
 

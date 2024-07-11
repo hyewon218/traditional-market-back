@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내정보</title>
+    <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: "/api/members/myinfo",
+                type: "GET",
+                contentType: 'application/json',
+                success: function(data) {
+                    $('#memberId').text(data.memberId);
+                    $('#memberEmail').text(data.memberEmail);
+                    $('#nicknameWithRandomTag').text(data.nicknameWithRandomTag);
+                    $('#role').text(data.role);
+                    $('#createTime').text(data.createTime);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching myinfo: " + error);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+
+<div class="my-info">
+    <h2>내 정보</h2>
+    <div>
+        <strong>회원 ID:</strong> <span id="memberId"></span>
+    </div>
+    <div>
+        <strong>이메일:</strong> <span id="memberEmail"></span>
+    </div>
+    <div>
+        <strong>닉네임:</strong> <span id="nicknameWithRandomTag"></span>
+    </div>
+    <div>
+        <strong>역할:</strong> <span id="role"></span>
+    </div>
+    <div>
+        <strong>가입일:</strong> <span id="createTime"></span>
+    </div>
+</div>
+
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</body>
+</html>

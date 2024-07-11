@@ -1,0 +1,80 @@
+@import url(/css/common/reset.css);
+@import url(/css/common/header.css);
+@import url(/css/common/footer.css);
+
+/*
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    width: 200px; */
+/* 좌측 메뉴 너비 *//*
+
+    height: 565px;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+}
+
+.menu-item {
+    margin-bottom: 10px;
+}
+
+.menu-item a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-item a:hover {
+    background-color: #555;
+}*/
+@import url(/css/common/reset.css);
+@import url(/css/common/header.css);
+@import url(/css/common/footer.css);
+
+@import url(/css/common/reset.css);
+@import url(/css/common/header.css);
+@import url(/css/common/footer.css);
+
+.menu-container {
+    position: fixed;  /*좌측 메뉴 고정 위치 설정 */
+/*    top: 0; *//* 상단 정렬 */
+    left: 0; /* 좌측 정렬 */
+    width: 200px; /* 좌측 메뉴 너비 */
+    height: 570px;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+}
+
+.menu-item {
+    margin-bottom: 10px;
+}
+
+.menu-item a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-item a:hover {
+    background-color: #555;
+}
+
+.content {
+    margin: 0 auto; /* 가운데 정렬 */
+    max-width: 800px; /* 최대 너비 설정 */
+    background-color: #f4f4f4;
+    padding: 20px;
+    margin-left: 220px; /* 좌측 메뉴 너비 + 여백 만큼 오른쪽으로 이동 */
+    margin-top: 20px; /* 위쪽 여백 추가 */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+

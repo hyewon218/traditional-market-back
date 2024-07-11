@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>403 Forbidden Access</title>
+  <link rel="stylesheet" th:href="@{/css/forbidden.css}">
 </head>
 <body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
 <div class="unContainer">
   <h2>403.Forbidden Access</h2>
   <div class="message">
@@ -13,4 +15,5 @@
   </div>
 </div>
 </body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
 </html>
