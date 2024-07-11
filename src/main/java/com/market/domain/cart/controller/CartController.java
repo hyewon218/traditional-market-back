@@ -58,10 +58,10 @@ public class CartController {
         return ResponseEntity.ok().body(cartItemNo);
     }
 
-    @DeleteMapping(value = "/cartitems/{cartItemId}") // 장바구니 특정 상품 주문 삭제
-    public ResponseEntity<Long> deleteCartItem(@PathVariable Long cartItemId,
+    @DeleteMapping(value = "/cartitems/{cartItemNo}") // 장바구니 특정 상품 주문 삭제
+    public ResponseEntity<Long> deleteCartItem( @PathVariable("cartItemNo") Long cartItemNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        cartItemService.deleteCartItem(cartItemId, userDetails.getMember());
-        return ResponseEntity.ok().body(cartItemId);
+        cartItemService.deleteCartItem(cartItemNo, userDetails.getMember());
+        return ResponseEntity.ok().body(cartItemNo);
     }
 }

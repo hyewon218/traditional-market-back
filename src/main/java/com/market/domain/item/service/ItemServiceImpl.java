@@ -85,6 +85,12 @@ public class ItemServiceImpl implements ItemService {
                 }
                 imageRepository.save(new Image(item, fileUrl));
             }
+        } else {
+            // 상품 기본 이미지 추가
+            if (!imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
+                item.getNo())) {
+                imageRepository.save(new Image(item, ImageConfig.DEFAULT_ITEM_IMAGE_URL));
+            }
         }
         return ItemResponseDto.of(item);
     }
@@ -231,9 +237,9 @@ public class ItemServiceImpl implements ItemService {
                 imageRepository.save(new Image(item, fileUrl));
             }
             // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
-            if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_IMAGE_URL,
+            if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
                 item.getNo())) {
-                imageRepository.deleteByImageUrlAndItem_No(ImageConfig.DEFAULT_IMAGE_URL,
+                imageRepository.deleteByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
                     item.getNo());
             }
         } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
@@ -244,7 +250,7 @@ public class ItemServiceImpl implements ItemService {
                 }
             }
         } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
-            imageRepository.save(new Image(item, ImageConfig.DEFAULT_IMAGE_URL));
+            imageRepository.save(new Image(item, ImageConfig.DEFAULT_ITEM_IMAGE_URL));
         }
 
         if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
