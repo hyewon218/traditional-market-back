@@ -25,7 +25,7 @@ import java.util.Optional;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     public static final String FIRST_REDIRECT_PATH = "/oauth/success";
-    public static final String REDIRECT_PATH = "/";
+//    public static final String REDIRECT_PATH = "/";
 
     private final TokenProvider tokenProvider;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
@@ -50,7 +50,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Member member = optionalMember.get();
 
         // 닉네임 있는지 없는지 확인 후 Redirect 경로 설정
-        String redirectPath = (member.getMemberNickname() == null) ? FIRST_REDIRECT_PATH : REDIRECT_PATH;
+//        String redirectPath = (member.getMemberNickname() == null) ? FIRST_REDIRECT_PATH : REDIRECT_PATH;
+        String redirectPath = FIRST_REDIRECT_PATH;
 
         // 액세스토큰 생성
         String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);

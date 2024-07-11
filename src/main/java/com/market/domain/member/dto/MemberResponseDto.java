@@ -19,7 +19,7 @@ public class MemberResponseDto {
     private Long memberNo;
     private String memberId;
     private String memberEmail;
-    private String memberNickname;
+    private String nicknameWithRandomTag;
     private String memberPw;
     private Role role;
     private ProviderType providerType;
@@ -33,7 +33,7 @@ public class MemberResponseDto {
                 .memberNo(member.getMemberNo())
                 .memberId(member.getMemberId())
                 .memberEmail(member.getMemberEmail())
-                .memberNickname(member.getMemberNickname())
+                .nicknameWithRandomTag(member.getNicknameWithRandomTag())
                 .memberPw(member.getMemberPw())
                 .providerType(member.getProviderType())
                 .role(member.getRole())

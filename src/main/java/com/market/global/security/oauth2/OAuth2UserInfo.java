@@ -61,17 +61,37 @@ public record OAuth2UserInfo(
     }
 
     public Member toEntity(PasswordEncoder passwordEncoder) {
+        // 랜덤 memberId 생성
         String memberId = UUID.randomUUID().toString();
         String encodedPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+
+        String randomTag = generateRandomTag();
+
         return Member.builder()
                 .memberId(memberId)
                 .memberEmail(memberEmail)
                 .memberNickname(memberNickname)
+                .randomTag(randomTag)
+                .nicknameWithRandomTag(memberNickname + randomTag)
                 .memberPw(encodedPassword)
                 .providerType(providerType)
                 .role(Role.MEMBER)
                 .build();
     }
+
+    // 닉네임 뒤 #으로 시작하는 랜덤태그 생성
+    private String generateRandomTag() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("#"); // "#"으로 시작하도록 추가
+
+        // 나머지 자리에는 0부터 9까지의 숫자를 랜덤하게 생성
+        for (int i = 1; i < 7; i++) {
+            int digit = (int) (Math.random() * 10);
+            sb.append(digit);
+        }
+        return sb.toString();
+    }
+
 
     // 휴대전화번호 DB에 저장될때 해당 형식으로 저장되도록 하는 메서드
     private static String transformPhoneNumber(String memberPhone) {
