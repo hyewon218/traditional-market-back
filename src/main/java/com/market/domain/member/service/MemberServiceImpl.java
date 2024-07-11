@@ -1,6 +1,8 @@
 package com.market.domain.member.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.market.domain.delivery.repository.DeliveryRepository;
+import com.market.domain.inquiry.repository.InquiryRepository;
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MemberResponseDto;
@@ -39,9 +41,12 @@ public class MemberServiceImpl implements MemberService {
     private final TokenProvider tokenProvider;
     private final RedisUtils redisUtils;
     private final ObjectMapper objectMapper;
+    private final DeliveryRepository deliveryRepository;
+    private final InquiryRepository inquiryRepository;
 
     // 회원 생성
     @Override
+    @Transactional
     public Member createMember(MemberRequestDto memberRequestDto){
         return memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
     }
@@ -107,7 +112,7 @@ public class MemberServiceImpl implements MemberService {
                     .memberNo(member.getMemberNo())
                     .memberId(member.getMemberId())
                     .memberEmail(member.getMemberEmail())
-                    .memberNickname(member.getMemberNickname())
+                    .nicknameWithRandomTag(member.getNicknameWithRandomTag())
                     .memberPw(member.getMemberPw())
                     .providerType(member.getProviderType())
                     .role(member.getRole())
@@ -171,37 +176,29 @@ public class MemberServiceImpl implements MemberService {
     public Member update(long memberNo, MemberRequestDto requestDto) {
         Member member = memberRepository.findById(memberNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
-
-        if (memberRepository.existsByMemberNickname(requestDto.getMemberNickname())) {
-            log.info("requestDto.getMemberNickname : " + requestDto.getMemberNickname());
-            log.info("member.getMemberNickname : " + member.getMemberNickname());
-            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
-        }
-        member.update(requestDto.getMemberNickname(), passwordEncoder.encode(requestDto.getMemberPw()));
+        member.updateNickname(requestDto.getMemberNickname()); // 닉네임만 수정
         return member;
     }
 
     // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
+    @Transactional
     public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        memberRepository.deleteById(memberNo);
+        inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
+        deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
         redisUtils.deleteValues(memberId);
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
+        memberRepository.deleteById(memberNo);
     }
 
     // OAuth2 인증 성공 후 추가 정보 수정 실행(memberNickname)
     @Override
     @Transactional
-    public Member updateNickname(long memberNo, MemberNicknameRequestDto MemberNicknameRequestDto) {
+    public Member updateNickname(long memberNo, MemberNicknameRequestDto memberNicknameRequestDto) {
         Member member = memberRepository.findById(memberNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
 
-        if (memberRepository.existsByMemberNickname(MemberNicknameRequestDto.getMemberNickname())) {
-            log.info("requestDto.getMemberNickname : " + MemberNicknameRequestDto.getMemberNickname());
-            log.info("member.getMemberNickname : " + member.getMemberNickname());
-            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
-        }
-        member.updateNickname(MemberNicknameRequestDto.getMemberNickname());
+        member.updateNickname(memberNicknameRequestDto.getMemberNickname());
         return member;
     }
 
@@ -290,6 +287,18 @@ public class MemberServiceImpl implements MemberService {
             log.info("해당 회원이 존재하지않습니다.");
         }
         return false;
+    }
+
+    // 회원가입 시 이메일 중복 확인
+    @Override
+    public boolean existsByMemberEmail(String memberEmail) {
+        return memberRepository.existsByMemberEmail(memberEmail);
+    }
+
+    // 회원가입 시 아이디 중복 확인
+    @Override
+    public boolean existsByMemberId(String memberId) {
+        return memberRepository.existsByMemberId(memberId);
     }
 
     // 회원 아이디 마스킹 처리

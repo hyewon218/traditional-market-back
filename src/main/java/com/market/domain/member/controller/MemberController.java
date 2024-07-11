@@ -32,8 +32,7 @@ public class MemberController {
     @PostMapping("/signup")
     public ResponseEntity<Member> createMember(@RequestBody MemberRequestDto memberRequestDto) {
         Member savedMember = memberService.createMember(memberRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedMember);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedMember);
     }
     
     // 로그인
@@ -89,8 +88,7 @@ public class MemberController {
     public ResponseEntity<Member> updateMember(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                @RequestBody MemberRequestDto memberRequestDto) {
         Member updatedMember = memberService.update(userDetails.getMember().getMemberNo(), memberRequestDto);
-        return ResponseEntity.ok()
-                .body(updatedMember);
+        return ResponseEntity.ok().body(updatedMember);
     }
 
     // 회원 삭제
@@ -114,7 +112,7 @@ public class MemberController {
     @PostMapping("/verifycode")
     public ResponseEntity<String> verifyCode(@RequestBody VerifyCodeRequestDto verifyCodeRequestDto) {
         if (memberService.verifyCode(verifyCodeRequestDto.getMemberEmail(), verifyCodeRequestDto.getCode())) {
-            return ResponseEntity.ok("인증 성공");
+            return ResponseEntity.ok(verifyCodeRequestDto.getCode());
         } else {
             return ResponseEntity.badRequest().body("인증 실패");
         }
@@ -147,4 +145,27 @@ public class MemberController {
         }
         return ResponseEntity.badRequest().body("비밀번호 변경 실패");
     }
+
+    // 회원가입 시 이메일 중복 확인
+    @GetMapping("/checkEmail")
+    public ResponseEntity<ApiResponse> existsMemberEmail(String memberEmail) {
+        if (memberService.existsByMemberEmail(memberEmail) == true) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse("이미 존재하는 이메일입니다", HttpStatus.BAD_REQUEST.value()));
+        } else {
+            return ResponseEntity.ok().body(new ApiResponse("사용가능한 이메일입니다", HttpStatus.OK.value()));
+        }
+    }
+
+    // 회원가입 시 아이디 중복 확인
+    @GetMapping("/checkId")
+    public ResponseEntity<ApiResponse> existsMemberId(String memberId) {
+        if (memberService.existsByMemberId(memberId)) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse("이미 존재하는 아이디입니다", HttpStatus.BAD_REQUEST.value()));
+        } else {
+            return ResponseEntity.ok().body(new ApiResponse("사용가능한 아이디입니다", HttpStatus.OK.value()));
+        }
+    }
+
 }
