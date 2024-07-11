@@ -20,8 +20,6 @@ public class InquiryRequestDto {
     @NotBlank(message = "내용을 입력하세요")
     private String inquiryContent;
 
-    private Member member;
-
     public InquiryRequestDto(String inquiryTitle, String inquiryContent) {
         this.inquiryTitle = inquiryTitle;
         this.inquiryContent = inquiryContent;
@@ -29,10 +27,10 @@ public class InquiryRequestDto {
 
     public Inquiry toEntity(Member member) {
         return Inquiry.builder()
-                .inquiryWriter(member.getMemberId())
+                .memberNo(member.getMemberNo())
+                .inquiryWriter(member.getNicknameWithRandomTag())
                 .inquiryTitle(this.inquiryTitle)
                 .inquiryContent(this.inquiryContent)
-                .member(member)
                 .build();
     }
 }

@@ -10,7 +10,8 @@ import java.util.Optional;
 @Repository
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
-    Optional<Inquiry> findByInquiryWriter(String memberId);
-    List<Inquiry> findAllByInquiryWriter(String memberId);
     void deleteAllByInquiryWriter(String memberId);
+    List<Inquiry> findAllByMemberNo(long memberNo);
+
+    void deleteAllByMemberNo(long memberNo);
 }

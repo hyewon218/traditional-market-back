@@ -18,6 +18,8 @@ public class Inquiry extends BaseEntity {
     @Column(name = "inquiry_no")
     private Long inquiryNo;
 
+    private Long memberNo;
+
     private String inquiryWriter;
 
     @Column(nullable = false)
@@ -26,15 +28,10 @@ public class Inquiry extends BaseEntity {
     @Column(nullable = false)
     private String inquiryContent;
 
-    @ManyToOne
-    @JoinColumn(name = "member_no")
-    private Member member;
-
     public Inquiry(String inquiryTitle, String inquiryContent, Member member) {
-        this.inquiryWriter = member.getMemberId();
+        this.inquiryWriter = member.getNicknameWithRandomTag();
         this.inquiryTitle = inquiryTitle;
         this.inquiryContent = inquiryContent;
-        this.member = member;
     }
 
     public void update(String inquiryTitle, String inquiryContent) {

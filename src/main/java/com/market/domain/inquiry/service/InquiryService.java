@@ -22,10 +22,10 @@ public interface InquiryService {
     /**
      * 전체 문의사항 조회
      *
-     * @param memberId : 문의사항 작성자
+     * @param memberNo : 문의사항 작성자 고유번호
      * @return : 전체 문의사항
      */
-    List<InquiryResponseDto> findAll(String memberId);
+    List<InquiryResponseDto> findAll(long memberNo);
 
     /**
      * 특정 문의사항 조회
@@ -54,7 +54,7 @@ public interface InquiryService {
     /**
      * 문의사항 전체 삭제
      *
-     * @param memberId  : 문의사항 작성자
+     * @param memberNo  : 문의사항 작성자 고유번호
      */
-    void deleteAll(String memberId);
+    void deleteAll(long memberNo);
 }
