@@ -133,6 +133,22 @@ public interface MemberService {
     boolean changePassword(long memberNo, String currentPw, String changePw, String confirmPw);
 
     /**
+     * 회원가입 시 이메일 중복 확인
+     *
+     * @param memberEmail : 해당 이메일 존재하는지 확인할 memberEmail
+     * @return : true / false
+     */
+    boolean existsByMemberEmail(String memberEmail);
+
+    /**
+     * 회원가입 시 아이디 중복 확인
+     *
+     * @param memberId : 해당 아이디 존재하는지 확인할 memberId
+     * @return : true / false
+     */
+    boolean existsByMemberId(String memberId);
+
+    /**
      * 회원 아이디 마스킹 처리
      *
      * @param memberId : 마스킹 처리 할 회원 아이디
