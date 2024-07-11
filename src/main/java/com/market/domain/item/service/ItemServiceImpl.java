@@ -229,7 +229,7 @@ public class ItemServiceImpl implements ItemService {
 
         if (files != null) {
             for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "market " + item.getNo());
+                String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
 
                 if (imageRepository.existsByImageUrlAndItem_No(fileUrl, item.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);

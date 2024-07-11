@@ -29,8 +29,7 @@ public class EmailController {
         String code = emailService.sendMail(emailMessageEntity, "email");
         EmailResponseDto emailResponseDto = new EmailResponseDto();
         emailResponseDto.setCode(code);
-        return ResponseEntity.ok()
-                .body(emailResponseDto);
+        return ResponseEntity.ok().body(emailResponseDto);
     }
 
     // 아이디 찾기 시 '인증번호 발급' 버튼
@@ -48,8 +47,7 @@ public class EmailController {
             String code = emailService.sendMail(emailMessageEntity, "email");
             EmailResponseDto emailResponseDto = new EmailResponseDto();
             emailResponseDto.setCode(code);
-            return ResponseEntity.ok()
-                    .body(emailResponseDto);
+            return ResponseEntity.ok().body(emailResponseDto);
         } else {
             return ResponseEntity.badRequest().body("닉네임과 이메일에 해당하는 회원이 존재하지않습니다");
         }
@@ -69,8 +67,7 @@ public class EmailController {
 
             // 변수 지우고 emailService.sendMail(emailMessageEntity, "password");만 남기기
             String tempPassword = emailService.sendMail(emailMessageEntity, "password");
-            return ResponseEntity.ok()
-                    .body(tempPassword);
+            return ResponseEntity.ok().body(tempPassword);
         } else {
             return ResponseEntity.badRequest().body("아이디와 이메일에 해당하는 회원이 존재하지않습니다");
         }

@@ -1,0 +1,86 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>시장 찾기</title>-->
+<!--    <link rel="stylesheet" th:href="@{/css/market/market.css}">-->
+<!--</head>-->
+<!--<body>-->
+<!--<div th:replace="~{fragments/common/header :: headerFragment}"></div>-->
+<!--<p>시장찾기페이지입니다</p>-->
+
+<!--</body>-->
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
+<!--</html>-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>시장 찾기</title>
+    <link rel="stylesheet" th:href="@{/css/market/market.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+
+<div class="market-find">
+    <h2>시장 찾기</h2>
+    <div id="marketList">
+
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+    $.ajax({
+        url: "/api/markets",
+        type: "GET",
+        contentType: 'application/json',
+        success: function(data) {
+            var marketListDiv = $('#marketList');
+            $.each(data.content, function(index, market) {
+                var marketDiv = $('<div class="market-item"></div>');
+<!--                marketDiv.append('<h3>' + market.marketName + '</h3>');-->
+                var marketLink = $('<a href="/markets/' + market.marketNo + '"></a>');
+                marketLink.append('<h3>' + market.marketName + '</h3>');
+                marketDiv.append(marketLink);
+<!--                marketDiv.append('<p><strong>주소:</strong> ' + market.marketAddr + '</p>');-->
+<!--                marketDiv.append('<p><strong>상세 설명:</strong> ' + market.marketDetail + '</p>');-->
+<!--                marketDiv.append('<p><strong>좋아요 수:</strong> ' + market.likes + '</p>');-->
+
+<!--                // 상점 리스트 추가-->
+<!--                marketDiv.append('<p><strong>상점 리스트:</strong></p>');-->
+<!--                var shopListUl = $('<ul></ul>');-->
+<!--                $.each(market.shopList, function(idx, shop) {-->
+<!--                    shopListUl.append('<li>' + shop.shopName + '</li>');-->
+<!--                });-->
+<!--                marketDiv.append(shopListUl);-->
+
+<!--                // 이미지 리스트 추가-->
+<!--                marketDiv.append('<p><strong>이미지 리스트:</strong></p>');-->
+<!--                var imageListUl = $('<ul></ul>');-->
+<!--                $.each(market.imageList, function(idx, image) {-->
+<!--                    imageListUl.append('<li>' + image.imageUrl + '</li>');-->
+<!--                });-->
+<!--                marketDiv.append(imageListUl);-->
+
+<!--                // 댓글 리스트 추가-->
+<!--                marketDiv.append('<p><strong>댓글 리스트:</strong></p>');-->
+<!--                var commentListUl = $('<ul></ul>');-->
+<!--                $.each(market.commentList, function(idx, comment) {-->
+<!--                    commentListUl.append('<li>' + comment.commentContent + '</li>');-->
+<!--                });-->
+<!--                marketDiv.append(commentListUl);-->
+
+                marketListDiv.append(marketDiv);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("시장 목록을 불러오는 중 오류 발생: " + error);
+        }
+    });
+});
+</script>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</body>
+</html>
+

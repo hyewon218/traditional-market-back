@@ -39,7 +39,7 @@ public class TokenProvider {
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(30);
-    public static final Duration REFRESH_TOKEN_DURATION = Duration.ofHours(12); // 보통 14일, 수정하기
+    public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(3); // 보통 14일, 수정하기
 
     public String generateToken(Member member, Duration expiredAt) {
         Date now = new Date();

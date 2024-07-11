@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>시장 상세보기</title>
+    <link rel="stylesheet" th:href="@{/css/market/marketinfo.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:src="@{/js/mapWeather.js}" defer="defer"></script>
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=wbg83yihp2&submodules=geocoder"></script>
+    <script>
+        $(document).ready(function() {
+            // URL에서 marketNo를 가져오기
+            var url = window.location.href;
+            var marketNo = url.substring(url.lastIndexOf('/') + 1);
+            console.log("marketNo : " + marketNo);
+
+            $.ajax({
+                url: "/api/markets/" + marketNo,
+                type: "GET",
+                contentType: 'application/json',
+                 success: function(data) {
+                    // 시장 이름을 동적으로 설정
+                    var marketName = data.marketName;
+
+                    // 시장 정보 설정
+                    $('#marketName').text(marketName);
+                    $('#marketAddr').text(data.marketAddr);
+                    $('#marketDetail').text(data.marketDetail);
+
+                    // <title> 태그 동적 설정
+                    $('title').text(marketName + " 상세보기");
+
+                    // <h2> 태그 동적 설정
+                    $('h2').text(marketName + " 상세정보");
+
+                    // <h3> 태그 동적 설정
+                    $('h3').text(marketName + " 날씨정보");
+
+                    // 시장 주소를 이용해 해당 시장의 주소를 검색하여 지도에 표시하고, 날씨 정보 가져오기
+                    showMarketInfo(data.marketAddr, marketName);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching 시장 상세보기 : " + error);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div class="market-info">
+    <h2>시장 상세정보</h2>
+    <div>
+        <strong>시장 이름 :</strong> <span id="marketName"></span>
+    </div>
+    <div>
+        <strong>시장 주소 :</strong> <span id="marketAddr"></span>
+    </div>
+    <div>
+        <strong>시장 설명 :</strong> <span id="marketDetail"></span>
+    </div>
+</div>
+<!-- 지도가 표시되는 영역 -->
+<div id="map" style="width:500px;height:400px;"></div>
+<!-- 날씨 정보가 표시되는 영역 -->
+<div id="weather-info" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 400px;">
+    <h3>날씨 정보</h3>
+    <p id="current-temp"></p>
+    <p id="feels-like"></p>
+    <p id="min-temp"></p>
+    <p id="max-temp"></p>
+    <p id="humidity"></p>
+    <p id="weather-description"></p>
+    <div id="weather-image-container"></div> <!-- 날씨 이미지를 표시할 컨테이너 -->
+</div>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</body>
+</html>
