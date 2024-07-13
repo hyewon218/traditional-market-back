@@ -6,10 +6,10 @@ import com.market.domain.inquiry.dto.InquiryUpdateRequestDto;
 import com.market.domain.inquiry.entity.Inquiry;
 import com.market.domain.inquiry.repository.InquiryRepository;
 import com.market.domain.member.entity.Member;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +29,7 @@ public class InquiryServiceImpl implements InquiryService {
 
     // 문의사항 전체 조회(해당 회원의 문의사항만 조회)
     @Override
+    @Transactional(readOnly = true)
     public List<InquiryResponseDto> findAll(long memberNo) {
         List<Inquiry> inquiries = inquiryRepository.findAllByMemberNo(memberNo);
         List<InquiryResponseDto> inquiryResponseDtos = inquiries
@@ -40,6 +41,7 @@ public class InquiryServiceImpl implements InquiryService {
 
     // 특정 문의사항 조회
     @Override
+    @Transactional(readOnly = true)
     public Inquiry findById(long inquiryNo) {
         return inquiryRepository.findById(inquiryNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 문의사항 조회 실패 : " + inquiryNo));
