@@ -149,6 +149,32 @@ public interface MemberService {
     boolean existsByMemberId(String memberId);
 
     /**
+     * 비밀번호 확인
+     *
+     * @param inputPassword : 비밀번호 확인 위해 입력한 비밀번호
+     * @param memberNo : 비밀번호 확인할 회원의 고유번호
+     * @return : true / false
+     */
+    boolean checkPassword(HttpServletRequest request, HttpServletResponse response, String inputPassword, long memberNo);
+
+    /**
+     * 비밀번호 확인 시 쿠키에 비밀번호 상태 저장
+     *
+     * @param response : 클라이언트에게 응답 보내기 위한 객체
+     * @param randomTag : 해당 회원의 randomTag
+     */
+    void setPasswordVerifiedToCookie(HttpServletRequest request, HttpServletResponse response, String randomTag);
+
+    /**
+     * 쿠키에서 비밀번호 확인 상태 체크
+     *
+     * @param request : 클라이언트의 요청
+     * @param randomTag : 해당 회원의 randomTag
+     * @return : true / false
+     */
+    boolean isPasswordVerified(HttpServletRequest request, String randomTag);
+
+    /**
      * 회원 아이디 마스킹 처리
      *
      * @param memberId : 마스킹 처리 할 회원 아이디
