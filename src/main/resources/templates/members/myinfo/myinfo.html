@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내정보</title>
+    <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:src="@{/js/members/myinfo/update.js}" defer="defer"></script>
+    <script>
+
+    </script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="myinfo-body">
+    <div class="myinfo-sidebar">
+        <h3>내 정보</h3>
+        <ul>
+            <li><a th:href="@{/myinfo}">내정보 홈</a></li>
+            <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
+            <li><a th:href="@{/myinfo/list}">구매목록</a></li>
+            <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
+            <li><a th:href="@{/myinfo/deliveries}">배송지관리</a></li>
+        </ul>
+    </div>
+    <div class="myinfo-contents">
+        <h2>내 정보</h2>
+        <div>
+            <strong>회원 ID:</strong> <span id="memberId"></span>
+        </div>
+        <div>
+            <strong>이메일:</strong> <span id="memberEmail"></span>
+        </div>
+        <div>
+            <strong>닉네임:</strong> <span id="nicknameWithRandomTag"></span>
+        </div>
+        <div>
+            <strong>역할:</strong> <span id="role"></span>
+        </div>
+        <div>
+            <strong>가입일:</strong> <span id="createTime"></span>
+        </div>
+        <button id="updateBtn">닉네임 수정</button>
+        <button id="deleteBtn" onclick="location.href='/myinfo/v'">회원 탈퇴</button>
+    </div>
+</div>
+<!-- 배송지 수정 모달창 -->
+<div class="modal" id="updateModal" style="display:none;">
+    <div class="modal-content">
+        <h2>회원정보 수정</h2>
+        <form id="updateForm">
+            <input type="hidden" id="memberNo" name="memberNo">
+            <label for="memberNickname">닉네임</label>
+            <input type="text" id="memberNickname" name="memberNickname" required><br>
+
+            <button type="button" id="updateExecuteBtn">수정하기</button>
+            <button type="button" id="cancelBtn" class="close">취소</button>
+        </form>
+    </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>

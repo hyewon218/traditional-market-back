@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 목록</title>
+    <!--<link rel="stylesheet" th:href="@{/css/members/myinfo.css}">-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: "/api/members",
+                type: "GET",
+                success: function(data) {
+                    // 회원 목록을 성공적으로 가져오면 테이블을 생성
+                    let memberTable = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>회원 ID</th>
+                                    <th>이메일</th>
+                                    <th>닉네임</th>
+                                    <th>역할</th>
+                                    <th>가입일</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                    data.forEach(function(member) {
+                        memberTable += `
+                            <tr>
+                                <td>${member.memberId}</td>
+                                <td>${member.memberEmail}</td>
+                                <td>${member.nicknameWithRandomTag}</td>
+                                <td>${member.role}</td>
+                                <td>${member.createTime}</td>
+                            </tr>`;
+                    });
+
+                    memberTable += `
+                            </tbody>
+                        </table>`;
+
+                    $(".memberList-contents").html(memberTable); // memberList-contents에 테이블 추가
+                },
+                error: function(xhr) {
+                    // 오류 발생 시 메시지 표시
+                    $(".memberList-contents").html(`<p>${xhr.responseText}</p>`);
+                }
+            });
+        });
+    </script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="memberList-body">
+    <div class="memberList-contents">
+        <!-- 회원 목록 테이블 여기에 출력 -->
+    </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>

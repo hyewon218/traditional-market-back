@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>시장 상세보기</title>
@@ -18,7 +18,7 @@
                 url: "/api/markets/" + marketNo,
                 type: "GET",
                 contentType: 'application/json',
-                 success: function(data) {
+                success: function(data) {
                     // 시장 이름을 동적으로 설정
                     var marketName = data.marketName;
 
@@ -26,15 +26,20 @@
                     $('#marketName').text(marketName);
                     $('#marketAddr').text(data.marketAddr);
                     $('#marketDetail').text(data.marketDetail);
+                    $('#likes').text(data.likes);
 
-                    // <title> 태그 동적 설정
                     $('title').text(marketName + " 상세보기");
-
-                    // <h2> 태그 동적 설정
-                    $('h2').text(marketName + " 상세정보");
-
-                    // <h3> 태그 동적 설정
+                    $('#h2').text(marketName + " 상세정보");
                     $('h3').text(marketName + " 날씨정보");
+
+                    // 이미지 리스트 출력
+                    if (data.imageList.length > 0) {
+                        data.imageList.forEach(function(image) {
+                            $('#image-container').append('<img src="' + image.imageUrl + '" alt="' + marketName + ' 이미지" style="width:100px;height:auto;margin:5px;">');
+                        });
+                    } else {
+                        $('#image-container').append('<p>이미지가 없습니다.</p>');
+                    }
 
                     // 시장 주소를 이용해 해당 시장의 주소를 검색하여 지도에 표시하고, 날씨 정보 가져오기
                     showMarketInfo(data.marketAddr, marketName);
@@ -49,7 +54,7 @@
 <body>
 <div th:replace="~{fragments/common/header :: headerFragment}"></div>
 <div class="market-info">
-    <h2>시장 상세정보</h2>
+    <h2 id="h2">시장 상세정보</h2>
     <div>
         <strong>시장 이름 :</strong> <span id="marketName"></span>
     </div>
@@ -58,6 +63,13 @@
     </div>
     <div>
         <strong>시장 설명 :</strong> <span id="marketDetail"></span>
+    </div>
+    <div>
+        <strong>좋아요 수 :</strong> <span id="likes"></span>
+    </div>
+    <div>
+        <strong>이미지 :</strong>
+        <div id="image-container" style="margin-top: 10px;"></div> <!-- 이미지 출력 영역 -->
     </div>
 </div>
 <!-- 지도가 표시되는 영역 -->

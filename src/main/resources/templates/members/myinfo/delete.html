@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 탈퇴 전 인증페이지</title>
+    <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
+    <script th:src="@{/js/members/myinfo/delete.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="myinfo-body">
+  <div class="myinfo-sidebar">
+    <h3>내 정보</h3>
+    <ul>
+      <li><a th:href="@{/myinfo}">내정보 홈</a></li>
+      <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
+      <li><a th:href="@{/myinfo/list}">구매목록</a></li>
+      <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
+      <li><a th:href="@{/myinfo/deliveries}">배송지관리</a></li>
+    </ul>
+  </div>
+  <div class="delete-contents">
+      <h3>탈퇴 전 인증번호 확인</h3>
+      <form id="verifyForm">
+          <div>
+              <input type="hidden" id="memberEmail" name="memberEmail">
+              <label for="emailVerificationCode">인증번호</label>
+              <input type="text" id="emailVerificationCode" name="emailVerificationCode" placeholder="인증번호를 입력하세요" required>
+              <!-- 이메일 인증 버튼 -->
+              <button type="button" id="certifyEmailButton" class="submitBtn">인증번호 전송</button>
+              <button type="button" id="verifyEmailButton" class="checkBtn">인증번호 확인</button>
+              <li>
+                  <!-- 인증 결과 메시지 영역 -->
+                  <div id="certifyEmailMessage" class="valid-feedback" style="display: none;"></div>
+              </li>
+          </div>
+          <div>
+              <input type="submit" value="인증번호 확인">
+          </div>
+      </form>
+  </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>
