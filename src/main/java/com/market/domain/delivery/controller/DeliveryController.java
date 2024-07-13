@@ -88,6 +88,38 @@ public class DeliveryController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일치하는 회원이 아닙니다");
         }
-
     }
+
+    // 기본배송지 설정
+    @PutMapping("/primary/{deliveryNo}")
+    public ResponseEntity<?> setPrimary(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @PathVariable long deliveryNo) {
+        Long memberNo = userDetails.getMember().getMemberNo();
+        Delivery delivery = deliveryRepository.findById(deliveryNo)
+                .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 없습니다"));
+
+        if(memberNo == delivery.getMemberNo()) {
+            deliveryService.setPrimary(deliveryNo);
+            return ResponseEntity.ok().body(delivery);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일치하는 회원이 아닙니다");
+        }
+    }
+
+    // 기본배송지 해제
+    @PutMapping("/delprimary/{deliveryNo}")
+    public ResponseEntity<?> delPrimary(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                        @PathVariable long deliveryNo) {
+        Long memberNo = userDetails.getMember().getMemberNo();
+        Delivery delivery = deliveryRepository.findById(deliveryNo)
+                .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 없습니다"));
+
+        if(memberNo == delivery.getMemberNo()) {
+            deliveryService.removePrimary();
+            return ResponseEntity.ok().body(delivery);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("일치하는 회원이 아닙니다");
+        }
+    }
+
 }

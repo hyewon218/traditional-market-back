@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeliveryResponseDto {
 
+    private Long deliveryNo;
     private Long memberNo;
     private String title;
     private String receiver;
@@ -21,9 +22,11 @@ public class DeliveryResponseDto {
     private String jibunAddr;
     private String detailAddr;
     private String extraAddr;
+    private boolean isPrimary;
 
     public static DeliveryResponseDto of(Delivery delivery) {
         return DeliveryResponseDto.builder()
+                .deliveryNo(delivery.getDeliveryNo())
                 .title(delivery.getTitle())
                 .receiver(delivery.getReceiver())
                 .phone(delivery.getPhone())
@@ -33,6 +36,7 @@ public class DeliveryResponseDto {
                 .detailAddr(delivery.getDetailAddr())
                 .extraAddr(delivery.getExtraAddr())
                 .memberNo(delivery.getMemberNo())
+                .isPrimary(delivery.isPrimary())
                 .build();
     }
 }

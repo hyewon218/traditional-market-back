@@ -50,4 +50,17 @@ public interface DeliveryService {
      * @param deliveryNo  : 삭제할 배송지 고유번호
      */
     void delete(long deliveryNo);
+
+    /**
+     * 기본배송지 설정
+     *
+     * @param deliveryNo  : 기본배송지로 설정할 배송지 고유번호
+     */
+    void setPrimary(long deliveryNo);
+
+    /**
+     * 기본배송지 해제
+     *
+     */
+    void removePrimary();
 }

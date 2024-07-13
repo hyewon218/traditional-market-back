@@ -10,4 +10,5 @@ import java.util.List;
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     void deleteAllByMemberNo(long memberNo);
     List<Delivery> findAllByMemberNo(long memberNo);
+    Delivery findByIsPrimary(boolean isPrimary); // 기본배송지 조회 시 필요
 }

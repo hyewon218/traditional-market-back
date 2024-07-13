@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>배송지 관리</title>
+    <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
+    <link rel="stylesheet" th:href="@{/css/delivery/mydelivery.css}">
+    <script th:src="@{/js/delivery/mydelivery.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="myinfo-body">
+    <div class="myinfo-sidebar">
+        <h3>내 정보</h3>
+        <ul>
+            <li><a th:href="@{/myinfo}">내정보 홈</a></li>
+            <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
+            <li><a th:href="@{/myinfo/list}">구매목록</a></li>
+            <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
+            <li><a th:href="@{/myinfo/deliveries}">배송지관리</a></li>
+        </ul>
+    </div>
+    <button id="addDeliveryBtn">배송지 추가</button>
+    <div class="deliveryList-contents">
+        <!-- 배송지 목록 테이블 여기에 출력 -->
+    </div>
+</div>
+<!-- 배송지 추가 모달창 -->
+<div class="modal" id="addDeliveryModal" style="display:none;">
+    <div class="modal-content">
+        <h2>배송지 추가</h2>
+        <form id="addDeliveryForm">
+            <label for="addTitle">배송지 이름</label>
+            <input type="text" id="addTitle" name="title" required><br>
+
+            <label for="addReceiver">받는 사람</label>
+            <input type="text" id="addReceiver" name="receiver" required><br>
+
+            <label for="addPhone">휴대전화번호</label>
+            <input type="text" id="addPhone" name="phone" required><br>
+
+            <label for="addPostCode">우편번호</label>
+            <input type="text" id="addPostCode" name="postCode" required><br>
+            <input type="button" onclick="sample4_execDaumPostcode('add')" value="주소 검색"><br>
+
+            <label for="addRoadAddr">도로명주소</label>
+            <input type="text" id="addRoadAddr" name="roadAddr"><br>
+
+            <label for="addJibunAddr">지번주소</label>
+            <input type="text" id="addJibunAddr" name="jibunAddr"><br>
+
+            <label for="addDetailAddr">상세주소</label>
+            <input type="text" id="addDetailAddr" name="detailAddr" required><br>
+
+            <label for="addExtraAddr">참고사항</label>
+            <input type="text" id="addExtraAddr" name="extraAddr" required><br>
+
+            <button type="button" id="saveDeliveryBtn">배송지 추가</button>
+            <button type="button" id="addCancelBtn" class="close">취소</button>
+        </form>
+    </div>
+</div>
+<!-- 배송지 수정 모달창 -->
+<div class="modal" id="editDeliveryModal" style="display:none;">
+    <div class="modal-content">
+        <h2>배송지 수정</h2>
+        <form id="editDeliveryForm">
+            <input type="hidden" id="deliveryNo" name="deliveryNo">
+            <label for="title">배송지 이름</label>
+            <input type="text" id="title" name="title" required><br>
+
+            <label for="receiver">받는 사람</label>
+            <input type="text" id="receiver" name="receiver" required><br>
+
+            <label for="phone">휴대전화번호</label>
+            <input type="text" id="phone" name="phone" required><br>
+
+            <label for="postCode">우편번호</label>
+            <input type="text" id="postCode" name="postCode" required><br>
+            <input type="button" onclick="sample4_execDaumPostcode('edit')" value="주소 검색"><br>
+
+            <label for="roadAddr">도로명주소</label>
+            <input type="text" id="roadAddr" name="roadAddr"><br>
+
+            <label for="jibunAddr">지번주소</label>
+            <input type="text" id="jibunAddr" name="jibunAddr"><br>
+
+            <label for="detailAddr">상세주소</label>
+            <input type="text" id="detailAddr" name="detailAddr" required><br>
+
+            <label for="extraAddr">참고사항</label>
+            <input type="text" id="extraAddr" name="extraAddr" required><br>
+
+            <button type="button" id="updateDeliveryBtn">수정하기</button>
+            <button type="button" id="cancelBtn" class="close">취소</button>
+        </form>
+    </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>

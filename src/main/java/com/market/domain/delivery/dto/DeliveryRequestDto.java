@@ -35,6 +35,7 @@ public class DeliveryRequestDto {
 
     private String extraAddr; // 참고 항목
 
+
     public Delivery toEntity(Member member) {
         return Delivery.builder()
                 .memberNo(member.getMemberNo())
@@ -46,6 +47,7 @@ public class DeliveryRequestDto {
                 .jibunAddr(this.jibunAddr)
                 .detailAddr(this.detailAddr)
                 .extraAddr(this.extraAddr)
+                .isPrimary(false)
                 .build();
     }
 
