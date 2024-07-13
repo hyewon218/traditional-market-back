@@ -30,7 +30,7 @@ public class Order extends BaseEntity {
 
     private LocalDateTime orderDate; // 주문일
 
-    private String tid; // 카카오페이 결제고유번호, 결제 승인되면 생성됨 / 결제 취소할때 해당값 필요
+    private String tid; // 카카오페이 결제고유번호, 결제 승인되면 생성됨 / 결제 취소할 때 해당값 필요
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus; // 주문 상태
@@ -47,8 +47,7 @@ public class Order extends BaseEntity {
         orderItem.setOrder(this); // orderItem 객체에 order 객체 세팅(양방향 참조)
     }
 
-    // tid(카카오페이 결제고유번호) 저장 메서드
-    public void setTid(String tid) {
+    public void setTid(String tid) { // tid(카카오페이 결제고유번호) 저장 메서드
         this.tid = tid;
     }
 

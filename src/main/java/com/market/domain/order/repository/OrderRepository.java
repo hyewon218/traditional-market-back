@@ -29,6 +29,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         "order by o.orderDate desc ")
     Optional<Order> findByOrderNoWithMemberAndOrderItemListAndItem(@Param("orderNo") Long orderNo);
 
-    // BaseEntity의 createTime 필드를 이용하여 가장 최근 주문을 조회하는 메서드
+    // BaseEntity 의 createTime 필드를 이용하여 가장 최근 주문을 조회하는 메서드
     Optional<Order> findFirstByMemberOrderByCreateTimeDesc(Member member);
 }
