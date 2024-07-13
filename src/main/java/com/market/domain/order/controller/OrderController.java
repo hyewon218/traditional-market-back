@@ -2,10 +2,13 @@ package com.market.domain.order.controller;
 
 import com.market.domain.order.dto.OrderHistResponseDto;
 import com.market.domain.order.service.OrderService;
+import com.market.domain.orderItem.dto.OrderItemHistResponseDto;
 import com.market.domain.orderItem.dto.OrderItemRequestDto;
 import com.market.global.security.UserDetailsImpl;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,7 +25,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping("/orders") // 주문
+    @PostMapping("/orders") // 단건 주문
     public ResponseEntity<Long> createOrder(@RequestBody OrderItemRequestDto requestDto,
         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
@@ -31,16 +33,18 @@ public class OrderController {
         return ResponseEntity.ok().body(orderNo);
     }
 
-    @GetMapping("/orders") // 주문 조회
+    @GetMapping("/orders") // 주문 목록 조회
     public ResponseEntity<Page<OrderHistResponseDto>> getOrdersWithMember(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam("page") int page,
-        @RequestParam("size") int size,
-        @RequestParam("sortBy") String sortBy,
-        @RequestParam("isAsc") boolean isAsc) {
+        @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
         Page<OrderHistResponseDto> result = orderService.getOrderList(userDetails.getMember(),
-            page, size, sortBy, isAsc);
+            pageable);
         return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/orderitems") // (가장 최근) 주문 내 상품 목록 조회
+    public ResponseEntity<List<OrderItemHistResponseDto>> getOrderItemList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok().body(orderService.getOrderItemList(userDetails.getMember()));
     }
 
     @PostMapping("/orders/{orderNo}/cancel") // 주문 취소
