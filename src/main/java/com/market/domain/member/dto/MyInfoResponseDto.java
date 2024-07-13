@@ -18,6 +18,7 @@ public class MyInfoResponseDto {
 
     private String memberId;
     private String memberEmail;
+    private String memberNickname;
     private String nicknameWithRandomTag;
     private Role role;
     private LocalDateTime createTime; // 가입일
@@ -26,6 +27,7 @@ public class MyInfoResponseDto {
         return MyInfoResponseDto.builder()
                 .memberId(member.getMemberId())
                 .memberEmail(member.getMemberEmail())
+                .memberNickname(member.getMemberNickname())
                 .nicknameWithRandomTag(member.getMemberNickname() + member.getRandomTag())
                 .role(member.getRole())
                 .createTime(member.getCreateTime())
