@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -67,5 +68,42 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 존재하지않습니다"));
         deliveryRepository.deleteById(delivery.getDeliveryNo());
+    }
+
+    // 기본배송지 설정
+    @Override
+    @Transactional
+    public void setPrimary(long deliveryNo) {
+        // 기존 기본배송지 찾기
+        Delivery currentDelivery = deliveryRepository.findByIsPrimary(true);
+        if (currentDelivery != null) {
+            currentDelivery.updatePrimary(false);
+            deliveryRepository.save(currentDelivery);
+            
+            // 기존 기본배송지 false 설정하고 새로운 기본배송지는 true 설정
+            Delivery newDelivery = deliveryRepository.findById(deliveryNo)
+                    .orElseThrow(() -> new IllegalArgumentException("일치하는 배송지가 없습니다"));
+            newDelivery.updatePrimary(true);
+            deliveryRepository.save(newDelivery);
+
+        } else {
+            // 기존 기본배송지 없을 경우 새로운 기본배송지 설정
+            Delivery newDelivery = deliveryRepository.findById(deliveryNo)
+                    .orElseThrow(() -> new IllegalArgumentException("일치하는 배송지가 없습니다"));
+            newDelivery.updatePrimary(true);
+            deliveryRepository.save(newDelivery);
+        }
+    }
+
+    // 기본배송지 해제
+    @Override
+    @Transactional
+    public void removePrimary() {
+        Delivery currentDelivery = deliveryRepository.findByIsPrimary(true);
+        if (currentDelivery == null) {
+            throw new NoSuchElementException("기본배송지가 존재하지 않습니다");
+        }
+        currentDelivery.updatePrimary(false);
+        deliveryRepository.save(currentDelivery);
     }
 }

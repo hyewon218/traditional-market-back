@@ -168,4 +168,19 @@ public class MemberController {
         }
     }
 
+    // 내정보 열람 시 본인 비밀번호 확인
+    @PostMapping("/myinfo/myinfo")
+    public ResponseEntity<ApiResponse> verifyPassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                      HttpServletRequest request, HttpServletResponse response,
+                                                      String password) {
+        boolean isValid = memberService.checkPassword(request, response, password, userDetails.getMember().getMemberNo());
+        if (isValid) {
+            return ResponseEntity.ok()
+                    .body(new ApiResponse("성공", HttpStatus.OK.value()));
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse("비밀번호가 틀립니다", HttpStatus.BAD_REQUEST.value()));
+        }
+    }
+
 }

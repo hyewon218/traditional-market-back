@@ -14,9 +14,10 @@ import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.redis.RedisUtils;
 import com.market.global.security.CookieUtil;
 import com.market.global.security.UserDetailsImpl;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +27,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -150,10 +152,13 @@ public class MemberServiceImpl implements MemberService {
         // 쿠키 삭제
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME);
+        // 내정보 열람 시 비밀번호 입력을 통해 비밀번호가 일치할 경우 생성되는 쿠키
+        CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified");
     }
 
     // 전체 회원 조회
     @Override
+    @Transactional(readOnly = true)
     public List<MyInfoResponseDto> findAll() {
         List<Member> members = memberRepository.findAll();
         List<MyInfoResponseDto> myInfoResponseDtos = members
@@ -165,6 +170,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 특정 회원 조회
     @Override
+    @Transactional(readOnly = true)
     public Member findById(long memberNo) {
         return memberRepository.findById(memberNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
@@ -186,9 +192,11 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
-        redisUtils.deleteValues(memberId);
-        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION);
-        memberRepository.deleteById(memberNo);
+        redisUtils.deleteValues(memberId); // 리프레시토큰 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified"); // 회원 정보 확인 시 발급받은 쿠키 삭제
+        memberRepository.deleteById(memberNo); // 계정 삭제
     }
 
     // OAuth2 인증 성공 후 추가 정보 수정 실행(memberNickname)
@@ -299,6 +307,61 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean existsByMemberId(String memberId) {
         return memberRepository.existsByMemberId(memberId);
+    }
+
+    // 비밀번호 확인
+    @Override
+    public boolean checkPassword(HttpServletRequest request, HttpServletResponse response,
+                                 String inputPassword, long memberNo) {
+        Member member = memberRepository.findById(memberNo)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
+
+        if (passwordEncoder.matches(inputPassword, member.getMemberPw())) {
+            setPasswordVerifiedToCookie(request, response, member.getRandomTag());
+            return true;
+        }
+        return false;
+    }
+
+    // 쿠키에 비밀번호 확인 상태 저장
+    @Override
+    public void setPasswordVerifiedToCookie(HttpServletRequest request, HttpServletResponse response, String randomTag) {
+        Cookie[] cookies = request.getCookies();
+        boolean cookieExists = false;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("isPasswordVerified".equals(cookie.getName())) {
+                    if (cookie.getValue().equals(randomTag)) {
+                        cookieExists = true; // 쿠키가 이미 존재함
+                    } else {
+                        CookieUtil.deleteCookie(request, response, "isPasswordVerified");
+                    }
+                    break; // 쿠키를 찾았으면 루프 종료
+                }
+            }
+        }
+        // 쿠키가 존재하지 않을 때만 생성
+        if (!cookieExists) {
+            Cookie cookie = new Cookie("isPasswordVerified", randomTag);
+            cookie.setPath("/");
+            cookie.setMaxAge(60 * 60); // 1시간
+            response.addCookie(cookie);
+        }
+    }
+
+    // 쿠키에서 비밀번호 확인 상태 체크
+    @Override
+    public boolean isPasswordVerified(HttpServletRequest request, String randomTag) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("isPasswordVerified".equals(cookie.getName()) && randomTag.equals(cookie.getValue())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // 회원 아이디 마스킹 처리

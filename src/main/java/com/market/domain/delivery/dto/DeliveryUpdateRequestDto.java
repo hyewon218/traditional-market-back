@@ -28,4 +28,6 @@ public class DeliveryUpdateRequestDto {
     private String detailAddr;
 
     private String extraAddr;
+
+    private boolean isPrimary;
 }

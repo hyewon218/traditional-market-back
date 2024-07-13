@@ -5,10 +5,10 @@ import com.market.domain.notice.dto.NoticeResponseDto;
 import com.market.domain.notice.dto.NoticeUpdateRequestDto;
 import com.market.domain.notice.entity.Notice;
 import com.market.domain.notice.repository.NoticeRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +28,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     // 공지사항 전체 조회
     @Override
+    @Transactional(readOnly = true)
     public List<NoticeResponseDto> findAll() {
         List<Notice> notices = noticeRepository.findAll();
         List<NoticeResponseDto> noticeResponseDtos = notices
@@ -39,6 +40,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     // 특정 공지사항 조회
     @Override
+    @Transactional(readOnly = true)
     public Notice findById(long noticeNo) {
         return noticeRepository.findById(noticeNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));

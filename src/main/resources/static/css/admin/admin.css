@@ -31,13 +31,6 @@
 .menu-item a:hover {
     background-color: #555;
 }*/
-@import url(/css/common/reset.css);
-@import url(/css/common/header.css);
-@import url(/css/common/footer.css);
-
-@import url(/css/common/reset.css);
-@import url(/css/common/header.css);
-@import url(/css/common/footer.css);
 
 .menu-container {
     position: fixed;  /*좌측 메뉴 고정 위치 설정 */

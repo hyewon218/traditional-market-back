@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>문의사항</title>
+  <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // 페이지가 로드될 때 문의사항을 가져오는 AJAX 요청
+      $.ajax({
+        url: "/api/inquiries",
+        type: "GET",
+        success: function(data) {
+          // 문의사항을 성공적으로 가져오면 테이블을 생성
+          let inquiryTable = `
+            <table>
+              <thead>
+                <tr>
+                  <th>문의 제목</th>
+                  <th>문의 내용</th>
+                  <th>작성자</th>
+                  <th>작성일</th>
+                  <th>상세보기</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+          data.forEach(function(inquiry) {
+            let inquiryUrl = "/myinfo/inquiry/" + inquiry.inquiryNo; // URL 조합
+            inquiryTable += `
+              <tr>
+                <td>${inquiry.inquiryTitle}</td>
+                <td>${inquiry.inquiryContent}</td>
+                <td>${inquiry.inquiryWriter}</td>
+                <td>${inquiry.createTime}</td>
+                <td>
+                  <a href="${inquiryUrl}" class="view-details">상세보기</a>
+                </td>
+              </tr>`;
+          });
+
+          inquiryTable += `
+              </tbody>
+            </table>`;
+
+          $(".inquiryList-contents").html(inquiryTable); // inquiryList-contents에 테이블 추가
+        },
+        error: function(xhr) {
+          // 오류 발생 시 메시지 표시
+          $(".inquiryList-contents").html(`<p>${xhr.responseText}</p>`);
+        }
+      });
+    });
+  </script>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="myinfo-body">
+  <div class="myinfo-sidebar">
+    <h3>내 정보</h3>
+    <ul>
+      <li><a th:href="@{/myinfo}">내정보 홈</a></li>
+      <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
+      <li><a th:href="@{/myinfo/list}">구매목록</a></li>
+      <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
+      <li><a th:href="@{/myinfo/deliveries}">배송지관리</a></li>
+    </ul>
+  </div>
+  <div class="inquiryList-contents">
+    <!-- 문의사항 테이블 여기에 출력 -->
+  </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>
+

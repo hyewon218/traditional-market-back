@@ -4,14 +4,14 @@
     background-color: #CDD4EF;
     border-top: 1px solid rgba(229, 224, 255, 0.669);*/
     position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #CDD4EF;
-            border-top: 1px solid rgba(229, 224, 255, 0.669);
-            /*padding: 40px 0 60px 0;*/
-            padding: 10px 0 10px 0;
-            text-align: center;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #CDD4EF;
+    border-top: 1px solid rgba(229, 224, 255, 0.669);
+    /*padding: 40px 0 60px 0;*/
+    padding: 10px 0 10px 0;
+    text-align: center;
 }
 .footer .nav{
     /*width: 1400px;

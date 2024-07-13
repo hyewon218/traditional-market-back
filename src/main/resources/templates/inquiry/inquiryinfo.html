@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>문의사항 상세보기</title>
+    <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // URL에서 inquiryNo 가져오기
+            var url = window.location.href;
+            var inquiryNo = url.substring(url.lastIndexOf('/') + 1);
+            console.log("inquiryNo : " + inquiryNo);
+
+            $.ajax({
+                url: "/api/inquiries/" + inquiryNo,
+                type: "GET",
+                contentType: 'application/json',
+                 success: function(data) {
+                    console.log(data);
+
+                    $('title').text(data.inquiryTitle + " 상세보기");
+                    $('#h2').text(data.inquiryTitle + " 상세정보");
+
+                    // 문의사항 정보 설정
+                    $('#inquiryTitle').text(data.inquiryTitle);
+                    $('#inquiryWriter').text(data.inquiryWriter);
+                    $('#inquiryContent').text(data.inquiryContent);
+                    $('#createTime').text(data.createTime);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching 문의사항 상세보기 : " + error);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="myinfo-body">
+    <div class="myinfo-sidebar">
+        <h3>내 정보</h3>
+        <ul>
+            <li><a th:href="@{/myinfo}">내정보 홈</a></li>
+            <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
+            <li><a th:href="@{/myinfo/list}">구매목록</a></li>
+            <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
+            <li><a th:href="@{/myinfo/delivery}">배송지관리</a></li>
+        </ul>
+    </div>
+    <div class="inquiry-info">
+        <h2 id="h2">문의사항 상세정보</h2>
+        <div>
+            <strong>제목 :</strong> <span id="inquiryTitle"></span>
+        </div>
+        <div>
+            <strong>작성자 :</strong> <span id="inquiryWriter"></span>
+        </div>
+        <div>
+            <strong>내용 :</strong> <span id="inquiryContent"></span>
+        </div>
+        <div>
+            <strong>작성 시간 :</strong> <span id="createTime"></span>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</body>
+</html>

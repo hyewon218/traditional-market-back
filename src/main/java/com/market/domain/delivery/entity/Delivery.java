@@ -44,6 +44,8 @@ public class Delivery extends BaseEntity {
 
     private String extraAddr; // 참고 항목
 
+    private boolean isPrimary; // 기본배송지 설정, 기본값 false
+
     // 배송지 정보 수정 메서드
     public void update(String title, String receiver, String phone,
                        String postCode, String roadAddr, String jibunAddr,
@@ -57,6 +59,11 @@ public class Delivery extends BaseEntity {
         this.jibunAddr = jibunAddr;
         this.detailAddr = detailAddr;
         this.extraAddr = extraAddr;
+    }
+
+    // 기본배송지로 변경
+    public void updatePrimary(boolean isPrimary) {
+        this.isPrimary = isPrimary;
     }
 
 }
