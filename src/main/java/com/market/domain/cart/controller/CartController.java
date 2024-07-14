@@ -35,16 +35,15 @@ public class CartController {
     }
 
     @PostMapping(value = "/carts/order") // 장바구니 상품 주문
-    public ResponseEntity<Long> orderCartItem(@RequestBody CartItemOrderRequestDto cartOrderDto,
+    public ResponseEntity<Long> orderCartItems(
+        @RequestBody List<CartItemOrderRequestDto> cartOrderDtoList,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<CartItemOrderRequestDto> cartOrderDtoList = cartOrderDto.getCartOrderDtoList();
-
         Long orderNo = cartService.orderCartItems(cartOrderDtoList,
             userDetails.getMember());
         return ResponseEntity.ok().body(orderNo);
     }
 
-    @GetMapping(value = "/cartitems") // 장바구니 상품 목록 조회
+    @GetMapping(value = "/cartitems") // 장바구니 내 상품 목록 조회
     public ResponseEntity<List<CartItemDetailResponseDto>> getCartItemList(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(cartItemService.getCartItemList(userDetails.getMember()));
@@ -52,14 +51,15 @@ public class CartController {
 
     @PatchMapping(value = "/cartitems/{cartItemNo}") // 장바구니 특정 상품 주문 갯수 수정
     public ResponseEntity<Long> updateCartItem(@RequestBody CartItemRequestDto cartItemRequestDto,
-        @PathVariable("cartItemNo") Long cartItemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        @PathVariable("cartItemNo") Long cartItemNo,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
         cartItemService.updateCartItemCount(cartItemNo, cartItemRequestDto,
             userDetails.getMember());
         return ResponseEntity.ok().body(cartItemNo);
     }
 
     @DeleteMapping(value = "/cartitems/{cartItemNo}") // 장바구니 특정 상품 주문 삭제
-    public ResponseEntity<Long> deleteCartItem( @PathVariable("cartItemNo") Long cartItemNo,
+    public ResponseEntity<Long> deleteCartItem(@PathVariable("cartItemNo") Long cartItemNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         cartItemService.deleteCartItem(cartItemNo, userDetails.getMember());
         return ResponseEntity.ok().body(cartItemNo);
