@@ -79,7 +79,7 @@ public class CartServiceImpl implements CartService {
         List<OrderItemRequestDto> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
 
         for (CartItemOrderRequestDto cartOrderDto : cartOrderDtoList) {
-            CartItem cartItem = cartItemRepository.findById(cartOrderDto.getCartItemId())
+            CartItem cartItem = cartItemRepository.findById(cartOrderDto.getCartItemNo())
                 .orElseThrow(
                     () -> new BusinessException(ErrorCode.NOT_FOUND_CART_ITEM)
                 );
@@ -91,7 +91,7 @@ public class CartServiceImpl implements CartService {
             Long orderId = cartOrders(orderItemList, member); // 장바구니에 담긴 상품들 주문
 
         for (CartItemOrderRequestDto cartOrderDto : cartOrderDtoList) {
-            CartItem cartItem = cartItemRepository.findById(cartOrderDto.getCartItemId())
+            CartItem cartItem = cartItemRepository.findById(cartOrderDto.getCartItemNo())
                 .orElseThrow(
                     () -> new BusinessException(ErrorCode.NOT_FOUND_CART_ITEM)
                 );

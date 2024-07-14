@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class CartItemDetailResponseDto {
 
-    private Long cartItemNo; //장바구니 상품 아이디
+    private Long cartItemNo; //장바구니 상품 No
 
     private Long itemNo; //상품 no
 
