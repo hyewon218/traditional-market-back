@@ -6,12 +6,12 @@ import com.market.domain.delivery.dto.DeliveryUpdateRequestDto;
 import com.market.domain.delivery.entity.Delivery;
 import com.market.domain.delivery.repository.DeliveryRepository;
 import com.market.domain.member.entity.Member;
+import com.market.global.exception.BusinessException;
+import com.market.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -19,91 +19,102 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
 
-    // 배송지 추가
     @Override
-    @Transactional
-    public Delivery createDelivery(DeliveryRequestDto deliveryRequestDto, Member member) {
-        return deliveryRepository.save(deliveryRequestDto.toEntity(member));
+    @Transactional // 배송지 추가
+    public DeliveryResponseDto createDelivery(DeliveryRequestDto deliveryRequestDto,
+        Member member) {
+        Delivery delivery = deliveryRequestDto.toEntity(member);
+        deliveryRepository.save(delivery);
+        return DeliveryResponseDto.of(delivery);
     }
 
-    // 배송지 전체 조회
     @Override
-    @Transactional(readOnly = true)
-    public List<DeliveryResponseDto> findAll(long memberNo) {
-        List<Delivery> deliveries = deliveryRepository.findAllByMemberNo(memberNo);
-        List<DeliveryResponseDto> deliveryResponseDtos = deliveries
-                .stream()
-                .map(DeliveryResponseDto::of)
-                .toList();
-        return deliveryResponseDtos;
+    @Transactional(readOnly = true) // 배송지 전체 조회
+    public List<DeliveryResponseDto> getAllDeliveries(Member member) {
+        return deliveryRepository.findAllByMemberNo(member.getMemberNo())
+            .stream()
+            .map(DeliveryResponseDto::of)
+            .toList();
     }
 
-    // 특정 배송지 조회
     @Override
-    @Transactional(readOnly = true)
-    public Delivery findById(long deliveryNo) {
+    @Transactional(readOnly = true) // 회원 특정 배송지 조회
+    public DeliveryResponseDto getDeliveryById(Member member, Long deliveryNo) {
+        validateDelivery(member, deliveryNo);
+        Delivery delivery = findById(deliveryNo);
+        return DeliveryResponseDto.of(delivery);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 특정 배송지 조회(공통)
+    public Delivery findById(Long deliveryNo) {
         return deliveryRepository.findById(deliveryNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 없습니다"));
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_DELIVERY));
     }
 
-    // 배송지 수정
     @Override
-    @Transactional
-    public Delivery update(long deliveryNo, DeliveryUpdateRequestDto deliveryUpdateRequestDto) {
-        Delivery delivery = deliveryRepository.findById(deliveryNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 존재하지않습니다"));
-
-        delivery.update(deliveryUpdateRequestDto.getTitle(), deliveryUpdateRequestDto.getReceiver(),
-                deliveryUpdateRequestDto.getPhone(), deliveryUpdateRequestDto.getPostCode(),
-                deliveryUpdateRequestDto.getRoadAddr(), deliveryUpdateRequestDto.getJibunAddr(),
-                deliveryUpdateRequestDto.getDetailAddr(), deliveryUpdateRequestDto.getExtraAddr());
-
-        return delivery;
+    @Transactional // 배송지 수정
+    public DeliveryResponseDto updateDelivery(Member member, Long deliveryNo,
+        DeliveryUpdateRequestDto deliveryUpdateRequestDto) {
+        validateDelivery(member, deliveryNo);
+        Delivery delivery = findById(deliveryNo);
+        delivery.update(deliveryUpdateRequestDto);
+        return DeliveryResponseDto.of(delivery);
     }
 
-    // 배송지 삭제
     @Override
-    @Transactional
-    public void delete(long deliveryNo) {
-        Delivery delivery = deliveryRepository.findById(deliveryNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 배송지가 존재하지않습니다"));
-        deliveryRepository.deleteById(delivery.getDeliveryNo());
+    @Transactional // 배송지 삭제
+    public void deleteDelivery(Member member, Long deliveryNo) {
+        validateDelivery(member, deliveryNo);
+        deliveryRepository.deleteById(deliveryNo);
     }
 
-    // 기본배송지 설정
     @Override
-    @Transactional
-    public void setPrimary(long deliveryNo) {
+    @Transactional // 기본배송지 설정
+    public void setPrimary(Member member, Long deliveryNo) {
         // 기존 기본배송지 찾기
-        Delivery currentDelivery = deliveryRepository.findByIsPrimary(true);
-        if (currentDelivery != null) {
-            currentDelivery.updatePrimary(false);
-            deliveryRepository.save(currentDelivery);
-            
-            // 기존 기본배송지 false 설정하고 새로운 기본배송지는 true 설정
-            Delivery newDelivery = deliveryRepository.findById(deliveryNo)
-                    .orElseThrow(() -> new IllegalArgumentException("일치하는 배송지가 없습니다"));
-            newDelivery.updatePrimary(true);
-            deliveryRepository.save(newDelivery);
+        Delivery currentPrimaryDelivery = getCurrentPrimaryDelivery(member);
+        Delivery newPrimaryDelivery = findById(deliveryNo);
+        if (currentPrimaryDelivery != null) {
+            // 기존 기본배송지를 기본 배송지에서 해제
+            currentPrimaryDelivery.updatePrimary(false);
+            deliveryRepository.save(currentPrimaryDelivery);
 
+            // 새로운 기본배송지 설정
+            newPrimaryDelivery.updatePrimary(true);
+            deliveryRepository.save(newPrimaryDelivery);
         } else {
-            // 기존 기본배송지 없을 경우 새로운 기본배송지 설정
-            Delivery newDelivery = deliveryRepository.findById(deliveryNo)
-                    .orElseThrow(() -> new IllegalArgumentException("일치하는 배송지가 없습니다"));
-            newDelivery.updatePrimary(true);
-            deliveryRepository.save(newDelivery);
+            // 새로운 기본배송지 설정
+            newPrimaryDelivery.updatePrimary(true);
+            deliveryRepository.save(newPrimaryDelivery);
         }
     }
 
-    // 기본배송지 해제
     @Override
-    @Transactional
-    public void removePrimary() {
-        Delivery currentDelivery = deliveryRepository.findByIsPrimary(true);
-        if (currentDelivery == null) {
-            throw new NoSuchElementException("기본배송지가 존재하지 않습니다");
+    @Transactional // 기본배송지 해제
+    public void removePrimary(Member member) {
+        // 기본 배송지 찾기
+        Delivery currentPrimaryDelivery = getCurrentPrimaryDelivery(member);
+        if (currentPrimaryDelivery == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_PRIMARY_DELIVERY);
         }
-        currentDelivery.updatePrimary(false);
-        deliveryRepository.save(currentDelivery);
+        currentPrimaryDelivery.updatePrimary(false);
+        deliveryRepository.save(currentPrimaryDelivery);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 회원에 해당하는 배송지 확인
+    public void validateDelivery(Member member, Long deliveryNo) {
+        boolean exists = deliveryRepository.existsByDeliveryNoAndMemberNo(deliveryNo,
+            member.getMemberNo());
+        if (!exists) {
+            throw new BusinessException(ErrorCode.NOT_AUTHORITY_DELIVERY);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 기본 배송지 찾기
+    public Delivery getCurrentPrimaryDelivery(Member member) {
+        return deliveryRepository.findByMemberNoAndIsPrimary(member.getMemberNo(), true);
     }
 }
