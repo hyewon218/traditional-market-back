@@ -40,6 +40,10 @@ public enum ErrorCode {
     // 장바구니 상품
     NOT_FOUND_CART_ITEM(HttpStatus.NOT_FOUND, "C001", "장바구니에 존재하지 않는 상품입니다."),
     NOT_AUTHORITY_CART_ITEM(HttpStatus.BAD_REQUEST, "C002", "장바구니 권한이 없습니다."),
+    // 배송지
+    NOT_FOUND_DELIVERY(HttpStatus.NOT_FOUND, "D001", "해당 배송지가 존재하지 않습니다."),
+    NOT_FOUND_PRIMARY_DELIVERY(HttpStatus.NOT_FOUND, "D002", "기본 배송지가 존재하지 않습니다."),
+    NOT_AUTHORITY_DELIVERY(HttpStatus.BAD_REQUEST, "C002", "배송지 권한이 없습니다."),
     // 알람
     NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "N001", "notification 연결 에러입니다."),
     // 관리자

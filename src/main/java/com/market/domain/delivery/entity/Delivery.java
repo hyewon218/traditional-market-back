@@ -1,8 +1,13 @@
 package com.market.domain.delivery.entity;
 
 import com.market.domain.base.BaseEntity;
-import com.market.domain.member.entity.Member;
-import jakarta.persistence.*;
+import com.market.domain.delivery.dto.DeliveryUpdateRequestDto;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,24 +52,20 @@ public class Delivery extends BaseEntity {
     private boolean isPrimary; // 기본배송지 설정, 기본값 false
 
     // 배송지 정보 수정 메서드
-    public void update(String title, String receiver, String phone,
-                       String postCode, String roadAddr, String jibunAddr,
-                       String detailAddr, String extraAddr) {
-
-        this.title = title;
-        this.receiver = receiver;
-        this.phone = phone;
-        this.postCode = postCode;
-        this.roadAddr = roadAddr;
-        this.jibunAddr = jibunAddr;
-        this.detailAddr = detailAddr;
-        this.extraAddr = extraAddr;
+    public void update(DeliveryUpdateRequestDto deliveryUpdateRequestDto) {
+        this.title = deliveryUpdateRequestDto.getTitle();
+        this.receiver = deliveryUpdateRequestDto.getReceiver();
+        this.phone = deliveryUpdateRequestDto.getPhone();
+        this.postCode = deliveryUpdateRequestDto.getPostCode();
+        this.roadAddr = deliveryUpdateRequestDto.getRoadAddr();
+        this.jibunAddr = deliveryUpdateRequestDto.getJibunAddr();
+        this.detailAddr = deliveryUpdateRequestDto.getDetailAddr();
+        this.extraAddr = deliveryUpdateRequestDto.getExtraAddr();
     }
 
     // 기본배송지로 변경
     public void updatePrimary(boolean isPrimary) {
         this.isPrimary = isPrimary;
     }
-
 }
 
