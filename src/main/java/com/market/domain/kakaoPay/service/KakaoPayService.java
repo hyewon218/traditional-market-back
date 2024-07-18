@@ -1,27 +1,28 @@
 package com.market.domain.kakaoPay.service;
 
+import com.market.domain.cartItem.service.CartItemService;
 import com.market.domain.kakaoPay.config.KakaoPayProperties;
 import com.market.domain.kakaoPay.dto.cancel.CancelResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ApproveResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ReadyResponseDto;
 import com.market.domain.member.entity.Member;
-import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.order.entity.Order;
-import com.market.domain.order.repository.OrderRepository;
+import com.market.domain.order.service.OrderServiceImpl;
 import com.market.domain.orderItem.entity.OrderItem;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
 
 @Service
 @Slf4j
@@ -29,14 +30,12 @@ import java.util.*;
 public class KakaoPayService {
 
     private final KakaoPayProperties kakaoPayProperties;
-    private final OrderRepository orderRepository;
-
-    private String tid;
+    private final OrderServiceImpl orderService;
+    private final CartItemService cartItemService;
 
     // 결제 요청
     @Transactional
     public ReadyResponseDto kakaoPayReady(Member member, Order order) {
-
         // 주문 상품 목록 가져오기
         List<OrderItem> orderItems = order.getOrderItemList();
 
@@ -92,7 +91,7 @@ public class KakaoPayService {
             param.add("fail_url", "http://localhost:8080/api/payment/fail");
 
         // 주문 상품이 1개일 경우
-        } else if(orderItems.size() == 1){
+        } else {
             OrderItem orderItem = orderItems.get(0);
             param.add("cid", kakaoPayProperties.getCid());
             param.add("partner_order_id", orderId);
@@ -123,7 +122,6 @@ public class KakaoPayService {
         // tid 추출해서 Order에 저장
         if (readyResponseDto != null && readyResponseDto.getTid() != null) {
             order.setTid(readyResponseDto.getTid());
-            orderRepository.save(order);
         }
         return readyResponseDto;
     }
@@ -151,6 +149,10 @@ public class KakaoPayService {
                 "https://open-api.kakaopay.com/online/v1/payment/approve",
                 requestEntity,
                 ApproveResponseDto.class);
+
+        cartItemService.deleteAllCartItems(member); // 장바구니 상품 삭제
+        // 주문 상태 COMPLETE 으로 변경 및 주문 상태 ORDER 인 주문 상품 목록 재고 증가 후 주문 목록 삭제
+        orderService.afterPayApprove(member, order);
 
         return approveResponseDto;
     }

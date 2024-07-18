@@ -88,16 +88,7 @@ public class CartServiceImpl implements CartService {
             orderItemList.add(orderDto);
 
         }
-            Long orderId = cartOrders(orderItemList, member); // 장바구니에 담긴 상품들 주문
-
-        for (CartItemOrderRequestDto cartOrderDto : cartOrderDtoList) {
-            CartItem cartItem = cartItemRepository.findById(cartOrderDto.getCartItemNo())
-                .orElseThrow(
-                    () -> new BusinessException(ErrorCode.NOT_FOUND_CART_ITEM)
-                );
-            cartItemRepository.delete(cartItem);
-        }
-        return orderId;
+        return cartOrders(orderItemList, member);
     }
 
     public Cart getCartByMemberNo(Long memberNo) { // memberNo 로 장바구니 찾기

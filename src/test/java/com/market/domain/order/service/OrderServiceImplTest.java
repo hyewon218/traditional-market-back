@@ -11,7 +11,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.repository.OrderRepository;
-import com.market.domain.orderItem.constant.OrderStatus;
+import com.market.domain.order.constant.OrderStatus;
 import com.market.domain.orderItem.dto.OrderItemRequestDto;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;

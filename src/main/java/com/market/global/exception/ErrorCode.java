@@ -37,9 +37,11 @@ public enum ErrorCode {
     ORDER_NOT_EXISTS(HttpStatus.BAD_REQUEST, "O002", "해당 주문이 존재하지 않습니다."),
     NOT_ORDER_DELETE(HttpStatus.BAD_REQUEST, "O003", "주문 취소 권한이 없습니다."),
     NOT_ORDER(HttpStatus.BAD_REQUEST, "O004", "주문 권한이 없습니다."),
+    // 장바구니
+    NOT_FOUND_CART(HttpStatus.NOT_FOUND, "C001", "장바구니가 존재하지 않습니다."),
     // 장바구니 상품
-    NOT_FOUND_CART_ITEM(HttpStatus.NOT_FOUND, "C001", "장바구니에 존재하지 않는 상품입니다."),
-    NOT_AUTHORITY_CART_ITEM(HttpStatus.BAD_REQUEST, "C002", "장바구니 권한이 없습니다."),
+    NOT_FOUND_CART_ITEM(HttpStatus.NOT_FOUND, "CI001", "장바구니에 존재하지 않는 상품입니다."),
+    NOT_AUTHORITY_CART_ITEM(HttpStatus.BAD_REQUEST, "CI002", "장바구니 권한이 없습니다."),
     // 배송지
     NOT_FOUND_DELIVERY(HttpStatus.NOT_FOUND, "D001", "해당 배송지가 존재하지 않습니다."),
     NOT_FOUND_PRIMARY_DELIVERY(HttpStatus.NOT_FOUND, "D002", "기본 배송지가 존재하지 않습니다."),
