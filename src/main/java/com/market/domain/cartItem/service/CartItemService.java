@@ -11,9 +11,13 @@ public interface CartItemService {
 
     List<CartItemDetailResponseDto> getCartItemList(Member member);
 
+    List<CartItem> getEntityCartItemList(Member member);
+
     void updateCartItemCount(Long cartItemNo, CartItemRequestDto cartItemRequestDto, Member member);
 
     void deleteCartItem(Long cartItemNo, Member member);
+
+    void deleteAllCartItems(Member member);
 
     boolean validateCartItem(Long cartItemNo, Member member);
 }

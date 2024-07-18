@@ -33,6 +33,13 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<CartItem> getEntityCartItemList(Member member) {
+        Cart cart = cartService.getCartByMemberNo(member.getMemberNo());
+        return cartItemRepository.findAllByCart_No(cart.getNo());
+    }
+
+    @Override
     @Transactional
     public void updateCartItemCount(Long cartItemNo, CartItemRequestDto cartItemRequestDto,
         Member member) {
@@ -43,11 +50,25 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    @Transactional
+    @Transactional // 장바구니 상품 삭제
     public void deleteCartItem(Long cartItemNo, Member member) {
         CartItem cartItem = getCartItemById(cartItemNo);
         if (validateCartItem(cartItemNo, member)) {
             cartItemRepository.delete(cartItem);
+        }
+    }
+
+    @Override
+    @Transactional // 장바구니 상품들 삭제
+    public void deleteAllCartItems(Member member) {
+        List<CartItem> cartItemList = getEntityCartItemList(member);
+
+        for (CartItem cartItem : cartItemList) {
+            CartItem cartItemEntity = cartItemRepository.findById(cartItem.getNo())
+                .orElseThrow(
+                    () -> new BusinessException(ErrorCode.NOT_FOUND_CART_ITEM)
+                );
+            cartItemRepository.delete(cartItemEntity);
         }
     }
 
