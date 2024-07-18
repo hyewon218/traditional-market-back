@@ -2,17 +2,16 @@ package com.market.domain.order.entity;
 
 import com.market.domain.base.BaseEntity;
 import com.market.domain.member.entity.Member;
-import com.market.domain.orderItem.constant.OrderStatus;
+import com.market.domain.order.constant.OrderStatus;
 import com.market.domain.orderItem.entity.OrderItem;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -71,6 +70,14 @@ public class Order extends BaseEntity {
 
     public void cancelOrder() {
         this.orderStatus = OrderStatus.CANCEL;
+        this.orderItemList.forEach(OrderItem::cancelOrder);
+    }
+
+    public void setOrderComplete() { // 결제 승인 시 주문 상태 변경
+        this.orderStatus = OrderStatus.COMPLETE;
+    }
+
+    public void statusOrderAddStock() { // 결제 승인 후 주문 상태 ORDER 인 목록 orderItem 재고 증가
         this.orderItemList.forEach(OrderItem::cancelOrder);
     }
 }

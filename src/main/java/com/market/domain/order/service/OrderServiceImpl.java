@@ -44,12 +44,38 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) // COMPLETE 주문 목록 조회
     public Page<OrderHistResponseDto> getOrderList(Member member, Pageable pageable) {
         // 회원 및 주문 데이터 조회
-        Page<Order> orderList = orderRepository.findOrderListWithMember(member.getMemberId(),
+        Page<Order> orderList = orderRepository.findOrderListWithMember(member.getMemberNo(),
             pageable);
         return orderList.map(OrderHistResponseDto::of);
+    }
+
+    /*결제 승인 후*/
+    @Transactional // order 의 status COMPLETE 로 변경
+    public void setOrderComplete(Order order) {
+        order.setOrderComplete();
+    }
+
+    @Transactional(readOnly = true) // ORDER 주문 목록 조회
+    public List<Order> getAllStatusOrderList(Member member) {
+        return orderRepository.findStatusOrderListWithMember(member.getMemberNo());
+    }
+
+    @Transactional // 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제
+    public void statusOrderItemListAddStockAndDelete(Member member) {
+        List<Order> orderList = getAllStatusOrderList(member);
+        for(Order order : orderList) {
+            order.statusOrderAddStock();
+        }
+        orderRepository.deleteAll(orderList);
+    }
+
+    @Transactional
+    public void afterPayApprove(Member member, Order order) {
+        setOrderComplete(order);
+        statusOrderItemListAddStockAndDelete(member);
     }
 
     @Override
