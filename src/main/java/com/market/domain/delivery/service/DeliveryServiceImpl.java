@@ -78,16 +78,19 @@ public class DeliveryServiceImpl implements DeliveryService {
         if (currentPrimaryDelivery != null) {
             // 기존 기본배송지를 기본 배송지에서 해제
             currentPrimaryDelivery.updatePrimary(false);
-            deliveryRepository.save(currentPrimaryDelivery);
-
             // 새로운 기본배송지 설정
             newPrimaryDelivery.updatePrimary(true);
-            deliveryRepository.save(newPrimaryDelivery);
         } else {
             // 새로운 기본배송지 설정
             newPrimaryDelivery.updatePrimary(true);
-            deliveryRepository.save(newPrimaryDelivery);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 기본 배송지 조회(주문 페이지)
+    public DeliveryResponseDto getCurrentPrimaryDeliveryDto(Member member) {
+        Delivery primaryDelivery = getCurrentPrimaryDelivery(member);
+        return DeliveryResponseDto.of(primaryDelivery);
     }
 
     @Override
@@ -95,9 +98,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     public void removePrimary(Member member) {
         // 기본 배송지 찾기
         Delivery currentPrimaryDelivery = getCurrentPrimaryDelivery(member);
-        if (currentPrimaryDelivery == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_PRIMARY_DELIVERY);
-        }
         currentPrimaryDelivery.updatePrimary(false);
         deliveryRepository.save(currentPrimaryDelivery);
     }
@@ -115,6 +115,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     @Transactional(readOnly = true) // 기본 배송지 찾기
     public Delivery getCurrentPrimaryDelivery(Member member) {
-        return deliveryRepository.findByMemberNoAndIsPrimary(member.getMemberNo(), true);
+        return deliveryRepository.findByMemberNoAndIsPrimary(member.getMemberNo(), true)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_PRIMARY_DELIVERY));
     }
 }
