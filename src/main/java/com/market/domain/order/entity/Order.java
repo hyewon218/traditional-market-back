@@ -3,8 +3,21 @@ package com.market.domain.order.entity;
 import com.market.domain.base.BaseEntity;
 import com.market.domain.member.entity.Member;
 import com.market.domain.order.constant.OrderStatus;
+import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.orderItem.entity.OrderItem;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +47,8 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus; // 주문 상태
 
+    private String deliveryAddr; // 결제 시 선택한 배송지
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_no")
     private Member member;
@@ -48,6 +63,10 @@ public class Order extends BaseEntity {
 
     public void setTid(String tid) { // tid(카카오페이 결제고유번호) 저장 메서드
         this.tid = tid;
+    }
+
+    public void setDelivery(SaveDeliveryRequestDto saveDeliveryRequestDto) {
+        this.deliveryAddr = saveDeliveryRequestDto.getDeliveryAddr();
     }
 
     public static Order toEntity(Member member, List<OrderItem> orderItemList) {

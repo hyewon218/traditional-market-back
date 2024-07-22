@@ -35,8 +35,9 @@ public enum ErrorCode {
     // 주문
     OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "O001", "재고가 존재하지 않습니다."),
     ORDER_NOT_EXISTS(HttpStatus.BAD_REQUEST, "O002", "해당 주문이 존재하지 않습니다."),
-    NOT_ORDER_DELETE(HttpStatus.BAD_REQUEST, "O003", "주문 취소 권한이 없습니다."),
-    NOT_ORDER(HttpStatus.BAD_REQUEST, "O004", "주문 권한이 없습니다."),
+    NOT_AUTHORITY_ORDER_DELETE(HttpStatus.BAD_REQUEST, "O003", "주문 취소 권한이 없습니다."),
+    NOT_AUTHORITY_ORDER(HttpStatus.BAD_REQUEST, "O004", "주문 권한이 없습니다."),
+    NOT_FOUND_RECENT_ORDER(HttpStatus.BAD_REQUEST, "O005", "해당 회원의 최근 주문을 찾을 수 없습니다."),
     // 장바구니
     NOT_FOUND_CART(HttpStatus.NOT_FOUND, "C001", "장바구니가 존재하지 않습니다."),
     // 장바구니 상품
@@ -49,12 +50,12 @@ public enum ErrorCode {
     // 알람
     NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "N001", "notification 연결 에러입니다."),
     // 관리자
-    NOT_EXISTS_ADMIN(HttpStatus.BAD_REQUEST, "A002", "관리자가 존재하지 않습니다."),
+    NOT_EXISTS_ADMIN(HttpStatus.BAD_REQUEST, "A001", "관리자가 존재하지 않습니다."),
     //채팅
-    INVALID_AUTH_TOKEN(HttpStatus.BAD_REQUEST,"A002", "관리자가 존재하지 않습니다."),
-    NOT_FOUND_CHATROOM (HttpStatus. BAD_REQUEST, "C001", "존재하지 않는 채팅방입나다."),
-    ONLY_MASTER_EDIT(HttpStatus.BAD_REQUEST, "CO02", "채팅방 개설자만 수정할 수 있습니다."),
-    ONLY_MASTER_DELETE(HttpStatus. BAD_REQUEST, "C003", "채팅방 개설자만 삭제할 수 있습니다."),
+    INVALID_AUTH_TOKEN(HttpStatus.BAD_REQUEST,"C001", "잘못된 인증 토큰입니다."),
+    NOT_FOUND_CHATROOM (HttpStatus. BAD_REQUEST, "C002", "존재하지 않는 채팅방입나다."),
+    ONLY_MASTER_EDIT(HttpStatus.BAD_REQUEST, "CO03", "채팅방 개설자만 수정할 수 있습니다."),
+    ONLY_MASTER_DELETE(HttpStatus. BAD_REQUEST, "C005", "채팅방 개설자만 삭제할 수 있습니다."),
     // aws s3
     EXISTED_FILE(HttpStatus.BAD_REQUEST, "AS001", "중복된 파일명입니다."),
     ;

@@ -4,6 +4,7 @@ import com.market.domain.image.dto.ImageResponseDto;
 import com.market.domain.item.entity.Item;
 import com.market.domain.item.repository.ItemRepository;
 import com.market.domain.member.entity.Member;
+import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.order.dto.OrderHistResponseDto;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.repository.OrderRepository;
@@ -44,6 +45,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional // 결제 요청 시 주문 테이블에 배송지 저장
+    public void setDeliveryAddr(Member member, SaveDeliveryRequestDto saveDeliveryRequestDto) {
+        Order order = getFirstOrderByMemberNo(member);
+        order.setDelivery(saveDeliveryRequestDto);
+    }
+
+    @Override
     @Transactional(readOnly = true) // COMPLETE 주문 목록 조회
     public Page<OrderHistResponseDto> getOrderList(Member member, Pageable pageable) {
         // 회원 및 주문 데이터 조회
@@ -53,25 +61,29 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /*결제 승인 후*/
+    @Override
     @Transactional // order 의 status COMPLETE 로 변경
     public void setOrderComplete(Order order) {
         order.setOrderComplete();
     }
 
+    @Override
     @Transactional(readOnly = true) // ORDER 주문 목록 조회
     public List<Order> getAllStatusOrderList(Member member) {
         return orderRepository.findStatusOrderListWithMember(member.getMemberNo());
     }
 
+    @Override
     @Transactional // 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제
     public void statusOrderItemListAddStockAndDelete(Member member) {
         List<Order> orderList = getAllStatusOrderList(member);
-        for(Order order : orderList) {
+        for (Order order : orderList) {
             order.statusOrderAddStock();
         }
         orderRepository.deleteAll(orderList);
     }
 
+    @Override
     @Transactional
     public void afterPayApprove(Member member, Order order) {
         setOrderComplete(order);
@@ -121,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = findOrder(orderNo);
 
         if (!member.getMemberId().equals(order.getMember().getMemberId())) {
-            throw new BusinessException(ErrorCode.NOT_ORDER_DELETE);
+            throw new BusinessException(ErrorCode.NOT_AUTHORITY_ORDER_DELETE);
         }
         return true;
     }
