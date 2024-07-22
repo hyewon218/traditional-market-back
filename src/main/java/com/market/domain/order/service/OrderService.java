@@ -1,6 +1,7 @@
 package com.market.domain.order.service;
 
 import com.market.domain.member.entity.Member;
+import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.order.dto.OrderHistResponseDto;
 import com.market.domain.order.entity.Order;
 import com.market.domain.orderItem.dto.OrderItemHistResponseDto;
@@ -20,6 +21,11 @@ public interface OrderService {
     Long order(OrderItemRequestDto requestDto, Member member);
 
     /**
+     * 결제 요청 시 배송지 저장
+     */
+    void setDeliveryAddr(Member member, SaveDeliveryRequestDto saveDeliveryRequestDto);
+
+    /**
      * 주문 목록 조회
      *
      * @return : 조회된 주문들 정보
@@ -32,6 +38,32 @@ public interface OrderService {
      * @return : 조회된 주문들 정보
      */
     List<OrderItemHistResponseDto> getOrderItemList(Member member);
+
+    /*결제 승인 후*/
+    /**
+     * order 의 status COMPLETE 로 변경
+     *
+     */
+    void setOrderComplete(Order order);
+
+    /**
+     * ORDER 주문 목록 조회
+     *
+     * @return : 조회된 주문들 정보
+     */
+    List<Order> getAllStatusOrderList(Member member);
+
+    /**
+     * 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제
+     *
+     */
+    void statusOrderItemListAddStockAndDelete(Member member);
+
+    /**
+     * 결제 완료 후 실행
+     *
+     */
+    void afterPayApprove(Member member, Order order);
 
     /**
      * 로그인한 사용자 정보로 가장 최근 주문 조회

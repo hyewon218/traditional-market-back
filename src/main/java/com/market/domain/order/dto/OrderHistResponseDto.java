@@ -18,6 +18,8 @@ public class OrderHistResponseDto {
 
     private String orderDate; // 주문 날짜
 
+    private String deliveryAddr; // 주문 배송지
+
     private OrderStatus orderStatus; //주문 상태
 
     private List<OrderItemHistResponseDto> orderItemList; // 주문상품 리스트
@@ -26,6 +28,7 @@ public class OrderHistResponseDto {
         return OrderHistResponseDto.builder()
             .orderNo(order.getNo())
             .orderDate(order.getOrderDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+            .deliveryAddr(order.getDeliveryAddr())
             .orderStatus(order.getOrderStatus())
             .orderItemList(
                 order.getOrderItemList().stream().map(OrderItemHistResponseDto::of).toList())
