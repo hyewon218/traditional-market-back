@@ -71,6 +71,13 @@ public interface DeliveryService {
     void setPrimary(Member member, Long deliveryNo);
 
     /**
+     * 기본 배송지 조회(주문 페이지)
+     *
+     * @param member : 기본 배송지 확인할 회원 정보
+     */
+    DeliveryResponseDto getCurrentPrimaryDeliveryDto(Member member);
+
+    /**
      * 기본배송지 해제
      *
      * @param member : 기본 배송지 확인할 회원 정보

@@ -82,6 +82,13 @@ public class DeliveryController {
         return ResponseEntity.ok().body(new ApiResponse("기본 배송지 설정 성공", HttpStatus.OK.value()));
     }
 
+    @GetMapping("/primary") // 기본배송지 조회(주문 페이지 상단)
+    public ResponseEntity<DeliveryResponseDto> getPrimaryDelivery(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok()
+            .body(deliveryService.getCurrentPrimaryDeliveryDto(userDetails.getMember()));
+    }
+
     @PutMapping("/delprimary") // 기본배송지 해제
     public ResponseEntity<ApiResponse> delPrimary(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
