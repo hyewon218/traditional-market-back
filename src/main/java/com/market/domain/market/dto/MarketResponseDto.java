@@ -1,6 +1,7 @@
 package com.market.domain.market.dto;
 
 import com.market.domain.image.dto.ImageResponseDto;
+import com.market.domain.market.entity.CategoryEnum;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.marketComment.dto.MarketCommentResponseDto;
 import com.market.domain.shop.dto.ShopResponseDto;
@@ -19,6 +20,8 @@ public class MarketResponseDto {
 
     private String marketAddr;
 
+    private CategoryEnum category;
+
     private String marketDetail;
 
     private Integer likes;
@@ -34,6 +37,7 @@ public class MarketResponseDto {
             .marketNo(market.getNo())
             .marketName(market.getMarketName())
             .marketAddr(market.getMarketAddr())
+            .category(market.getCategory())
             .marketDetail(market.getMarketDetail())
             .likes(market.getMarketLikeList().size())
             .shopList(market.getShopList().stream().map(ShopResponseDto::of).toList())

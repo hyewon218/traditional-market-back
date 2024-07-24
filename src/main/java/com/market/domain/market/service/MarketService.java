@@ -2,6 +2,7 @@ package com.market.domain.market.service;
 
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
+import com.market.domain.market.entity.CategoryEnum;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.member.entity.Member;
@@ -37,6 +38,12 @@ public interface MarketService {
      */
     Page<MarketResponseDto> searchMarkets(MarketSearchCond cond, Pageable pageable);
 
+    /**
+     * 시장 카테고리별 목록 조회
+     *
+     * @return : 조회된 시장들 정보
+     */
+    Page<MarketResponseDto> getCategoryMarkets(CategoryEnum category, Pageable pageable);
 
     /**
      * 시장 단건 조회
@@ -87,4 +94,6 @@ public interface MarketService {
      * @return : 시장 Entity
      */
     Market findMarket(Long marketNo);
+
+
 }
