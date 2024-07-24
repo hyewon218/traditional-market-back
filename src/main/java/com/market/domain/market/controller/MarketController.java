@@ -2,6 +2,7 @@ package com.market.domain.market.controller;
 
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
+import com.market.domain.market.entity.CategoryEnum;
 import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.market.service.MarketService;
 import com.market.global.response.ApiResponse;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,9 +50,18 @@ public class MarketController {
         return ResponseEntity.ok().body(result);
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/markets/search") // 키워드 검색 시장 목록 조회
     public ResponseEntity<Page<MarketResponseDto>> searchMarkets(MarketSearchCond cond, Pageable pageable){
         Page<MarketResponseDto> result = marketService.searchMarkets(cond, pageable);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/markets/category") // 시장 카테고리별 조회
+    public ResponseEntity<Page<MarketResponseDto>> getCategoryMarkets(
+        @RequestParam("category") CategoryEnum category,
+        Pageable pageable) {
+        Page<MarketResponseDto> result = marketService.getCategoryMarkets(category, pageable);
         return ResponseEntity.ok().body(result);
     }
 

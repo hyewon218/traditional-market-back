@@ -1,5 +1,6 @@
 package com.market.domain.market.repository;
 
+import com.market.domain.market.entity.CategoryEnum;
 import com.market.domain.market.entity.Market;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,4 +14,6 @@ public interface MarketRepository extends JpaRepository<Market, Long> {
     boolean existsMarketByMarketName(String marketName);
 
     Market findByMarketName(String marketName);
+
+    Page<Market> findByCategoryOrderByMarketName(CategoryEnum category, Pageable pageable);
 }

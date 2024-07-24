@@ -6,6 +6,7 @@ import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
+import com.market.domain.market.entity.CategoryEnum;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.marketLike.entity.MarketLike;
 import com.market.domain.market.marketLike.repository.MarketLikeRepository;
@@ -80,9 +81,16 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 키워드 검색 게시글 목록 조회
+    @Transactional(readOnly = true) // 키워드 검색 시장 목록 조회
     public Page<MarketResponseDto> searchMarkets(MarketSearchCond cond, Pageable pageable) {
         return marketRepositoryQuery.searchMarkets(cond, pageable).map(MarketResponseDto::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 카테고리별 상점 목록 조회
+    public Page<MarketResponseDto> getCategoryMarkets(CategoryEnum category, Pageable pageable) {
+        Page<Market> marketList = marketRepository.findByCategoryOrderByMarketName(category, pageable);
+        return marketList.map(MarketResponseDto::of);
     }
 
     @Transactional(readOnly = true) // 시장 단건 조회

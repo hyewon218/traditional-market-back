@@ -9,6 +9,8 @@ import com.market.domain.shop.entity.Shop;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,6 +48,10 @@ public class Market extends BaseEntity {
     @Column(nullable = false)
     private String marketDetail; // 시장 상세 설명
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CategoryEnum category;
+
     @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<Image> imageList = new ArrayList<>();
@@ -65,6 +71,7 @@ public class Market extends BaseEntity {
     public void update(MarketRequestDto requestDto){
         this.marketName = requestDto.getMarketName();
         this.marketAddr = requestDto.getMarketAddr();
+        this.category = requestDto.getCategory();
         this.marketDetail = requestDto.getMarketDetail();
     }
 }
