@@ -4,17 +4,21 @@ import com.market.domain.kakaoPay.dto.cancel.CancelResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ApproveResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ReadyResponseDto;
 import com.market.domain.kakaoPay.service.KakaoPayService;
-import com.market.domain.member.entity.Member;
-import com.market.domain.order.entity.Order;
-import com.market.domain.order.repository.OrderRepository;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -23,55 +27,40 @@ import org.springframework.web.bind.annotation.*;
 public class KakaoPayController {
 
     private final KakaoPayService kakaoPayService;
-    private final OrderRepository orderRepository;
 
-    // 결제 요청
-    @PostMapping("/ready")
-    public ResponseEntity<ReadyResponseDto> readyToKakaoPay(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Member member = userDetails.getMember();
-        Order order = orderRepository.findFirstByMemberOrderByCreateTimeDesc(member)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원의 최근 주문을 찾을 수 없습니다"));
-
-        return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(member, order));
+    @PostMapping("/ready") // 결제 요청
+    public ResponseEntity<ReadyResponseDto> readyToKakaoPay(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok().body(kakaoPayService.kakaoPayReady(userDetails.getMember()));
     }
 
-    // 결제 성공
-    @GetMapping("/success")
+    @GetMapping("/success") // 결제 성공
     public ResponseEntity<ApproveResponseDto> afterKakaoPayRequest(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("pg_token") String pgToken) {
-
-        Member member = userDetails.getMember();
-        Order order = orderRepository.findFirstByMemberOrderByCreateTimeDesc(member)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원의 최근 주문을 찾을 수 없습니다"));
-
-        ApproveResponseDto approveResponseDto = kakaoPayService.kakaoPayApprove(pgToken, member, order);
-        return ResponseEntity.ok().body(approveResponseDto);
+        HttpServletResponse response,
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam("pg_token") String pgToken) throws IOException {
+        ApproveResponseDto approveResponseDto = kakaoPayService.kakaoPayApprove(pgToken,
+            userDetails.getMember());
+        // 결제 완료 후 리액트 결제 완료된 주문 상세 페이지로 이동
+        response.sendRedirect("http://localhost:3000/order-complete");
+        return ResponseEntity.ok()
+            .body(approveResponseDto);
     }
 
-    // 결제 진행 중 취소
-    @GetMapping("/cancel")
+    @GetMapping("/cancel") // 결제 진행 중 취소
     public ResponseEntity<?> cancelOrder() {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
-                .body(new ApiResponse("사용자가 결제를 취소했습니다", HttpStatus.EXPECTATION_FAILED.value()));
+            .body(new ApiResponse("사용자가 결제를 취소했습니다.", HttpStatus.EXPECTATION_FAILED.value()));
     }
 
-    // 결제 실패
-    @GetMapping("/fail")
+    @GetMapping("/fail") // 결제 실패
     public ResponseEntity<?> failOrder() {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
-                .body(new ApiResponse("결제 실패했습니다", HttpStatus.EXPECTATION_FAILED.value()));
+            .body(new ApiResponse("결제 실패했습니다.", HttpStatus.EXPECTATION_FAILED.value()));
     }
 
-    // 결제 취소
-    @PostMapping("/cancel/{orderNo}")
-    public ResponseEntity<CancelResponseDto> cancelOrder(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                         @PathVariable long orderNo) {
-        Member member = userDetails.getMember();
-        Order order = orderRepository.findById(orderNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다"));
-
-        CancelResponseDto cancelResponseDto = kakaoPayService.kakaoPayCancel(member, order);
-        return ResponseEntity.ok().body(cancelResponseDto);
+    @PostMapping("/cancel/{orderNo}") // 결제 취소
+    public ResponseEntity<CancelResponseDto> cancelOrder(@PathVariable Long orderNo) {
+        return ResponseEntity.ok().body(kakaoPayService.kakaoPayCancel(orderNo));
     }
 }
