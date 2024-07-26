@@ -33,15 +33,4 @@ public class OrderItemHistResponseDto {
                 orderItem.getItem().getImageList().stream().map(ImageResponseDto::of).toList())
             .build();
     }
-
-    public OrderItemHistResponseDto(Long orderItemNo, String itemName, int count, int orderPrice) {
-        this.orderItemNo = orderItemNo;
-        this.itemName = itemName;
-        this.count = count;
-        this.orderPrice = orderPrice;
-    }
-
-    public void setImageList(List<ImageResponseDto> imageList) { // 이미지를 처리하는 로직은 서비스 레이어에서 처리
-        this.imageList = imageList;
-    }
 }

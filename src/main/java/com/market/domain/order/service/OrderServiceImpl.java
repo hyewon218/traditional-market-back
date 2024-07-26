@@ -1,6 +1,5 @@
 package com.market.domain.order.service;
 
-import com.market.domain.image.dto.ImageResponseDto;
 import com.market.domain.item.entity.Item;
 import com.market.domain.item.repository.ItemRepository;
 import com.market.domain.member.entity.Member;
@@ -56,20 +55,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true) // 주문 내 상품 목록 조회
     public List<OrderItemHistResponseDto> getOrderItemList(Member member) {
         Order order = getFirstOrderByMemberNo(member); // 로그인한 member 정보로 가장 최근 order 정보 가져오기
-
-        List<OrderItemHistResponseDto> orderItemDtoList = orderItemRepository.findOrderItemHistResponseDtoList(
-            order.getNo(), member.getMemberNo());
-
-        // 각 DTO 에 이미지 목록 추가
-        for (OrderItemHistResponseDto orderItemDto : orderItemDtoList) {
-            // 이미지 목록을 얻기 위해 엔터티를 가져옴
-            OrderItem orderItem = orderItemRepository.findById(orderItemDto.getOrderItemNo()).orElseThrow();
-            List<ImageResponseDto> imageList = orderItem.getItem().getImageList().stream()
-                .map(ImageResponseDto::of)
-                .toList();
-            orderItemDto.setImageList(imageList); // DTO 에 이미지 추가
-        }
-        return orderItemDtoList;
+        List<OrderItem> orderItemList = orderItemRepository.findAllByOrderNo(order.getNo());
+        return orderItemList.stream().map(OrderItemHistResponseDto::of).toList();
     }
 
     @Override

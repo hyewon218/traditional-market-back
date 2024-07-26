@@ -35,7 +35,7 @@ public class OrderController {
         return ResponseEntity.ok().body(orderNo);
     }
 
-    @GetMapping("/orderitems") // (가장 최근) 주문 내 상품 목록 조회(장바구니)
+    @GetMapping("/orderitems") // (가장 최근) 주문 내 상품 목록 조회(주문페이지)
     public ResponseEntity<List<OrderItemHistResponseDto>> getOrderItemList(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok().body(orderService.getOrderItemList(userDetails.getMember()));
