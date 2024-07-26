@@ -35,24 +35,32 @@ public class OrderController {
         return ResponseEntity.ok().body(orderNo);
     }
 
+    @GetMapping("/orderitems") // (가장 최근) 주문 내 상품 목록 조회(장바구니)
+    public ResponseEntity<List<OrderItemHistResponseDto>> getOrderItemList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok().body(orderService.getOrderItemList(userDetails.getMember()));
+    }
+
     @PutMapping("/orders/delivery") // 주문 시 배송지 저장
-    public ResponseEntity<String> saveDeliveryAddr(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<String> saveDeliveryAddr(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody SaveDeliveryRequestDto saveDeliveryRequestDto) {
         orderService.setDeliveryAddr(userDetails.getMember(), saveDeliveryRequestDto);
         return ResponseEntity.ok().body(saveDeliveryRequestDto.getDeliveryAddr());
     }
 
-    @GetMapping("/orders") // 주문 목록 조회
-    public ResponseEntity<Page<OrderHistResponseDto>> getOrdersWithMember(
-        @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
+    @GetMapping("/orders") // 가장 최근 주문 COMPLETE 주문 조회
+    public ResponseEntity<OrderHistResponseDto> getOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok()
-            .body(orderService.getOrderList(userDetails.getMember(), pageable));
+            .body(orderService.findLatestOrder(userDetails.getMember()));
     }
 
-    @GetMapping("/orderitems") // (가장 최근) 주문 내 상품 목록 조회
-    public ResponseEntity<List<OrderItemHistResponseDto>> getOrderItemList(
-        @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok().body(orderService.getOrderItemList(userDetails.getMember()));
+    @GetMapping("/orders-page") // 주문 COMPLETE 목록 조회
+    public ResponseEntity<Page<OrderHistResponseDto>> getOrders(
+        @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
+        return ResponseEntity.ok()
+            .body(orderService.getOrders(userDetails.getMember(), pageable));
     }
 
     @PostMapping("/orders/{orderNo}/cancel") // 주문 취소
