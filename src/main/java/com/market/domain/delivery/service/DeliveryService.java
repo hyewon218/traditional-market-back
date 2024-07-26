@@ -7,6 +7,7 @@ import com.market.domain.delivery.entity.Delivery;
 import com.market.domain.member.entity.Member;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DeliveryService {
 
@@ -98,4 +99,11 @@ public interface DeliveryService {
      * @param member : 기본 배송지 확인할 회원 정보
      */
     Delivery getCurrentPrimaryDelivery(Member member);
+
+    /**
+     * 기본 배송지 찾기
+     *
+     * @param member : 기본 배송지 확인할 회원 정보
+     */
+    Optional<Delivery> getCurrentPrimaryDeliveryOpt(Member member);
 }

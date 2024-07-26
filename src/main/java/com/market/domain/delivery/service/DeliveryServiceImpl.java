@@ -9,6 +9,8 @@ import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,27 +72,27 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
-    @Transactional // 기본배송지 설정
+    @Transactional // 기본배송지 수정
     public void setPrimary(Member member, Long deliveryNo) {
-        // 기존 기본배송지 찾기
-        Delivery currentPrimaryDelivery = getCurrentPrimaryDelivery(member);
+        // 기존 기본배송지 있는지 확인
+        Optional<Delivery> currentPrimaryDeliveryOpt = deliveryRepository.findByMemberNoAndIsPrimary(
+            member.getMemberNo(), true);
+        // 새로운 기본배송지 찾기
         Delivery newPrimaryDelivery = findById(deliveryNo);
-        if (currentPrimaryDelivery != null) {
-            // 기존 기본배송지를 기본 배송지에서 해제
-            currentPrimaryDelivery.updatePrimary(false);
-            // 새로운 기본배송지 설정
-            newPrimaryDelivery.updatePrimary(true);
-        } else {
-            // 새로운 기본배송지 설정
-            newPrimaryDelivery.updatePrimary(true);
+        // 기존 기본배송지가 존재하면 기본 배송지에서 해제
+        if (currentPrimaryDeliveryOpt.isPresent()) {
+            Delivery currentPrimaryDelivery = currentPrimaryDeliveryOpt.get();
+            currentPrimaryDelivery.updatePrimary(false); // 기존 기본배송지 해제
         }
+        // 새로운 기본배송지 설정
+        newPrimaryDelivery.updatePrimary(true);
     }
 
     @Override
-    @Transactional(readOnly = true) // 기본 배송지 조회(주문 페이지)
+    @Transactional(readOnly = true) // 기본 배송지 조회(주문 페이지) 단순조회
     public DeliveryResponseDto getCurrentPrimaryDeliveryDto(Member member) {
-        Delivery primaryDelivery = getCurrentPrimaryDelivery(member);
-        return DeliveryResponseDto.of(primaryDelivery);
+        Optional<Delivery> primaryDeliveryOpt = getCurrentPrimaryDeliveryOpt(member);
+        return DeliveryResponseDto.of(Objects.requireNonNull(primaryDeliveryOpt.orElse(null)));
     }
 
     @Override
@@ -117,5 +119,11 @@ public class DeliveryServiceImpl implements DeliveryService {
     public Delivery getCurrentPrimaryDelivery(Member member) {
         return deliveryRepository.findByMemberNoAndIsPrimary(member.getMemberNo(), true)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_PRIMARY_DELIVERY));
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 기본 배송지 조회
+    public Optional<Delivery> getCurrentPrimaryDeliveryOpt(Member member) {
+        return deliveryRepository.findByMemberNoAndIsPrimary(member.getMemberNo(), true);
     }
 }

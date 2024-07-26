@@ -1,9 +1,16 @@
 package com.market.domain.cartItem.dto;
 
+import com.market.domain.cartItem.entity.CartItem;
+import com.market.domain.image.dto.ImageResponseDto;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+@Builder
 @Getter
+@AllArgsConstructor
 @Setter
 public class CartItemDetailResponseDto {
 
@@ -17,14 +24,17 @@ public class CartItemDetailResponseDto {
 
     private int initialCount; //수량
 
-    private String imageUrl;
+    private List<ImageResponseDto> imageList; // 상품 이미지
 
-    public CartItemDetailResponseDto(Long cartItemNo, Long itemNo, String itemName, int price, int count, String imageUrl) {
-        this.cartItemNo = cartItemNo;
-        this.itemNo = itemNo;
-        this.itemName = itemName;
-        this.price = price;
-        this.initialCount = count;
-        this.imageUrl = imageUrl;
+    public static CartItemDetailResponseDto of(CartItem cartItem) {
+        return CartItemDetailResponseDto.builder()
+            .cartItemNo(cartItem.getNo())
+            .itemNo(cartItem.getItem().getNo())
+            .itemName(cartItem.getItem().getItemName())
+            .price(cartItem.getItem().getPrice())
+            .initialCount(cartItem.getCount())
+            .imageList(
+                cartItem.getItem().getImageList().stream().map(ImageResponseDto::of).toList())
+            .build();
     }
 }
