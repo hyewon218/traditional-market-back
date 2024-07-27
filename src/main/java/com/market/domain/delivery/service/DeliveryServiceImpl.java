@@ -8,10 +8,11 @@ import com.market.domain.delivery.repository.DeliveryRepository;
 import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +33,9 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional(readOnly = true) // 배송지 전체 조회
-    public List<DeliveryResponseDto> getAllDeliveries(Member member) {
-        return deliveryRepository.findAllByMemberNo(member.getMemberNo())
-            .stream()
-            .map(DeliveryResponseDto::of)
-            .toList();
+    public Page<DeliveryResponseDto> getAllDeliveries(Long memberNo, Pageable pageable) {
+        Page<Delivery> deliveries = deliveryRepository.findAllByMemberNo(memberNo, pageable);
+        return deliveries.map(DeliveryResponseDto::of);
     }
 
     @Override

@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -51,8 +53,8 @@ public class MemberController {
 
     // 전체 회원 조회
     @GetMapping("")
-    public ResponseEntity<List<MyInfoResponseDto>> findAllMember() {
-        List<MyInfoResponseDto> members = memberService.findAll();
+    public ResponseEntity<Page<MyInfoResponseDto>> findAllMember(Pageable pageable) {
+        Page<MyInfoResponseDto> members = memberService.findAll(pageable);
         return ResponseEntity.ok().body(members);
     }
 
@@ -132,12 +134,12 @@ public class MemberController {
     }
 
     // 비밀번호 변경
-    @PostMapping("/changepw")
+    @PutMapping("/changepw")
     public ResponseEntity<String> changeMemberPw(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                  @RequestBody ChangePwRequestDto changePwRequestDto) {
         Optional<Member> optionalMember = memberRepository.findById(userDetails.getMember().getMemberNo());
         if (optionalMember.isPresent()) {
-            if (memberService.changePassword(userDetails.getMember().getMemberNo(), changePwRequestDto.getCurrentPw(),
+            if (memberService.changePassword(userDetails.getMember().getMemberNo(),
                     changePwRequestDto.getChangePw(), changePwRequestDto.getConfirmPw())) {
                 return ResponseEntity.ok()
                         .body("비밀번호 변경 성공, 변경한 비밀번호 : " + changePwRequestDto.getChangePw());
@@ -147,9 +149,9 @@ public class MemberController {
     }
 
     // 회원가입 시 이메일 중복 확인
-    @GetMapping("/checkEmail")
+    @GetMapping("/checkemail")
     public ResponseEntity<ApiResponse> existsMemberEmail(String memberEmail) {
-        if (memberService.existsByMemberEmail(memberEmail) == true) {
+        if (memberService.existsByMemberEmail(memberEmail)) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse("이미 존재하는 이메일입니다", HttpStatus.BAD_REQUEST.value()));
         } else {
@@ -158,7 +160,7 @@ public class MemberController {
     }
 
     // 회원가입 시 아이디 중복 확인
-    @GetMapping("/checkId")
+    @GetMapping("/checkid")
     public ResponseEntity<ApiResponse> existsMemberId(String memberId) {
         if (memberService.existsByMemberId(memberId)) {
             return ResponseEntity.badRequest()
@@ -169,7 +171,7 @@ public class MemberController {
     }
 
     // 내정보 열람 시 본인 비밀번호 확인
-    @PostMapping("/myinfo/myinfo")
+    @PostMapping("/myinfo/check")
     public ResponseEntity<ApiResponse> verifyPassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                       HttpServletRequest request, HttpServletResponse response,
                                                       String password) {

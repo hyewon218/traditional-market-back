@@ -5,6 +5,8 @@ import com.market.domain.delivery.dto.DeliveryResponseDto;
 import com.market.domain.delivery.dto.DeliveryUpdateRequestDto;
 import com.market.domain.delivery.entity.Delivery;
 import com.market.domain.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +25,10 @@ public interface DeliveryService {
     /**
      * 배송지 목록 조회
      *
-     * @param member : 해당 배송지 소유 회원
+     * @param memberNo : 해당 배송지 소유 회원 고유번호
      * @return : 저장된 배송지 목록 반환
      */
-    List<DeliveryResponseDto> getAllDeliveries(Member member);
+    Page<DeliveryResponseDto> getAllDeliveries(Long memberNo, Pageable pageable);
 
     /**
      * 회원 특정 배송지 조회
