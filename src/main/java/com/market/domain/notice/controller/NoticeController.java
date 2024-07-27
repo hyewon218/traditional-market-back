@@ -8,10 +8,14 @@ import com.market.domain.notice.service.NoticeServiceImpl;
 import com.market.global.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,15 +27,17 @@ public class NoticeController {
 
     // 공지사항 생성
     @PostMapping("")
-    public ResponseEntity<Notice> createNotice(@RequestBody NoticeRequestDto noticeRequestDto) {
-        Notice savedNotice = noticeService.createNotice(noticeRequestDto);
+    public ResponseEntity<NoticeResponseDto> createNotice(@ModelAttribute NoticeRequestDto noticeRequestDto,
+                                                          @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
+            throws IOException {
+        NoticeResponseDto savedNotice = noticeService.createNotice(noticeRequestDto, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedNotice);
     }
 
     // 공지사항 전체 조회
     @GetMapping("")
-    public ResponseEntity<List<NoticeResponseDto>> findNotices() {
-        List<NoticeResponseDto> notices = noticeService.findAll();
+    public ResponseEntity<Page<NoticeResponseDto>> findNotices(Pageable pageable) {
+        Page<NoticeResponseDto> notices = noticeService.findAll(pageable);
         return ResponseEntity.ok().body(notices);
     }
 
@@ -44,9 +50,11 @@ public class NoticeController {
 
     // 공지사항 수정
     @PutMapping("/{noticeNo}")
-    public ResponseEntity<Notice> updateNotice(@PathVariable long noticeNo,
-                                               @RequestBody NoticeRequestDto requestDto) {
-        Notice updatedNotice = noticeService.update(noticeNo, requestDto);
+    public ResponseEntity<NoticeResponseDto> updateNotice(@PathVariable long noticeNo,
+                                               @ModelAttribute NoticeRequestDto requestDto,
+                                               @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
+            throws IOException {
+        NoticeResponseDto updatedNotice = noticeService.update(noticeNo, requestDto, files);
         return ResponseEntity.ok().body(updatedNotice);
     }
     

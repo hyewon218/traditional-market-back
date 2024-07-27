@@ -97,12 +97,6 @@ public class MarketServiceImpl implements MarketService {
         return marketList.map(MarketResponseDto::of);
     }
 
-//    @Transactional(readOnly = true) // 시장 단건 조회
-//    public MarketResponseDto getMarket(Long marketNo) {
-//        Market market = findMarket(marketNo);
-//        return MarketResponseDto.of(market);
-//    }
-
     @Transactional // 시장 단건 조회 // IP 주소당 하루에 조회수 1회 증가
     public MarketResponseDto getMarket(Long marketNo, HttpServletRequest request) {
         Market market = findMarket(marketNo);
