@@ -1,5 +1,6 @@
 package com.market.domain.inquiry.dto;
 
+import com.market.domain.inquiry.constrant.InquiryState;
 import com.market.domain.inquiry.entity.Inquiry;
 import com.market.domain.member.entity.Member;
 import jakarta.validation.constraints.NotBlank;
@@ -31,6 +32,7 @@ public class InquiryRequestDto {
                 .inquiryWriter(member.getNicknameWithRandomTag())
                 .inquiryTitle(this.inquiryTitle)
                 .inquiryContent(this.inquiryContent)
+                .inquiryState(InquiryState.ANSWER_PENDING)
                 .build();
     }
 }

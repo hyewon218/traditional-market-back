@@ -1,9 +1,14 @@
 package com.market.domain.inquiry.entity;
 
 import com.market.domain.base.BaseEntity;
+import com.market.domain.image.entity.Image;
+import com.market.domain.inquiry.constrant.InquiryState;
 import com.market.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -28,6 +33,13 @@ public class Inquiry extends BaseEntity {
     @Column(nullable = false)
     private String inquiryContent;
 
+    @Enumerated(EnumType.STRING)
+    private InquiryState inquiryState;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "inquiry", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    private List<Image> imageList = new ArrayList<>();
+
     public Inquiry(String inquiryTitle, String inquiryContent, Member member) {
         this.inquiryWriter = member.getNicknameWithRandomTag();
         this.inquiryTitle = inquiryTitle;
@@ -37,5 +49,9 @@ public class Inquiry extends BaseEntity {
     public void update(String inquiryTitle, String inquiryContent) {
         this.inquiryTitle = inquiryTitle;
         this.inquiryContent = inquiryContent;
+    }
+
+    public void updateState(InquiryState newState) {
+        this.inquiryState = newState;
     }
 }

@@ -1,7 +1,10 @@
 package com.market.domain.image.entity;
 
+import com.market.domain.inquiry.entity.Inquiry;
+import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.item.entity.Item;
 import com.market.domain.market.entity.Market;
+import com.market.domain.notice.entity.Notice;
 import com.market.domain.shop.entity.Shop;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +45,18 @@ public class Image {
     @JoinColumn(name = "item_no")
     private Item item;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inquiry_no")
+    private Inquiry inquiry;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notice_no")
+    private Notice notice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "answer_no")
+    private InquiryAnswer inquiryAnswer;
+
     public Image(Market market, String urlText) {
         this.market = market;
         this.imageUrl = urlText;
@@ -54,6 +69,21 @@ public class Image {
 
     public Image(Item item, String urlText) {
         this.item = item;
+        this.imageUrl = urlText;
+    }
+
+    public Image(Inquiry inquiry, String urlText) {
+        this.inquiry = inquiry;
+        this.imageUrl = urlText;
+    }
+
+    public Image(Notice notice, String urlText) {
+        this.notice = notice;
+        this.imageUrl = urlText;
+    }
+
+    public Image(InquiryAnswer inquiryAnswer, String urlText) {
+        this.inquiryAnswer = inquiryAnswer;
         this.imageUrl = urlText;
     }
 }

@@ -14,11 +14,23 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     List<Image> findByItem_No(Long item);
 
+    List<Image> findByInquiry_InquiryNo(Long inquiryNo);
+
+    List<Image> findByNotice_NoticeNo(Long noticeNo);
+
+    List<Image> findByInquiryAnswer_AnswerNo(Long answerNo);
+
     Boolean existsByImageUrlAndMarket_No(String imageUrl, Long marketNo);
 
     Boolean existsByImageUrlAndShop_No(String imageUrl, Long shopNo);
 
     Boolean existsByImageUrlAndItem_No(String imageUrl, Long no);
+
+    Boolean existsByImageUrlAndInquiry_InquiryNo(String imageUrl, Long inquiryNo);
+
+    Boolean existsByImageUrlAndInquiryAnswer_AnswerNo(String imageUrl, Long answerNo);
+
+    Boolean existsByImageUrlAndNotice_NoticeNo(String imageUrl, Long noticeNo);
 
     void deleteByImageUrlAndMarket_No(String defaultImageUrl, Long marketNo);
 
