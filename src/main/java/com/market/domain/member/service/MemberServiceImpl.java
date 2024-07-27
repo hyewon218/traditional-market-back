@@ -21,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
@@ -161,13 +163,9 @@ public class MemberServiceImpl implements MemberService {
     // 전체 회원 조회
     @Override
     @Transactional(readOnly = true)
-    public List<MyInfoResponseDto> findAll() {
-        List<Member> members = memberRepository.findAll();
-        List<MyInfoResponseDto> myInfoResponseDtos = members
-                .stream()
-                .map(MyInfoResponseDto::of)
-                .toList();
-        return myInfoResponseDtos;
+    public Page<MyInfoResponseDto> findAll(Pageable pageable) {
+        Page<Member> members = memberRepository.findAll(pageable);
+        return members.map(MyInfoResponseDto::of);
     }
 
     // 특정 회원 조회
@@ -274,25 +272,20 @@ public class MemberServiceImpl implements MemberService {
 
     // 비밀번호 변경
     @Override
-    public boolean changePassword(long memberNo, String currentPw, String changePw, String confirmPw) {
+    public boolean changePassword(long memberNo, String changePw, String confirmPw) {
         Optional<Member> optionalMember = memberRepository.findById(memberNo);
         Member member = optionalMember.get();
         if (member != null) {
             log.info("member : {}", member);
-            // 현재 입력한 비밀번호와 DB에 저장된 비밀번호가 일치하는지 확인
-            if (passwordEncoder.matches(currentPw, member.getMemberPw())) {
-                // 변경할 비밀번호와 변경할 비밀번호 재확인 일치하는지 확인
-                if (changePw.equals(confirmPw)) {
-                    member.setMemberPw(passwordEncoder.encode(changePw));
-                    memberRepository.save(member);
-                    log.info("비밀번호 변경 성공");
-                    return true;
+            // 변경할 비밀번호와 변경할 비밀번호 재확인 일치하는지 확인
+            if (changePw.equals(confirmPw)) {
+                member.setMemberPw(passwordEncoder.encode(changePw));
+                memberRepository.save(member);
+                log.info("비밀번호 변경 성공");
+                return true;
 
-                } else {
-                    log.info("변경할 비밀번호가 일치하지않습니다");
-                }
             } else {
-                log.info("현재 비밀번호가 일치하지않습니다");
+                log.info("변경할 비밀번호가 일치하지않습니다");
             }
         } else {
             log.info("해당 회원이 존재하지않습니다.");

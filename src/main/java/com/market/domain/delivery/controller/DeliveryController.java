@@ -6,9 +6,10 @@ import com.market.domain.delivery.dto.DeliveryUpdateRequestDto;
 import com.market.domain.delivery.service.DeliveryService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,10 +40,10 @@ public class DeliveryController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<DeliveryResponseDto>> getDeliveries( // 배송지 목록 조회
-        @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<DeliveryResponseDto> deliveries = deliveryService.getAllDeliveries(
-            userDetails.getMember());
+    public ResponseEntity<Page<DeliveryResponseDto>> getDeliveries( // 배송지 목록 조회
+        @AuthenticationPrincipal UserDetailsImpl userDetails, Pageable pageable) {
+        Page<DeliveryResponseDto> deliveries = deliveryService.getAllDeliveries(
+            userDetails.getMember().getMemberNo(), pageable);
         return ResponseEntity.ok().body(deliveries);
     }
 

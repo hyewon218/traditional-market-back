@@ -6,6 +6,8 @@ import com.market.domain.member.dto.MyInfoResponseDto;
 import com.market.domain.member.entity.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -44,7 +46,7 @@ public interface MemberService {
      *
      * @return : 회원 전체 목록
      */
-    List<MyInfoResponseDto> findAll();
+    Page<MyInfoResponseDto> findAll(Pageable pageable);
 
     /**
      * 특정 회원 조회
@@ -126,11 +128,10 @@ public interface MemberService {
      * 비밀번호 변경
      *
      * @param memberNo : 회원 있는지 확인할 memberNo
-     * @param currentPw : 현재 비밀번호
      * @param changePw : 변경할 비밀번호
      * @param confirmPw : 변경할 비밀번호 재확인
      */
-    boolean changePassword(long memberNo, String currentPw, String changePw, String confirmPw);
+    boolean changePassword(long memberNo, String changePw, String confirmPw);
 
     /**
      * 회원가입 시 이메일 중복 확인
