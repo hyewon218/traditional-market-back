@@ -1,8 +1,13 @@
 package com.market.domain.notice.entity;
 
 import com.market.domain.base.BaseEntity;
+import com.market.domain.image.entity.Image;
+import com.market.domain.notice.dto.NoticeRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Entity
@@ -25,14 +30,24 @@ public class Notice extends BaseEntity {
 
     private String noticeWriter; // "관리자"로 고정
 
+    private Long viewCount; // 조회수
+
+    @Builder.Default
+    @OneToMany(mappedBy = "notice", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    private List<Image> imageList = new ArrayList<>();
+
     public Notice(String noticeTitle, String noticeContent) {
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
         this.noticeWriter = "관리자";
     }
 
-    public void updateNotice(String noticeTitle, String noticeContent) {
-        this.noticeTitle = noticeTitle;
-        this.noticeContent = noticeContent;
+    public void updateNotice(NoticeRequestDto requestDto) {
+        this.noticeTitle = requestDto.getNoticeTitle();
+        this.noticeContent = requestDto.getNoticeContent();
+    }
+
+    public void setViewCount(Long viewCount) {
+        this.viewCount = viewCount;
     }
 }

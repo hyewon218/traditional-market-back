@@ -52,6 +52,8 @@ public class Market extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CategoryEnum category;
 
+    private Long viewCount; // 조회수
+
     @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true)
     private List<Image> imageList = new ArrayList<>();
@@ -73,5 +75,9 @@ public class Market extends BaseEntity {
         this.marketAddr = requestDto.getMarketAddr();
         this.category = requestDto.getCategory();
         this.marketDetail = requestDto.getMarketDetail();
+    }
+
+    public void setViewCount(Long viewCount) {
+        this.viewCount = viewCount;
     }
 }

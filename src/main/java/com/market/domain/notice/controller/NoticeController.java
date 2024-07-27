@@ -6,6 +6,7 @@ import com.market.domain.notice.dto.NoticeUpdateRequestDto;
 import com.market.domain.notice.entity.Notice;
 import com.market.domain.notice.service.NoticeServiceImpl;
 import com.market.global.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,16 +37,16 @@ public class NoticeController {
 
     // 특정 공지사항 조회
     @GetMapping("/{noticeNo}")
-    public ResponseEntity<NoticeResponseDto> findNotice(@PathVariable long noticeNo) {
-        Notice notice = noticeService.findById(noticeNo);
-        return ResponseEntity.ok().body(NoticeResponseDto.of(notice));
+    public ResponseEntity<NoticeResponseDto> findNotice(@PathVariable long noticeNo, HttpServletRequest request) {
+        NoticeResponseDto notice = noticeService.getNotice(noticeNo, request);
+        return ResponseEntity.ok().body(notice);
     }
 
     // 공지사항 수정
     @PutMapping("/{noticeNo}")
     public ResponseEntity<Notice> updateNotice(@PathVariable long noticeNo,
-                                               @RequestBody NoticeUpdateRequestDto updateRequestDto) {
-        Notice updatedNotice = noticeService.update(noticeNo, updateRequestDto);
+                                               @RequestBody NoticeRequestDto requestDto) {
+        Notice updatedNotice = noticeService.update(noticeNo, requestDto);
         return ResponseEntity.ok().body(updatedNotice);
     }
     

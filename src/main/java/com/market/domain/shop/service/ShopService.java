@@ -7,6 +7,8 @@ import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import java.io.IOException;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,7 +51,7 @@ public interface ShopService {
      * @param shopNo : 조회 할 상점 no
      * @return : 조회된 상점 단건 정보
      */
-    ShopResponseDto getShop(Long shopNo);
+    ShopResponseDto getShop(Long shopNo, HttpServletRequest request);
 
     /**
      * 상점명 수정

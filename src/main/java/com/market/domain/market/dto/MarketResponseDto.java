@@ -26,6 +26,8 @@ public class MarketResponseDto {
 
     private Integer likes;
 
+    private Long viewCount;
+
     private List<ShopResponseDto> shopList;
 
     private List<ImageResponseDto> imageList;
@@ -40,6 +42,7 @@ public class MarketResponseDto {
             .category(market.getCategory())
             .marketDetail(market.getMarketDetail())
             .likes(market.getMarketLikeList().size())
+            .viewCount(market.getViewCount())
             .shopList(market.getShopList().stream().map(ShopResponseDto::of).toList())
             .imageList(market.getImageList().stream().map(ImageResponseDto::of).toList())
             .commentList(market.getMarketCommentList().stream().map(MarketCommentResponseDto::of).toList())

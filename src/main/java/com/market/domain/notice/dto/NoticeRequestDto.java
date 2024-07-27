@@ -30,6 +30,7 @@ public class NoticeRequestDto {
                 .noticeTitle(this.noticeTitle)
                 .noticeContent(this.noticeContent)
                 .noticeWriter("관리자")
+                .viewCount(0L)
                 .build();
     }
 }

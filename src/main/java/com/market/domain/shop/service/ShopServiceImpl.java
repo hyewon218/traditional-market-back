@@ -24,6 +24,9 @@ import com.market.global.exception.ErrorCode;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+
+import com.market.global.ip.IpService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,7 @@ public class ShopServiceImpl implements ShopService {
     private final ShopLikeRepository shopLikeRepository;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
+    private final IpService ipService;
 
     @Override
     @Transactional // 상점 생성
@@ -101,9 +105,22 @@ public class ShopServiceImpl implements ShopService {
         return shopList.map(ShopResponseDto::of);
     }
 
-    @Transactional(readOnly = true) // 상점 단건 조회
-    public ShopResponseDto getShop(Long shopNo) {
+//    @Transactional(readOnly = true) // 상점 단건 조회
+//    public ShopResponseDto getShop(Long shopNo) {
+//        Shop shop = findShop(shopNo);
+//        return ShopResponseDto.of(shop);
+//    }
+
+    @Transactional // 상점 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+    public ShopResponseDto getShop(Long shopNo, HttpServletRequest request) {
         Shop shop = findShop(shopNo);
+
+        String ipAddress = ipService.getIpAddress(request);
+
+        if(!ipService.hasTypeBeenViewed(ipAddress, "shop", shopNo)) {
+            ipService.markTypeAsViewed(ipAddress, "shop", shopNo);
+            shop.setViewCount(shop.getViewCount() + 1);
+        }
         return ShopResponseDto.of(shop);
     }
 

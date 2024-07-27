@@ -8,6 +8,8 @@ import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,7 +53,7 @@ public interface MarketService {
      * @param marketNo : 조회 할 시장 no
      * @return : 조회된 시장 단건 정보
      */
-    MarketResponseDto getMarket(Long marketNo);
+    MarketResponseDto getMarket(Long marketNo, HttpServletRequest request);
 
     /**
      * 시장 수정

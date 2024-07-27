@@ -37,6 +37,7 @@ public class MarketRequestDto {
             .marketAddr(this.marketAddr)
             .category(this.category)
             .marketDetail(this.marketDetail)
+            .viewCount(0L)
             .build();
     }
 }

@@ -9,6 +9,8 @@ import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
 import java.io.IOException;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,8 +69,8 @@ public class MarketController {
 
     @GetMapping("/markets/{marketNo}") // 시장 단건 조회
     public ResponseEntity<MarketResponseDto> getMarket(
-        @PathVariable("marketNo") Long marketNo) {
-        return ResponseEntity.ok(marketService.getMarket(marketNo));
+            @PathVariable("marketNo") Long marketNo, HttpServletRequest request) {
+        return ResponseEntity.ok(marketService.getMarket(marketNo, request));
     }
 
     @PutMapping("/markets/{marketNo}")
@@ -98,8 +100,8 @@ public class MarketController {
 
     @GetMapping("/markets/{marketNo}/likes")
     public ResponseEntity<Integer> getMarketLike( // 좋아요 갯수 조회
-        @PathVariable Long marketNo) {
-        return ResponseEntity.ok(marketService.getMarket(marketNo).getLikes());
+        @PathVariable Long marketNo, HttpServletRequest request) {
+        return ResponseEntity.ok(marketService.getMarket(marketNo, request).getLikes());
     }
 
     @DeleteMapping("/markets/{marketNo}/likes")

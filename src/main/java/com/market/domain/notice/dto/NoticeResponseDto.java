@@ -18,6 +18,7 @@ public class NoticeResponseDto {
     private String noticeTitle;
     private String noticeContent;
     private String noticeWriter;
+    private Long viewCount;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
@@ -27,6 +28,7 @@ public class NoticeResponseDto {
                 .noticeTitle(notice.getNoticeTitle())
                 .noticeContent(notice.getNoticeContent())
                 .noticeWriter(notice.getNoticeWriter())
+                .viewCount(notice.getViewCount())
                 .createTime(notice.getCreateTime())
                 .updateTime(notice.getUpdateTime())
                 .build();
