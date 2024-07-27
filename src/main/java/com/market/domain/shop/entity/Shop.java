@@ -39,13 +39,9 @@ public class Shop extends BaseEntity {
     private String sellerName;
 
     @Column(nullable = false)
-    private String postCode; // 주소 찾기 api 이용 시 필요, 우편번호
-
-    @Column(nullable = false)
-    private String streetAddr; // 주소 찾기 api 이용 시 필요, 도로명 주소
-
-    @Column(nullable = false)
-    private String detailAddr; // 주소 찾기 api 이용 시 필요, 상세 주소
+    private String shopAddr;
+    
+    private Long viewCount; // 조회수
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -75,14 +71,11 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", orphanRemoval = true)
     private List<ShopComment> shopCommentList = new ArrayList<>();
 
-
     public void updateShop(ShopRequestDto requestDto) {
         this.shopName = requestDto.getShopName();
         this.tel = requestDto.getTel();
         this.sellerName = requestDto.getSellerName();
-        this.postCode = requestDto.getPostCode();
-        this.streetAddr = requestDto.getStreetAddr();
-        this.detailAddr = requestDto.getDetailAddr();
+        this.shopAddr = requestDto.getShopAddr();
         this.category = requestDto.getCategory();
     }
     public void updateShopSeller(ShopRequestDto requestDto, Member seller) {
@@ -90,9 +83,11 @@ public class Shop extends BaseEntity {
         this.shopName = requestDto.getShopName();
         this.tel = requestDto.getTel();
         this.sellerName = requestDto.getSellerName();
-        this.postCode = requestDto.getPostCode();
-        this.streetAddr = requestDto.getStreetAddr();
-        this.detailAddr = requestDto.getDetailAddr();
+        this.shopAddr = requestDto.getShopAddr();
         this.category = requestDto.getCategory();
+    }
+
+    public void setViewCount(Long viewCount) {
+        this.viewCount = viewCount;
     }
 }

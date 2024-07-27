@@ -1,6 +1,5 @@
 package com.market.global.visitor;
 
-import com.market.global.redis.RedisUtils;
 import com.market.global.security.CookieUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,15 +69,6 @@ public class VisitorService {
         return null;
     }
 
-//    private String createNewVisitorId(HttpServletResponse response) {
-//        String visitorId = UUID.randomUUID().toString();
-//        Cookie cookie = new Cookie(COOKIE_NAME, visitorId);
-//        cookie.setPath("/");
-//        cookie.setMaxAge((int) COOKIE_EXPIRATION);
-//        response.addCookie(cookie);
-//        return visitorId;
-//    }
-
     private String createNewVisitorId(HttpServletResponse response) {
         String visitorId = UUID.randomUUID().toString();
         CookieUtil.addCookie(response, COOKIE_NAME, visitorId, (int) COOKIE_EXPIRATION);
@@ -91,4 +81,23 @@ public class VisitorService {
         String key = "visitor:" + today;
         redisTemplate.delete(key);
     }
+
+    ////////////////////// 쿠키 사용해 조회수 증가 시 필요///////////////////////////////
+    public void markMarketAsViewed(String visitorId, Long marketNo) {
+        String today = LocalDate.now().format(DATE_FORMATTER);
+        String key = "marketViewed:" + visitorId + ":" + today;
+
+        LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
+        long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight).getSeconds();
+
+        redisTemplate.opsForSet().add(key, marketNo.toString()); // 시장 번호를 집합에 추가
+        redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS); // 만료 시간 설정
+    }
+
+    public boolean hasMarketBeenViewed(String visitorId, Long marketNo) {
+        String today = LocalDate.now().format(DATE_FORMATTER);
+        String key = "marketViewed:" + visitorId + ":" + today;
+        return redisTemplate.opsForSet().isMember(key, marketNo.toString());
+    }
+    //////////////////////////////////////////////////////////////////////////////////
 }

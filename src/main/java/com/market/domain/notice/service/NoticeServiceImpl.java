@@ -2,9 +2,10 @@ package com.market.domain.notice.service;
 
 import com.market.domain.notice.dto.NoticeRequestDto;
 import com.market.domain.notice.dto.NoticeResponseDto;
-import com.market.domain.notice.dto.NoticeUpdateRequestDto;
 import com.market.domain.notice.entity.Notice;
+import com.market.global.ip.IpService;
 import com.market.domain.notice.repository.NoticeRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
+    private final IpService ipService;
 
     // 공지사항 글 생성
     @Override
@@ -39,20 +41,35 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     // 특정 공지사항 조회
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Notice findById(long noticeNo) {
+//        return noticeRepository.findById(noticeNo)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));
+//    }
+
+    // 특정 공지사항 조회
     @Override
-    @Transactional(readOnly = true)
-    public Notice findById(long noticeNo) {
-        return noticeRepository.findById(noticeNo)
+    @Transactional
+    public NoticeResponseDto getNotice(long noticeNo, HttpServletRequest request) {
+        Notice notice = noticeRepository.findById(noticeNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));
+
+        String ipAddress = ipService.getIpAddress(request);
+        if (!ipService.hasTypeBeenViewed(ipAddress, "notice", notice.getNoticeNo())) {
+            ipService.markTypeAsViewed(ipAddress, "notice", notice.getNoticeNo());
+            notice.setViewCount(notice.getViewCount() + 1);
+        }
+        return NoticeResponseDto.of(notice);
     }
     
     // 공지사항 수정
     @Override
     @Transactional
-    public Notice update(long noticeNo, NoticeUpdateRequestDto updateRequestDto) {
+    public Notice update(long noticeNo, NoticeRequestDto requestDto) {
         Notice notice = noticeRepository.findById(noticeNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));
-        notice.updateNotice(updateRequestDto.getNoticeTitle(), updateRequestDto.getNoticeContent());
+        notice.updateNotice(requestDto);
         return notice;
     }
     

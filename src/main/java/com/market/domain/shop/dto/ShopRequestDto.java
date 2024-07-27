@@ -35,14 +35,8 @@ public class ShopRequestDto {
     @NotBlank(message = "상점 사장님 이름은 필수 입력 값입니다.")
     private String sellerName;
 
-    @NotBlank(message = "상점 우편번호는 필수 입력 값입니다.")
-    private String postCode;
-
-    @NotBlank(message = "상점 도로명주소는 필수 입력 값입니다.")
-    private String streetAddr;
-
-    @NotBlank(message = "상점 상세주소는 필수 입력 값입니다.")
-    private String detailAddr;
+    @NotBlank(message = "상점 주소는 필수 입력 값입니다.")
+    private String shopAddr;
 
     @NotBlank(message = "카테고리는 필수 입력 값입니다.")
     private CategoryEnum category;
@@ -56,10 +50,9 @@ public class ShopRequestDto {
             .shopName(this.shopName)
             .tel(this.tel)
             .sellerName(this.sellerName)
-            .postCode(this.postCode)
-            .streetAddr(this.streetAddr)
-            .detailAddr(this.detailAddr)
+            .shopAddr(this.shopAddr)
             .category(this.category)
+            .viewCount(0L)
             .build();
     }
     public Shop toEntity(Market market, Member seller) {
@@ -69,10 +62,9 @@ public class ShopRequestDto {
             .shopName(this.shopName)
             .tel(this.tel)
             .sellerName(this.sellerName)
-            .postCode(this.postCode)
-            .streetAddr(this.streetAddr)
-            .detailAddr(this.detailAddr)
+            .shopAddr(this.shopAddr)
             .category(this.category)
+            .viewCount(0L)
             .build();
     }
 }

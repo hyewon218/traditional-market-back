@@ -8,6 +8,8 @@ import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
 import java.io.IOException;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,8 +68,8 @@ public class ShopController {
 
     @GetMapping("/shops/{shopNo}") // 상점 단건 조회
     public ResponseEntity<ShopResponseDto> getShop(
-        @PathVariable Long shopNo) {
-        return ResponseEntity.ok(shopService.getShop(shopNo));
+            @PathVariable Long shopNo, HttpServletRequest request) {
+        return ResponseEntity.ok(shopService.getShop(shopNo, request));
     }
 
     @PutMapping("/shops/{shopNo}")
@@ -97,8 +99,8 @@ public class ShopController {
 
     @GetMapping("/shops/{shopNo}/likes")
     public ResponseEntity<Integer> getShopLike( // 좋아요 갯수 조회
-        @PathVariable Long shopNo) {
-        return ResponseEntity.ok(shopService.getShop(shopNo).getLikes());
+        @PathVariable Long shopNo, HttpServletRequest request) {
+        return ResponseEntity.ok(shopService.getShop(shopNo, request).getLikes());
     }
 
     @DeleteMapping("/shops/{shopNo}/likes")

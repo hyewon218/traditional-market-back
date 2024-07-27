@@ -24,6 +24,9 @@ import com.market.global.exception.ErrorCode;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+
+import com.market.global.ip.IpService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,7 @@ public class MarketServiceImpl implements MarketService {
     private final NotificationService notificationService;
     private final MemberRepository memberRepository;
     private final MarketRepositoryQuery marketRepositoryQuery;
+    private final IpService ipService;
 
     @Override
     @Transactional // 시장 생성
@@ -93,9 +97,22 @@ public class MarketServiceImpl implements MarketService {
         return marketList.map(MarketResponseDto::of);
     }
 
-    @Transactional(readOnly = true) // 시장 단건 조회
-    public MarketResponseDto getMarket(Long marketNo) {
+//    @Transactional(readOnly = true) // 시장 단건 조회
+//    public MarketResponseDto getMarket(Long marketNo) {
+//        Market market = findMarket(marketNo);
+//        return MarketResponseDto.of(market);
+//    }
+
+    @Transactional // 시장 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+    public MarketResponseDto getMarket(Long marketNo, HttpServletRequest request) {
         Market market = findMarket(marketNo);
+
+        String ipAddress = ipService.getIpAddress(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddress, "market", marketNo)) {
+            ipService.markTypeAsViewed(ipAddress, "market", marketNo);
+            market.setViewCount(market.getViewCount() + 1);
+        }
         return MarketResponseDto.of(market);
     }
 

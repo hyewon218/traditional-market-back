@@ -22,15 +22,13 @@ public class ShopResponseDto {
 
     private String sellerName;
 
-    private String postCode;
-
-    private String streetAddr;
-
-    private String detailAddr;
+    private String shopAddr;
 
     private CategoryEnum category;
 
     private Integer likes;
+
+    private Long viewCount; // 조회수
 
     private List<ImageResponseDto> imageList;
 
@@ -44,11 +42,10 @@ public class ShopResponseDto {
             .shopName(shop.getShopName())
             .tel(shop.getTel())
             .sellerName(shop.getSellerName())
-            .postCode(shop.getPostCode())
-            .streetAddr(shop.getStreetAddr())
-            .detailAddr(shop.getDetailAddr())
+            .shopAddr(shop.getShopAddr())
             .category(shop.getCategory())
             .likes(shop.getShopLikeList().size())
+            .viewCount(shop.getViewCount())
             .imageList(shop.getImageList().stream().map(ImageResponseDto::of).toList())
             .itemList(shop.getItemList().stream().map(ItemResponseDto::of).toList())
             .shopCommentList(

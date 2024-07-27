@@ -4,6 +4,7 @@ import com.market.domain.notice.dto.NoticeRequestDto;
 import com.market.domain.notice.dto.NoticeResponseDto;
 import com.market.domain.notice.dto.NoticeUpdateRequestDto;
 import com.market.domain.notice.entity.Notice;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -30,16 +31,16 @@ public interface NoticeService {
      * @param noticeNo : 공지사항 고유번호
      * @return : 특정 공지사항
      */
-    Notice findById(long noticeNo);
+    NoticeResponseDto getNotice(long noticeNo, HttpServletRequest request);
 
     /**
      * 공지사항 수정
      *
      * @param noticeNo : 공지사항 고유번호
-     * @param updateRequestDto : 공지사항 수정 요청 정보
+     * @param requestDto : 공지사항 수정 요청 정보
      * @return : 수정된 공지사항
      */
-    Notice update(long noticeNo, NoticeUpdateRequestDto updateRequestDto);
+    Notice update(long noticeNo, NoticeRequestDto requestDto);
 
     /**
      * 공지사항 삭제
