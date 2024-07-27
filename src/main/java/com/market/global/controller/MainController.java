@@ -6,9 +6,10 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberServiceImpl;
 import com.market.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -100,12 +101,6 @@ public class MainController {
         return "members/myinfo/list";
     }
 
-    // 배송지 관리 // 인증 필요, 테스트 끝나면 security에서 바꾸기
-    @GetMapping("/myinfo/delivery")
-    public String getMyDeliveryList() {
-        return "members/myinfo/mydelivery";
-    }
-
     // 내 문의사항 목록 보기 // 인증 필요, 테스트 끝나면 security에서 바꾸기
     @GetMapping("/myinfo/inquiries")
     public String getMyInquiryList() {
@@ -113,29 +108,133 @@ public class MainController {
     }
 
     // 내 문의사항 개별 보기 // 인증 필요, 테스트 끝나면 security에서 바꾸기
+//    @GetMapping("/myinfo/inquiry/{inquiryNo}")
+//    public String getMyInquiry(@PathVariable Long inquiryNo,
+//                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(
+//                authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+//        Member member = userDetails.getMember();
+//        Inquiry inquiry = inquiryService.findById(inquiryNo);
+//
+//        if (isAdmin || member.getMemberNo() == inquiry.getMemberNo()) {
+//            return "inquiry/inquiryinfo";
+//        } else {
+//            return "unauthorized";
+//        }
+//    }
     @GetMapping("/myinfo/inquiry/{inquiryNo}")
     public String getMyInquiry(@PathVariable Long inquiryNo,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(
+                authority -> authority.getAuthority().equals("ROLE_ADMIN"));
         Member member = userDetails.getMember();
         Inquiry inquiry = inquiryService.findById(inquiryNo);
 
-        if (member.getMemberNo() == inquiry.getMemberNo()) {
+        if (isAdmin) {
+            return "admin/inquiryinfo";
+        } else if (member.getMemberNo().equals(inquiry.getMemberNo())) {
             return "inquiry/inquiryinfo";
         } else {
             return "unauthorized";
         }
     }
 
-    // 배송지 관리
+    // 공지사항 추가 페이지(관리자)
+    @GetMapping("/admin/notice/a")
+    public String addNotice() {
+        return "notice/addNotice";
+    }
+
+    // 공지사항 관리 페이지(관리자)
+    @GetMapping("/admin/notices")
+    public String getNoticeManage() {
+        return "admin/noticeManage";
+    }
+
+    // 공지사항 전체 조회(관리자 외)
+    @GetMapping("/noticelist")
+    public String getNotices() {
+        return "notice/noticelist";
+    }
+
+    // 공지사항 개별 보기
+    @GetMapping("/notice/{noticeNo}")
+    public String getNotice() {
+        return "notice/noticeinfo";
+    }
+
+    // 공지사항 수정 페이지
+    @GetMapping("/admin/notices/{noticeNo}")
+    public String getUpdateNoticePage() {
+        return "notice/updateNotice";
+    }
+
+    // 배송지 관리 // 인증 필요, 테스트 끝나면 security에서 바꾸기
     @GetMapping("/myinfo/deliveries")
     public String getDeliveries() {
         return "members/myinfo/mydelivery";
     }
 
-    // 회원 탈퇴
+    // 회원 탈퇴 // 인증 필요, 테스트 끝나면 security에서 바꾸기
     @GetMapping("/myinfo/v")
     public String getVerification() {
         return "members/myinfo/delete";
+    }
+
+    // 전체 회원 목록 조회(admin만)
+    @GetMapping("/admin/members")
+    public String getMemberList() {
+        return "admin/memberlist";
+    }
+
+    // 전체 문의사항 목록 조회(admin만)
+    @GetMapping("/admin/inquiries")
+    public String getInquiryList() {
+        return "admin/inquirylist";
+    }
+
+    // 아이디 찾기
+    @GetMapping("/members/findid")
+    public String getFindId() {
+        return "members/findid";
+    }
+
+    // 임시비밀번호 발급
+    @GetMapping("/members/temppw")
+    public String getTempPw() {
+        return "members/temppassword";
+    }
+
+    // 배송지 목록
+    @GetMapping("/delivery/deliverylist")
+    public String getDeliveryLIst() {
+        return "delivery/deliveryList";
+    }
+
+    // 배송지 추가
+    @GetMapping("/delivery/add")
+    public String addDelivery() {
+        return "delivery/addDelivery";
+    }
+
+    // 배송지 수정
+    @GetMapping("/delivery/deliverylist/{deliveryNo}")
+    public String updateDelivery() {
+        return "delivery/updateDelivery";
+    }
+
+    // 주문 페이지 테스트
+    @GetMapping("/order/test")
+    public String orderTest() {
+        return "order/test";
+    }
+
+    // 문의사항 작성 페이지
+    @GetMapping("/inquiry/add")
+    public String getAddInquiry() {
+        return "inquiry/addInquiry";
     }
 
     // 시장 찾기 메뉴
@@ -164,9 +263,85 @@ public class MainController {
 
     // 특정 시장 조회
     @GetMapping("/markets/{marketNo}")
-    public String marketDetail(@PathVariable Long marketNo) {
+    public String marketDetail() {
         return "market/marketInfo";
     }
 
+    @GetMapping("/kakaopay")
+    public String payRequest() {
+        return "kakaopay/kakaopay";
+    }
+
+    // 주문 후 주문 정보 페이지
+    @GetMapping("/orderinfo")
+    public String getOrderInfo() {
+        return "order/orderinfo";
+    }
+
+    // 시장 관리 페이지
+    @GetMapping("/admin/markets")
+    public String getMarketManage() {
+        return "admin/marketManage";
+    }
+
+    // 시장 추가 페이지
+    @GetMapping("/admin/markets/a")
+    public String addMarket() {
+        return "admin/addMarket";
+    }
+
+    // 특정 시장 조회(관리자)
+    @GetMapping("/admin/markets/{marketNo}")
+    public String getMarket() {
+        return "admin/marketinfo";
+    }
+
+    // 시장 수정 페이지
+    @GetMapping("/admin/markets/u/{marketNo}")
+    public String updateMarket() {
+        return "admin/updateMarket";
+    }
+
+    // 제미나이 css 테스트 페이지
+    @GetMapping("/admin/test")
+    public String geminiTest() {
+        return "admin/gmarket";
+    }
+
+    // 상점 관리 페이지
+    @GetMapping("/admin/shops")
+    public String getShopManage() {
+        return "admin/shopManage";
+    }
+
+    // 상점 추가 페이지
+    @GetMapping("/admin/shops/a")
+    public String addShop() {
+        return "admin/addShop";
+    }
+
+    // 특정 상점 조회
+    @GetMapping("/shops/{shopNo}")
+    public String shopDetail() {
+        return "shop/shopInfo";
+    }
+
+    // 특정 상점 조회(관리자)
+    @GetMapping("/admin/shops/{shopNo}")
+    public String getShop() {
+        return "admin/shopinfo";
+    }
+
+    // 상점 수정 페이지
+    @GetMapping("/admin/shops/u/{shopNo}")
+    public String updateShop() {
+        return "admin/updateShop";
+    }
+
+    // 방문자 수 집계(관리자)
+    @GetMapping("/admin/visitor")
+    public String viewVisitorCount() {
+        return "admin/visitorCount";
+    }
 
 }

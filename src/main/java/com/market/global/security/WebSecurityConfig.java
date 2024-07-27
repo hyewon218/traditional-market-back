@@ -60,30 +60,33 @@ public class WebSecurityConfig {
             AuthenticationManager authenticationManager) throws Exception {
             http
                 .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers(HttpMethod.GET, "/api/members").hasAnyRole("ADMIN") // 전체 회원 목록 조회
-                    .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyRole("ADMIN") // 공지사항 생성
-                    .requestMatchers(HttpMethod.PUT, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 수정
-                    .requestMatchers(HttpMethod.DELETE, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 삭제
-                    .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/markets").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/markets/**").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/markets/**").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/shops").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/shops/**").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/shops/**").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
-                    .requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
-                    .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login", "/api/members/login",
-                        "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
-                            "/api/oauth2/login", "/api/send-mail/**", "/api/members/checkEmail", "/api/members/checkId",
-                            "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**", "/api/members/myinfo/myinfo",
-                        "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
-                    .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/api/inquiries", "/myinfo/inquiry/**",
-                         "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
-                        "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
-                    .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
-                    .anyRequest().permitAll() // authenticated로 바꾸기
+                        .requestMatchers(HttpMethod.GET, "/api/members").hasAnyRole("ADMIN") // 전체 회원 목록 조회
+                        .requestMatchers(HttpMethod.GET, "/api/inquiries").hasAnyRole("ADMIN") // 전체 문의사항 조회
+                        .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyRole("ADMIN") // 공지사항 생성
+                        .requestMatchers(HttpMethod.PUT, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 수정
+                        .requestMatchers(HttpMethod.DELETE, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 삭제
+                        .requestMatchers(HttpMethod.DELETE, "/api/inquiries").hasAnyRole("ADMIN") // 모든 사람 문의사항 전체 삭제
+                        .requestMatchers(HttpMethod.POST, "/api/inquiryanswer/**").hasAnyRole("ADMIN") // 문의사항에 답변 등록
+                        .requestMatchers(HttpMethod.POST, "/api/markets").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/markets/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/markets/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/shops").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/shops/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/shops/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasAnyRole("ADMIN")
+                        .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login",
+                                "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
+                                "/api/oauth2/login", "/api/send-mail/**", "/api/members/checkemail", "/api/members/checkid",
+                                "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**", "/api/members/myinfo/myinfo",
+                                "/api/members/changepw", "/api/members/login", "/api/members/myinfo/check",
+                                "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/myinfo/inquiry/**",
+                                "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
+                                "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
+                        .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
+                        .anyRequest().permitAll() // authenticated로 바꾸기
                 )
 
                 .oauth2Login(oauth2 -> oauth2

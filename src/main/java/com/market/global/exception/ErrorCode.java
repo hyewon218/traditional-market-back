@@ -47,6 +47,7 @@ public enum ErrorCode {
     // 배송지
     NOT_FOUND_DELIVERY(HttpStatus.NOT_FOUND, "D001", "해당 배송지가 존재하지 않습니다."),
     NOT_FOUND_PRIMARY_DELIVERY(HttpStatus.NOT_FOUND, "D002", "기본 배송지가 존재하지 않습니다."),
+    NOT_FOUND_SELECTED_DELIVERY(HttpStatus.NOT_FOUND, "D002", "선택된 배송지가 존재하지 않습니다."),
     NOT_AUTHORITY_DELIVERY(HttpStatus.BAD_REQUEST, "C002", "배송지 권한이 없습니다."),
     // 알람
     NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "N001", "notification 연결 에러입니다."),
@@ -59,6 +60,11 @@ public enum ErrorCode {
     ONLY_MASTER_DELETE(HttpStatus. BAD_REQUEST, "C005", "채팅방 개설자만 삭제할 수 있습니다."),
     // aws s3
     EXISTED_FILE(HttpStatus.BAD_REQUEST, "AS001", "중복된 파일명입니다."),
+    // 문의사항
+    INQUIRY_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "IQ001", "오늘의 문의사항 생성 개수 제한을 초과하였습니다."),
+    // 문의사항 답변
+    NOT_FOUND_INQUIRY_ANSWER (HttpStatus. BAD_REQUEST, "IQA001", "존재하지 않는 문의사항 답변입나다."),
+    NOT_AUTHORITY_ANSWER(HttpStatus.BAD_REQUEST, "C002", "답변 열람 권한이 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
