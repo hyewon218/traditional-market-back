@@ -2,6 +2,7 @@ package com.market.domain.member.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.delivery.repository.DeliveryRepository;
+import com.market.domain.deliveryMessage.repository.DeliveryMessageRepository;
 import com.market.domain.inquiry.repository.InquiryRepository;
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
@@ -45,6 +46,7 @@ public class MemberServiceImpl implements MemberService {
     private final ObjectMapper objectMapper;
     private final DeliveryRepository deliveryRepository;
     private final InquiryRepository inquiryRepository;
+    private final DeliveryMessageRepository deliveryMessageRepository;
 
     // 회원 생성
     @Override
@@ -192,6 +194,7 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
+        deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
         redisUtils.deleteValues(memberId); // 리프레시토큰 삭제
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
         CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제

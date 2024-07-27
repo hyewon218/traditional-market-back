@@ -10,4 +10,6 @@ import java.util.List;
 public interface DeliveryMessageRepository extends JpaRepository<DeliveryMessage, Long> {
 
     List<DeliveryMessage> findAllByMemberNo(long memberNo);
+
+    void deleteAllByMemberNo(long memberNo);
 }
