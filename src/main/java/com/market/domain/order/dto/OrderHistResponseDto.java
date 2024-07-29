@@ -22,6 +22,8 @@ public class OrderHistResponseDto {
 
     private OrderStatus orderStatus; //주문 상태
 
+    private String orderStatusDisplayName; // 주문 상태의 표시 이름
+
     private List<OrderItemHistResponseDto> orderItemList; // 주문상품 리스트
 
     public static OrderHistResponseDto of(Order order) {
@@ -30,6 +32,7 @@ public class OrderHistResponseDto {
             .orderDate(order.getOrderDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
             .deliveryAddr(order.getDeliveryAddr())
             .orderStatus(order.getOrderStatus())
+            .orderStatusDisplayName(order.getOrderStatus().toString())
             .orderItemList(
                 order.getOrderItemList().stream().map(OrderItemHistResponseDto::of).toList())
             .build();
