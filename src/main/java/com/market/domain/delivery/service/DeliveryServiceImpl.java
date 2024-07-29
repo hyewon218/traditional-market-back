@@ -8,7 +8,6 @@ import com.market.domain.delivery.repository.DeliveryRepository;
 import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -91,7 +90,8 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional(readOnly = true) // 기본 배송지 조회(주문 페이지) 단순조회
     public DeliveryResponseDto getCurrentPrimaryDeliveryDto(Member member) {
         Optional<Delivery> primaryDeliveryOpt = getCurrentPrimaryDeliveryOpt(member);
-        return DeliveryResponseDto.of(Objects.requireNonNull(primaryDeliveryOpt.orElse(null)));
+        return primaryDeliveryOpt.map(DeliveryResponseDto::of)
+            .orElseGet(DeliveryResponseDto::new); // orElse 를 활용하여 빈 객체 반환
     }
 
     @Override
