@@ -68,7 +68,7 @@ public class CartServiceImpl implements CartService {
             );
             orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
         }
-        Order order = Order.toEntity(member, orderItemList); // (주문 상품 담아) 주문 생성
+        Order order = Order.toEntity(member, orderItemList, true); // (주문 상품 담아) 주문 생성
         orderRepository.save(order); // 주문 저장
         return order.getNo();
     }
