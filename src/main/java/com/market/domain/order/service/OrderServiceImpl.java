@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
         );
         List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
         orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
-        Order order = Order.toEntity(member, orderItemList); // (주문 상품 담아) 주문 생성
+        Order order = Order.toEntity(member, orderItemList, false); // (주문 상품 담아) 주문 생성
         orderRepository.save(order); // 주문 저장
         return order.getNo();
     }
@@ -85,19 +85,19 @@ public class OrderServiceImpl implements OrderService {
 
     /*결제 승인 후*/
     @Override
-    @Transactional // order 의 status COMPLETE 로 변경
+    @Transactional // 주문 상태 COMPLETE 로 변경
     public void setOrderComplete(Order order) {
         order.setOrderComplete();
     }
 
     @Override
-    @Transactional(readOnly = true) // ORDER 주문 목록 조회
+    @Transactional(readOnly = true) // 주문 상태 ORDER 주문 목록 조회
     public List<Order> getStatusOrders(Member member) {
         return orderRepository.findStatusOrders(member.getMemberNo(), OrderStatus.ORDER);
     }
 
     @Override
-    @Transactional // 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제
+    @Transactional // 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가 후 주문 목록 삭제
     public void statusOrderItemListAddStockAndDelete(Member member) {
         List<Order> orderList = getStatusOrders(member);
         for (Order order : orderList) {

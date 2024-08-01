@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "orders")
+@Table(name = "orders") // order = 예약된 키워드
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
@@ -57,6 +57,8 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList = new ArrayList<>(); // 장바구니 페이지에서 한 번에 여러개 주문 가능
 
+    private boolean isCartOrder; // 장바구니 주문 여부
+
     public void setOder(OrderItem orderItem) {
         orderItem.setOrder(this); // orderItem 객체에 order 객체 세팅(양방향 참조)
     }
@@ -69,12 +71,13 @@ public class Order extends BaseEntity {
         this.deliveryAddr = saveDeliveryRequestDto.getDeliveryAddr();
     }
 
-    public static Order toEntity(Member member, List<OrderItem> orderItemList) {
+    public static Order toEntity(Member member, List<OrderItem> orderItemList, Boolean isCartOrder) {
         Order order = Order.builder()
             .member(member)
             .orderItemList(orderItemList)
             .orderStatus(OrderStatus.ORDER)
             .orderDate(LocalDateTime.now())
+            .isCartOrder(isCartOrder)
             .build();
         for (OrderItem orderItem : orderItemList) {
             order.setOder(orderItem);
