@@ -91,26 +91,19 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 주문 상태 ORDER 주문 목록 조회
-    public List<Order> getStatusOrders(Member member) {
-        return orderRepository.findStatusOrders(member.getMemberNo(), OrderStatus.ORDER);
+    @Transactional(readOnly = true) // 주문 상태 ORDER 주문 목록 조회(전체)
+    public List<Order> getAllStatusOrders() {
+        return orderRepository.findAllByOrderStatus(OrderStatus.ORDER);
     }
 
-    @Override
+    @Override /* 스케줄러로 주기적으로 삭제*/
     @Transactional // 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가 후 주문 목록 삭제
-    public void statusOrderItemListAddStockAndDelete(Member member) {
-        List<Order> orderList = getStatusOrders(member);
+    public void deleteAllOrdersAndRestoreStock() {
+        List<Order> orderList = getAllStatusOrders();
         for (Order order : orderList) {
             order.statusOrderAddStock();
         }
         orderRepository.deleteAll(orderList);
-    }
-
-    @Override
-    @Transactional // 결제 승인 후
-    public void afterPayApprove(Member member, Order order) {
-        setOrderComplete(order);
-        statusOrderItemListAddStockAndDelete(member);
     }
 
     @Override
