@@ -15,4 +15,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Page<Shop> findAllByMarket_No(Long marketNo, Pageable pageable);
 
     Page<Shop> findByCategoryOrderByCategoryDesc(CategoryEnum category, Pageable pageable);
+
+    Page<Shop> findByMarketNoAndCategory(Long marketNo, CategoryEnum category, Pageable pageable);
 }
