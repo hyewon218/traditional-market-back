@@ -3,6 +3,7 @@ package com.market.domain.chatRoom.entity;
 import com.market.domain.base.BaseEntity;
 import com.market.domain.chat.entity.Chat;
 import com.market.domain.member.entity.Member;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -39,7 +40,7 @@ public class ChatRoom extends BaseEntity {
     private String title; // 채팅방 이름
 
     @Builder.Default
-    @OneToMany(mappedBy = "chatRoom", orphanRemoval = true)
+    @OneToMany(mappedBy = "chatRoom", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Chat> ChatMessages = new ArrayList<>();
 
 }
