@@ -160,9 +160,12 @@ public class KakaoPayService {
             requestEntity,
             ApproveResponseDto.class);
 
-        cartItemService.deleteAllCartItems(member); // 장바구니 상품 삭제
-        // 주문 상태 COMPLETE 으로 변경 및 주문 상태 ORDER 인 주문 상품 목록 재고 증가 후 주문 목록 삭제
-        orderService.afterPayApprove(member, order);
+        // 장바구니에서 주문한 경우에만 장바구니 상품 삭제
+        if (order.isCartOrder()) {
+            cartItemService.deleteAllCartItems(member);
+        }
+        // 주문 상태 COMPLETE 으로 변경
+        orderService.setOrderComplete(order);
 
         return approveResponseDto;
     }

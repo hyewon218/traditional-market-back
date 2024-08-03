@@ -21,7 +21,7 @@ public interface OrderService {
     Long order(OrderItemRequestDto requestDto, Member member);
 
     /**
-     *  가장 최근 주문 찾기 (주문페이지)
+     * 가장 최근 주문 찾기 (주문페이지)
      *
      * @param member : 로그인한 사용자
      */
@@ -56,28 +56,35 @@ public interface OrderService {
     /*결제 승인 후*/
     /**
      * order 의 status COMPLETE 로 변경
-     *
      */
     void setOrderComplete(Order order);
 
     /**
      * ORDER 주문 목록 조회
      *
-     * @return : 조회된 주문들 정보
+     * @return : 조회된 주문 목록
      */
-    List<Order> getStatusOrders(Member member);
+    Order getStatusOrder(Member member);
+
+
+    boolean hasStatusOrder(Member member);
 
     /**
      * 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제
-     *
      */
-    void statusOrderItemListAddStockAndDelete(Member member);
+    void deleteOrderAndRestoreStock(Member member);
 
     /**
-     * 결제 완료 후 실행
+     * ORDER 주문 목록 조회(전체)
      *
+     * @return : 조회된 주문 목록
      */
-    void afterPayApprove(Member member, Order order);
+    List<Order> getAllStatusOrders();
+
+    /**
+     * 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제(전체)
+     */
+    void deleteAllOrdersAndRestoreStock();
 
     /**
      * 주문 취소

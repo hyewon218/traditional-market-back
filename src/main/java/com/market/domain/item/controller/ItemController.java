@@ -29,8 +29,8 @@ public class ItemController {
 
     private final ItemService itemService;
 
-    @PostMapping("/items")
-    public ResponseEntity<ItemResponseDto> createItem( // 상품 생성
+    @PostMapping("/items") // 상품 생성
+    public ResponseEntity<ItemResponseDto> createItem(
         @ModelAttribute ItemRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
@@ -51,7 +51,6 @@ public class ItemController {
         return ResponseEntity.ok().body(result);
     }
 
-
     @GetMapping("/items/search") // 키워드 검색 상품 목록 조회
     public ResponseEntity<Page<ItemResponseDto>> searchItems(ItemSearchCond cond,
         Pageable pageable) {
@@ -67,18 +66,6 @@ public class ItemController {
         return ResponseEntity.ok().body(result);
     }
 
-    @GetMapping("/items/ranking") // 상품 가격 랭킹 조회
-    public ResponseEntity<List<ItemResponseDto>> searchPriceRankFiveItems(ItemSearchCond cond) {
-        List<ItemResponseDto> result = itemService.searchRankingFiveItems(cond);
-        return ResponseEntity.ok().body(result);
-    }
-
-    @GetMapping("/items/{itemNo}") // 상품 단건 조회
-    public ResponseEntity<ItemResponseDto> getItem(
-        @PathVariable Long itemNo, HttpServletRequest request) {
-        return ResponseEntity.ok(itemService.getItem(itemNo, request));
-    }
-
     @GetMapping("/items/category") // 상품 카테고리별 조회
     public ResponseEntity<Page<ItemResponseDto>> getCategoryShop(ItemCategoryEnum itemCategory,
         Pageable pageable) {
@@ -88,7 +75,7 @@ public class ItemController {
 
     @GetMapping("/{marketNo}/items/category") // 시장 번호와 상품 카테고리로 해당하는 상품 목록 조회
     public ResponseEntity<List<ItemCategoryResponseDto>> getItemsByCategory(
-        @PathVariable Long marketNo, ItemCategoryEnum itemCategory) {
+        @PathVariable("marketNo") Long marketNo, @RequestParam("category") ItemCategoryEnum itemCategory) {
         List<ItemCategoryResponseDto> categories = itemService.getItemsByCategory(marketNo,
             itemCategory);
         return ResponseEntity.ok().body(categories);
@@ -103,11 +90,23 @@ public class ItemController {
     }
 
     @GetMapping("/{marketNo}/items/rank") // 상품 저렴한 순으로 5개 조회
-    public ResponseEntity<?> getTop5ItemsInMarketByCategory(
-        @PathVariable Long marketNo, String itemName) {
+    public ResponseEntity<List<ItemTop5ResponseDto>> getTop5ItemsInMarketByCategory(
+        @PathVariable("marketNo") Long marketNo, String itemName) {
         List<ItemTop5ResponseDto> top5Items = itemService.getTop5ItemsInMarketByItemName(marketNo,
             itemName);
         return ResponseEntity.ok().body(top5Items);
+    }
+
+    @GetMapping("/items/ranking") // 상품 가격 랭킹 조회
+    public ResponseEntity<List<ItemResponseDto>> searchPriceRankFiveItems(ItemSearchCond cond) {
+        List<ItemResponseDto> result = itemService.searchRankingFiveItems(cond);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/items/{itemNo}") // 상품 단건 조회
+    public ResponseEntity<ItemResponseDto> getItem(
+        @PathVariable Long itemNo, HttpServletRequest request) {
+        return ResponseEntity.ok(itemService.getItem(itemNo, request));
     }
 
     @PutMapping("/items/{itemNo}")

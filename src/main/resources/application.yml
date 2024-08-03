@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: traditional-market
+  #Spring Batch
+  batch:
+    job:
+      name: ${job.name:NONE} # 파라미터로 받은 job.name 을 job.name 에 넣어준다.
+      enabled: false # 프로그램 인수가 있더라도 실행이 되지 않는다.
+    jdbc:
+      initialize-schema: always
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/${DB_NAME}

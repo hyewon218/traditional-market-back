@@ -1,9 +1,7 @@
 package com.market.domain.notification.constant;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
 public enum NotificationType {
     NEW_LIKE_ON_MARKET("시장에 좋아요가 눌렸어요!"),
@@ -15,4 +13,13 @@ public enum NotificationType {
     NEW_PURCHASE_ON_SHOP("판매 상품에 구매요청이 왔어요!");
 
     private final String notificationContent;
+
+    NotificationType(String notificationContent) {
+        this.notificationContent = notificationContent;
+    }
+
+    @Override
+    public String toString() {
+        return notificationContent;
+    }
 }

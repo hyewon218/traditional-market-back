@@ -1,9 +1,9 @@
 package com.market.domain.cart.service;
 
 import com.market.domain.cart.dto.CartRequestDto;
-import com.market.domain.cartItem.dto.CartItemOrderRequestDto;
 import com.market.domain.cart.entity.Cart;
 import com.market.domain.cart.repository.CartRepository;
+import com.market.domain.cartItem.dto.CartItemOrderRequestDto;
 import com.market.domain.cartItem.dto.CartItemRequestDto;
 import com.market.domain.cartItem.entity.CartItem;
 import com.market.domain.cartItem.repository.CartItemRepository;
@@ -12,6 +12,7 @@ import com.market.domain.item.repository.ItemRepository;
 import com.market.domain.member.entity.Member;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.repository.OrderRepository;
+import com.market.domain.order.service.OrderService;
 import com.market.domain.orderItem.dto.OrderItemRequestDto;
 import com.market.domain.orderItem.entity.OrderItem;
 import com.market.global.exception.BusinessException;
@@ -30,21 +31,18 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     @Override
-    @Transactional
+    @Transactional // 장바구니 추가
     public Long addCart(CartItemRequestDto cartItemDto, Member member) {
         // 선택한 상품 장바구니
         Item item = itemRepository.findById(cartItemDto.getItemNo()).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
         );
-        Cart cart = getCartByMemberNo(member.getMemberNo());
-
-        if (cart == null) {
-            cart = CartRequestDto.toEntity(member);
-            cartRepository.save(cart); // 장바구니 없으면 생성
-        }
-        CartItem savedCartItem = cartItemRepository.findByCart_NoAndItem_No(cart.getNo(), item.getNo());
+        Cart cart = getOrCreateCartByMember(member);
+        CartItem savedCartItem = cartItemRepository.findByCart_NoAndItem_No(cart.getNo(),
+            item.getNo());
 
         if (savedCartItem != null) {
             savedCartItem.addCount(cartItemDto.getCount()); // 장바구니에 담겨있는 상품이라면 갯수 더함
@@ -57,9 +55,16 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
+    @Transactional // 장바구니 상품 주문
     public Long cartOrders(List<OrderItemRequestDto> orderItemDtoList, Member member) {
         List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
+
+        // 이전 주문(결제하지 않은, 주문 상태 ORDER) 이 있는지 확인
+        synchronized (orderService) { // 동시성 문제 해결
+            if (orderService.hasStatusOrder(member)) { // 이전 주문이 있으면
+                orderService.deleteOrderAndRestoreStock(member); // 재고 증가(복원) 후 주문 삭제
+            }
+        }
 
         for (OrderItemRequestDto orderItemDto : orderItemDtoList) {
             // 선택한 상품 주문
@@ -68,7 +73,7 @@ public class CartServiceImpl implements CartService {
             );
             orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
         }
-        Order order = Order.toEntity(member, orderItemList); // (주문 상품 담아) 주문 생성
+        Order order = Order.toEntity(member, orderItemList, true); // (주문 상품 담아) 주문 생성
         orderRepository.save(order); // 주문 저장
         return order.getNo();
     }
@@ -91,7 +96,12 @@ public class CartServiceImpl implements CartService {
         return cartOrders(orderItemList, member);
     }
 
-    public Cart getCartByMemberNo(Long memberNo) { // memberNo 로 장바구니 찾기
-        return cartRepository.findByMember_MemberNo(memberNo);
+    public Cart getOrCreateCartByMember(Member member) { // member 로 장바구니 조회 및 생성
+        return cartRepository.findByMember_MemberNo(member.getMemberNo())
+            .orElseGet(() -> {
+                Cart newCart = CartRequestDto.toEntity(member);
+                cartRepository.save(newCart); // 장바구니 없으면 생성
+                return newCart;
+            });
     }
 }

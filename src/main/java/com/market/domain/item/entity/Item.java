@@ -9,6 +9,7 @@ import com.market.domain.item.itemLike.entity.ItemLike;
 import com.market.domain.shop.entity.Shop;
 import com.market.global.exception.ErrorCode;
 import com.market.global.exception.OutOfStockException;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -64,15 +65,15 @@ public class Item extends BaseEntity {
     private Shop shop;
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Image> imageList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<ItemLike> itemLikeList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<ItemComment> itemCommentList = new ArrayList<>();
 
     public void updateItem(ItemRequestDto requestDto) {

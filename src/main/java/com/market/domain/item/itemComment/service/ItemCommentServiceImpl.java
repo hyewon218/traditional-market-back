@@ -50,7 +50,7 @@ public class ItemCommentServiceImpl implements ItemCommentService {
             receiver = item.getShop().getSeller();
         }
         notificationService.send(
-            NotificationType.NEW_COMMENT_ON_SHOP,
+            NotificationType.NEW_COMMENT_ON_ITEM,
             new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
     }
 
