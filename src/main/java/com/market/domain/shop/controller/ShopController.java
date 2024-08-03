@@ -66,6 +66,14 @@ public class ShopController {
         return ResponseEntity.ok().body(result);
     }
 
+    @GetMapping("/{marketNo}/shops/category") // 시장 번호와 상점 카테고리로 해당하는 상점 목록 조회
+    public ResponseEntity<Page<ShopResponseDto>> getShopsByCategory(
+        @PathVariable Long marketNo, CategoryEnum category, Pageable pageable) {
+        Page<ShopResponseDto> categories = shopService.getShopsByCategory(marketNo,
+            category, pageable);
+        return ResponseEntity.ok().body(categories);
+    }
+
     @GetMapping("/shops/{shopNo}") // 상점 단건 조회
     public ResponseEntity<ShopResponseDto> getShop(
             @PathVariable Long shopNo, HttpServletRequest request) {
