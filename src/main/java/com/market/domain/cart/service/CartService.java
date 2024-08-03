@@ -34,9 +34,9 @@ public interface CartService {
     Long orderCartItems(List<CartItemOrderRequestDto> cartOrderDtoList, Member member);
 
     /**
-     * 로그인한 사용자 정보로 카트 조회
+     * 로그인한 사용자 정보로 카트 조회 및 생성
      *
-     * @param memberNo : 로그인한 사용자 No
+     * @param member : 로그인한 사용자
      */
-    Cart getCartByMemberNo(Long memberNo);
+    Cart getOrCreateCartByMember(Member member);
 }

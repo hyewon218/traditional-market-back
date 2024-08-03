@@ -23,21 +23,21 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartService cartService;
 
     @Override
-    @Transactional(readOnly = true) // 장바구니 내 상품 목록 조회
+    @Transactional // 장바구니 내 상품 목록 조회
     public List<CartItemDetailResponseDto> getCartItemList(Member member) {
-        Cart cart = cartService.getCartByMemberNo(member.getMemberNo()); // 로그인한 member 정보로 cart 정보 가져오기
-        if (cart == null) {
-            return Collections.emptyList(); // cart 가 null(상품 추가 전)이면 빈 리스트 반환
-        }
-        List<CartItem> cartItemList = cartItemRepository.findAllByCart_No(cart.getNo());
+        List<CartItem> cartItemList = getEntityCartItemList(member);
         return cartItemList.stream().map(CartItemDetailResponseDto::of).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CartItem> getEntityCartItemList(Member member) {
-        Cart cart = cartService.getCartByMemberNo(member.getMemberNo());
-        return cartItemRepository.findAllByCart_No(cart.getNo());
+        Cart cart = cartService.getOrCreateCartByMember(member); // 로그인한 member 정보로 cart 정보 가져오기
+        List<CartItem> cartItemList = cartItemRepository.findAllByCart_No(cart.getNo()); // 장바구니 상품 목록 조회
+        if (cartItemList == null || cartItemList.isEmpty()) {
+            return Collections.emptyList(); // 장바구니에 상품이 존재하지 않는다면 빈 리스트 반환
+        }
+        return cartItemList;
     }
 
     @Override
