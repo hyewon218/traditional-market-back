@@ -44,9 +44,10 @@ public class IpService { // 공지사항, 시장, 상점 조회 시 클라이언
     private String generateKey(String ipAddress, String type) {
         String today = LocalDate.now().format(DATE_FORMATTER);
         return switch (type) {
-            case "shop" -> "shopViewed:" + ipAddress + "_" + today;
-            case "market" -> "marketViewed:" + ipAddress + "_" + today;
             case "notice" -> "noticeViewed:" + ipAddress + "_" + today;
+            case "market" -> "marketViewed:" + ipAddress + "_" + today;
+            case "shop" -> "shopViewed:" + ipAddress + "_" + today;
+            case "item" -> "itemViewed:" + ipAddress + "_" + today;
             default -> throw new IllegalArgumentException("Unsupported type: " + type);
         };
     }
