@@ -49,6 +49,7 @@ public class ItemRequestDto {
             .itemDetail(this.itemDetail)
             .itemCategory(this.itemCategory)
             .itemSellStatus(this.itemSellStatus)
+            .viewCount(0L)
             .build();
     }
 }

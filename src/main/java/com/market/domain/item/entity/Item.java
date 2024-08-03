@@ -59,6 +59,8 @@ public class Item extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus; // 상품 판매 상태
+    
+    private Long viewCount; // 조회수
 
     @ManyToOne
     @JoinColumn(name = "shop_no")
@@ -92,9 +94,19 @@ public class Item extends BaseEntity {
                     this.stockNumber));
         }
         this.stockNumber = restStock;
+        if (this.stockNumber == 0) {
+            this.itemSellStatus = ItemSellStatus.SOLD_OUT; // 재고가 0이면 ItemSellStatus 필드 'SOLD_OUT'으로 변경
+        }
     }
 
     public void addStock(int stockNumber) { // 주문 취소 시 상품의 재고를 증가
         this.stockNumber += stockNumber;
+        if (this.stockNumber > 0) {
+            this.itemSellStatus = ItemSellStatus.SELL; // 재고가 있으면 'SELL'로 변경
+        }
+    }
+
+    public void setViewCount(Long viewCount) {
+        this.viewCount = viewCount;
     }
 }
