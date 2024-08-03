@@ -24,11 +24,17 @@ public class ShopResponseDto {
 
     private String shopAddr;
 
+    private String shopLat;
+
+    private String shopLng;
+
     private CategoryEnum category;
 
     private Integer likes;
 
     private Long viewCount; // 조회수
+
+    private Long marketNo; // 소속 시장 알기 위한 필드
 
     private List<ImageResponseDto> imageList;
 
@@ -43,9 +49,12 @@ public class ShopResponseDto {
             .tel(shop.getTel())
             .sellerName(shop.getSellerName())
             .shopAddr(shop.getShopAddr())
+            .shopLat(shop.getShopLat())
+            .shopLng(shop.getShopLng())
             .category(shop.getCategory())
             .likes(shop.getShopLikeList().size())
             .viewCount(shop.getViewCount())
+            .marketNo(shop.getMarket().getNo())
             .imageList(shop.getImageList().stream().map(ImageResponseDto::of).toList())
             .itemList(shop.getItemList().stream().map(ItemResponseDto::of).toList())
             .shopCommentList(
