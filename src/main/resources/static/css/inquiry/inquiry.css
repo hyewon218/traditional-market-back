@@ -1,3 +1,80 @@
 @import url(/css/common/reset.css);
 @import url(/css/common/header.css);
 @import url(/css/common/footer.css);
+
+/* textarea 스타일 추가 */
+#inquiryContent {
+  width: 50%;
+  height: 150px;
+  resize: none;
+}
+#imagePreview {
+  margin-top: 10px;
+  display: flex; /* Flexbox로 이미지 정렬 */
+  flex-wrap: wrap; /* 여러 줄로 감싸기 */
+}
+.preview-image-container {
+  position: relative;
+  margin-right: 10px;
+  margin-bottom: 10px; /* 이미지 간격 추가 */
+}
+.preview-image {
+  width: 100px;
+  height: 100px;
+  margin-right: 10px;
+  margin-bottom: 10px; /* 이미지 간격 추가 */
+  object-fit: cover; /* 이미지 비율 유지 */
+}
+.delete-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  background-color: rgba(255, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+}
+/*inquiryinfo 내 버튼*/
+.button-info {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+/* 모달 스타일 */
+.modal {
+    display: none; /* 기본적으로 숨김 */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #ffffff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}

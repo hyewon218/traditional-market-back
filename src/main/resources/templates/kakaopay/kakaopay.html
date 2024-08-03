@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오페이</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+        body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin: auto;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007aff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #005bb5;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #orderInfo {
+        margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>결제하기</h1>
+  <button id="payButton">결제</button>
+</div>
+
+<script>
+        $(document).ready(function() {
+            $('#payButton').click(function() {
+                $.ajax({
+                    url: '/api/payment/ready',
+                    type: 'POST',
+                    success: function(response) {
+                        // 카카오 결제 요청 URL로 리다이렉트
+                        console.log(response);
+                        window.location.href = response.next_redirect_pc_url;
+                    },
+                    error: function(error) {
+                        alert("주문 정보를 가져오는 데 실패했습니다.");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

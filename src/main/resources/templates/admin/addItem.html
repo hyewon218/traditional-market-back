@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>상품 추가</title>
+  <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+  <script th:src="@{/js/admin/addItem.js}" defer="defer"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="admin-body">
+  <div class="admin-sidebar">
+    <h3>관리자 메뉴</h3>
+    <ul>
+      <li><a th:href="@{/admin/markets}">시장 관리</a></li>
+      <li><a th:href="@{/admin/shops}">상점 관리</a></li>
+      <li><a th:href="@{/admin/items}">상품 관리</a></li>
+      <li><a th:href="@{/admin/members}">회원목록 조회</a></li>
+      <li><a th:href="@{/admin/inquiries}">문의사항 목록</a></li>
+      <li><a th:href="@{/admin/notices}">공지사항 관리</a></li>
+      <li><a th:href="@{/admin/visitor}">방문자 수</a></li>
+    </ul>
+  </div>
+  <div class="item-add">
+    <h2>상품 추가</h2>
+    <form id="addItemForm" enctype="multipart/form-data">
+      <div>
+        <label for="marketNo">소속 시장</label>
+        <select id="marketNo" name="marketNo">
+          <option value="">시장 선택</option>
+        </select>
+      </div>
+      <div>
+        <label for="shopNo">소속 상점</label>
+        <select id="shopNo" name="shopNo">
+          <option value="">상점 선택</option>
+        </select>
+      </div>
+      <div>
+        <label for="itemName">상품 이름</label>
+        <input type="text" id="itemName" name="itemName" required placeholder="상품 이름을 입력하세요" />
+      </div>
+      <div>
+        <label for="price">가격</label>
+        <input type="text" id="price" name="price" required placeholder="가격을 입력하세요" />
+      </div>
+      <div>
+        <label for="itemDetail">상품 상세</label>
+        <input type="text" id="itemDetail" name="itemDetail" required placeholder="상품 상세설명을 입력하세요" />
+      </div>
+      <div>
+        <label for="stockNumber">재고</label>
+        <input type="text" id="stockNumber" name="stockNumber" required placeholder="상품 재고를 입력하세요" />
+      </div>
+      <div>
+        <label for="itemCategory">상품 분류</label>
+        <select id="itemCategory" name="itemCategory" required>
+          <option value="">상품분류 선택</option>
+          <option value="과일">과일</option>
+          <option value="채소">채소</option>
+          <option value="육류">육류</option>
+          <option value="생선">생선</option>
+        </select>
+      <div>
+        <label for="itemSellStatus">판매 상태</label>
+        <select id="itemSellStatus" name="itemSellStatus" required>
+          <option value="">판매상태 선택</option>
+          <option value="SELL">판매중</option>
+          <option value="SOLD_OUT">품절</option>
+        </select>
+      </div>
+      <div>
+        <label for="imageFiles">이미지 업로드</label>
+        <input type="file" id="imageFiles" name="imageFiles" multiple accept="image/*" />
+        <div id="imagePreview"></div>
+      </div>
+      <div>
+        <button type="submit">상품추가</button>
+        <button type="button" onclick="window.history.back()">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- 이미지 미리보기 모달 -->
+<div id="myModal" class="modal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img class="modal-content" id="img01">
+  <div id="caption"></div>
+</div>
+</body>
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
+</html>

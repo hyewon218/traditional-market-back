@@ -1,5 +1,6 @@
 package com.market.domain.member.service;
 
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MyInfoResponseDto;
@@ -64,6 +65,15 @@ public interface MemberService {
      * @return : 회원 Entity
      */
     Member update(long memberNo, MemberRequestDto memberRequestDto);
+
+    /**
+     * 회원 권한 수정(admin만 가능)
+     *
+     * @param memberNo : 수정할 회원 고유번호
+     * @param memberRequestDto : 회원 수정 요청 정보
+     * @return : 회원 Entity
+     */
+    Member updateRole(long memberNo, MemberRequestDto memberRequestDto);
     
     /**
      * 회원 삭제
@@ -75,6 +85,15 @@ public interface MemberService {
      */
     void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
 
+    /**
+     * 회원 삭제(admin이 다른 회원 삭제)
+     *
+     * @param memberNo : 삭제할 회원 고유번호
+     * @param memberId : 삭제할 회원 아이디
+     * @param httpRequest :
+     * @param httpResponse :
+     */
+    void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
     /**
      * OAuth2 최초 로그인 시 닉네임 수정
      *
@@ -174,6 +193,14 @@ public interface MemberService {
      * @return : true / false
      */
     boolean isPasswordVerified(HttpServletRequest request, String randomTag);
+
+    /**
+     * 권한 조회
+     *
+     * @param role : 특정 role
+     * @return : role에 일치하는 회원 목록 반환
+     */
+    Page<MyInfoResponseDto> getRole(Role role, Pageable pageable);
 
     /**
      * 회원 아이디 마스킹 처리

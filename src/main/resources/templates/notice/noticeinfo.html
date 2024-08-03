@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+                xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항 상세보기</title>
+    <link rel="stylesheet" th:href="@{/css/notice/notice.css}">
+    <script th:src="@{/js/notice/noticeinfo.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* 미리보기 스타일 */
+        .preview-image {
+            width: 100px;
+            height: 100px;
+            margin-right: 10px;
+            margin-bottom: 10px; /* 이미지 간격 추가 */
+            object-fit: cover; /* 이미지 비율 유지 */
+            cursor: pointer; /* 클릭 가능 표시 */
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+    <div class="notice-info">
+        <h2 id="h2">공지사항 상세정보</h2>
+        <div>
+            <strong>제목 :</strong> <span id="noticeTitle"></span>
+        </div>
+        <div>
+            <strong>작성자 :</strong> <span id="noticeWriter"></span>
+        </div>
+        <div>
+            <strong>내용 :</strong> <span id="noticeContent"></span>
+        </div>
+        <div>
+            <strong>작성 시간 :</strong> <span id="createTime"></span>
+        </div>
+        <div>
+            <strong>이미지 :</strong>
+            <div id="imageContainer"></div>
+        </div>
+        <th:block sec:authorize="hasAnyRole('ADMIN')">
+            <button class="update-notice" data-notice-no="${notice.noticeNo}">수정</button> <!--관리자만 보이게 하기-->
+            <button class="delete-notice" data-notice-no="${notice.noticeNo}">삭제</button> <!--관리자만 보이게 하기-->
+        </th:block>
+    </div>
+
+<!-- 모달 -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="img01">
+    <div id="caption"></div>
+</div>
+<!-- 비밀번호 입력 모달창 -->
+<div class="modalPw" id="verifyPwModal" style="display:none;">
+    <div class="modal-content-pw">
+        <h2>공지사항 삭제</h2>
+        <form id="verifyPwForm">
+            <label for="adminPw">관리자 비밀번호 입력</label>
+            <input type="password" id="adminPw" name="adminPw" required><br>
+            <button type="button" id="deleteExecuteBtn">확인</button>
+            <button type="button" id="deleteCancelBtn" class="close">취소</button>
+        </form>
+        <div id="checkPwError" style="color: red;"></div> <!-- 오류 메시지 표시 -->
+    </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>

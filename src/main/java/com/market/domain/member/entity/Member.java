@@ -3,6 +3,7 @@ package com.market.domain.member.entity;
 import com.market.domain.base.BaseEntity;
 import com.market.domain.cart.entity.Cart;
 import com.market.domain.member.constant.Role;
+import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.order.entity.Order;
 import com.market.global.security.oauth2.ProviderType;
 import jakarta.persistence.*;
@@ -42,6 +43,7 @@ public class Member extends BaseEntity {
     private String memberPw;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 30)
     private Role role;  // member, seller, admin 권한
 
     @Enumerated(EnumType.STRING)
@@ -65,10 +67,16 @@ public class Member extends BaseEntity {
     }
 
     // 회원 정보 수정 메서드(닉네임, 비밀번호 수정)
-    public void update(String memberNickname, String memberPw) {
-        this.memberNickname = memberNickname;
-        this.nicknameWithRandomTag = memberNickname + this.randomTag;
-        this.memberPw = memberPw;
+    public void update(MemberRequestDto requestDto) {
+        this.memberNickname = requestDto.getMemberNickname();
+        this.nicknameWithRandomTag = requestDto.getMemberNickname() + this.randomTag;
+        this.memberPw = requestDto.getMemberPw();
+        this.role = requestDto.getRole();
+    }
+
+    // 회원 권한 수정 메서드(admin만 가능)
+    public void updateRole(MemberRequestDto requestDto) {
+        this.role = requestDto.getRole();
     }
 
     public void updateNickname(String memberNickname) {

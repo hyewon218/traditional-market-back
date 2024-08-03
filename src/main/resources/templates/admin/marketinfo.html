@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>시장 상세보기(관리자)</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+    <script th:src="@{/js/admin/marketinfo.js}" defer="defer"></script>
+    <script th:src="@{/js/mapWeather.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=wbg83yihp2&submodules=geocoder"></script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div id="admin-body">
+    <div class="admin-sidebar">
+        <h3>관리자 메뉴</h3>
+        <ul>
+            <li><a th:href="@{/admin/markets}">시장 관리</a></li>
+            <li><a th:href="@{/admin/shops}">상점 관리</a></li>
+            <li><a th:href="@{/admin/items}">상품 관리</a></li>
+            <li><a th:href="@{/admin/members}">회원목록 조회</a></li>
+            <li><a th:href="@{/admin/inquiries}">문의사항 목록</a></li>
+            <li><a th:href="@{/admin/notices}">공지사항 관리</a></li>
+            <li><a th:href="@{/admin/visitor}">방문자 수</a></li>
+        </ul>
+    </div>
+    <button id="addShopButton">상점 추가</button>
+    <div class="adminMarket-info">
+        <h2 id="h2">시장 상세정보(관리자)</h2>
+        <div>
+            <strong>이미지 :</strong>
+            <div id="imageContainer"></div>
+        </div>
+        <div>
+            <strong>시장 고유번호 :</strong> <span id="marketNo"></span>
+        </div>
+        <div>
+            <strong>시장 이름 :</strong> <span id="marketName"></span>
+        </div>
+        <div>
+            <strong>시장 주소 :</strong> <span id="marketAddr"></span>
+        </div>
+        <div>
+            <strong>시장 상세 :</strong> <span id="marketDetail"></span>
+        </div>
+        <div>
+            <strong>도시명 :</strong> <span id="category"></span>
+        </div>
+        <div>
+            <strong>조회수 :</strong> <span id="viewCount"></span>
+        </div>
+        <div>
+            <strong>좋아요 수 :</strong> <span id="likes"></span>
+        </div>
+        <div>
+            <strong>주차정보 1 :</strong> <span id="parkingInfo1"></span>
+        </div>
+        <div>
+            <strong>주차정보 2 :</strong> <span id="parkingInfo2"></span>
+        </div>
+        <div>
+            <strong>버스정류장 정보 :</strong> <span id="busInfo"></span>
+        </div>
+        <div>
+            <strong>버스정류장 x :</strong> <span id="busLat"></span>
+        </div>
+        <div>
+            <strong>버스정류장 y :</strong> <span id="busLng"></span>
+        </div>
+        <div>
+            <strong>지하철역 정보 :</strong> <span id="subwayInfo"></span>
+        </div>
+        <div>
+            <strong>지하철역 x :</strong> <span id="subwayLat"></span>
+        </div>
+        <div>
+            <strong>지하철역 y :</strong> <span id="subwayLng"></span>
+        </div>
+        <div>
+            <strong>상점 목록 :</strong>
+            <div id="shopContainer"></div>
+        </div>
+        <div>
+            <strong>댓글 목록 :</strong>
+            <div id="commentContainer"></div>
+        </div>
+        <div>
+            <strong>시장 생성일 :</strong> <span id="createTime"></span>
+        </div>
+        <div>
+            <strong>시장 정보 변경일 :</strong> <span id="updateTime"></span>
+        </div>
+        <th:block sec:authorize="hasAnyRole('ADMIN')">
+            <button class="button-info" id="updateButton">수정</button>
+            <button class="button-info" id="deleteButton">삭제</button>
+        </th:block>
+    </div>
+</div>
+
+<!-- 지도가 표시되는 영역 -->
+<div id="map" style="width:500px;height:400px;"></div>
+<button id="parkingInfoBtn">주차 정보</button>
+<button id="nearTransport">근처 대중교통</button>
+
+<!-- 날씨 정보가 표시되는 영역 -->
+<div id="weather-info" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 400px;">
+    <h3 id="h3">날씨 정보</h3>
+    <p id="current-temp"></p>
+    <p id="feels-like"></p>
+    <p id="min-temp"></p>
+    <p id="max-temp"></p>
+    <p id="humidity"></p>
+    <p id="weather-description"></p>
+    <div id="weather-image-container"></div> <!-- 날씨 이미지를 표시할 컨테이너 -->
+</div>
+
+<!--이미지 모달 -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="img01">
+    <div id="caption"></div>
+</div>
+
+<!-- 주차 정보 모달 -->
+<div id="parkingModal" class="modal">
+    <span class="close" onclick="closeParkingModal()">&times;</span>
+    <div class="modal-content">
+        <h2 class="modal-title">주차 정보</h2>
+        <div id="parkingMap" style="width:600px;height:600px;"></div>
+    </div>
+</div>
+
+<!-- 대중교통 모달 -->
+<div id="transportModal" class="modal">
+    <span class="close" onclick="closeTransportModal()">&times;</span>
+    <div class="modal-content">
+        <h2 class="modal-title">근처 대중교통</h2>
+        <div id="transportMap" style="width:600px;height:600px;"></div>
+    </div>
+</div>
+
+<!-- 비밀번호 입력 모달창 -->
+<div class="modalPw" id="verifyPwModal" style="display:none;">
+    <div class="modal-content-pw">
+        <h2>시장 삭제</h2>
+        <form id="verifyPwForm">
+            <label for="adminPw">관리자 비밀번호 입력</label>
+            <input type="password" id="adminPw" name="adminPw" required><br>
+            <button type="button" id="deleteExecuteBtn">확인</button>
+            <button type="button" id="deleteCancelBtn" class="close">취소</button>
+        </form>
+        <div id="checkPwError" style="color: red;"></div> <!-- 오류 메시지 표시 -->
+    </div>
+</div>
+</body>
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
+</html>
