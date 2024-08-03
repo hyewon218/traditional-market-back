@@ -6,6 +6,7 @@ import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.marketComment.entity.MarketComment;
 import com.market.domain.market.marketLike.entity.MarketLike;
 import com.market.domain.shop.entity.Shop;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -55,19 +56,19 @@ public class Market extends BaseEntity {
     private Long viewCount; // 조회수
 
     @Builder.Default
-    @OneToMany(mappedBy = "market", orphanRemoval = true)
-    private List<Image> imageList = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "market", orphanRemoval = true)
+    @OneToMany(mappedBy = "market", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Shop> shopList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "market", orphanRemoval = true)
+    @OneToMany(mappedBy = "market", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    private List<Image> imageList = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "market", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<MarketLike> marketLikeList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "market", orphanRemoval = true)
+    @OneToMany(mappedBy = "market", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<MarketComment> marketCommentList = new ArrayList<>();
 
     public void update(MarketRequestDto requestDto){

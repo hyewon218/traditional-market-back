@@ -56,19 +56,19 @@ public class Shop extends BaseEntity {
     private Member seller;
 
     @Builder.Default
-    @OneToMany(mappedBy = "shop", orphanRemoval = true)
+    @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Item> itemList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "shop", orphanRemoval = true)
+    @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Image> imageList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "shop", orphanRemoval = true)
+    @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<ShopLike> shopLikeList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "shop", orphanRemoval = true)
+    @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<ShopComment> shopCommentList = new ArrayList<>();
 
     public void updateShop(ShopRequestDto requestDto) {
