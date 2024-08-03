@@ -22,6 +22,7 @@ public enum ErrorCode {
     NOT_USER_SHOP_DELETE(HttpStatus.BAD_REQUEST,"S006","작성자만 삭제할 수 있습니다."),
     NOT_FOUND_SHOP_COMMENT(HttpStatus.BAD_REQUEST,"S007","존재하지 않는 댓글입니다."),
     NOT_EXISTS_SELLER(HttpStatus.BAD_REQUEST, "S008", "해당 상점의 사장님이 존재하지 않습니다."),
+    NOT_FOUND_CATEGORY_SHOPS(HttpStatus.NOT_FOUND, "I008", "카테고리에 대한 시장 내 상점 목록이 존재하지 않습니다."),
     // 상품
     NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I001", "존재하지 않는 상품입니다."),
     EXISTED_ITEM(HttpStatus.BAD_REQUEST, "I002", "중복된 상품명입니다."),

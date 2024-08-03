@@ -35,8 +35,11 @@ public class ShopRequestDto {
     @NotBlank(message = "상점 사장님 이름은 필수 입력 값입니다.")
     private String sellerName;
 
-    @NotBlank(message = "상점 주소는 필수 입력 값입니다.")
     private String shopAddr;
+
+    private String shopLat;
+
+    private String shopLng;
 
     @NotBlank(message = "카테고리는 필수 입력 값입니다.")
     private CategoryEnum category;
@@ -51,6 +54,8 @@ public class ShopRequestDto {
             .tel(this.tel)
             .sellerName(this.sellerName)
             .shopAddr(this.shopAddr)
+            .shopLat(this.shopLat)
+            .shopLng(this.shopLng)
             .category(this.category)
             .viewCount(0L)
             .build();
@@ -63,6 +68,8 @@ public class ShopRequestDto {
             .tel(this.tel)
             .sellerName(this.sellerName)
             .shopAddr(this.shopAddr)
+            .shopLat(this.shopLat)
+            .shopLng(this.shopLng)
             .category(this.category)
             .viewCount(0L)
             .build();

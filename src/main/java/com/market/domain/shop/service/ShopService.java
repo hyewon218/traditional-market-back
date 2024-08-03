@@ -46,6 +46,15 @@ public interface ShopService {
     Page<ShopResponseDto> getCategoryShop(CategoryEnum category, Pageable pageable);
 
     /**
+     * 상품 카테고리에 해당하는 상품 조회
+     *
+     * @param marketNo : 찾을 시장 no
+     * @param category : 찾을 상품 카테고리
+     * @return ItemCategoryResponseDto : 특정 카테고리에 해당하는 상품 목록
+     */
+    Page<ShopResponseDto> getShopsByCategory(Long marketNo, CategoryEnum category, Pageable pageable);
+
+    /**
      * 상점 단건 조회
      *
      * @param shopNo : 조회 할 상점 no

@@ -38,8 +38,11 @@ public class Shop extends BaseEntity {
     @Column(nullable = false)
     private String sellerName;
 
-    @Column(nullable = false)
     private String shopAddr;
+
+    private String shopLat; // 상점의 위도값(해당값 이용해서 지도에 핀 설정)
+
+    private String shopLng; // 상점의 경도값(해당값 이용해서 지도에 핀 설정)
     
     private Long viewCount; // 조회수
 
@@ -76,6 +79,8 @@ public class Shop extends BaseEntity {
         this.tel = requestDto.getTel();
         this.sellerName = requestDto.getSellerName();
         this.shopAddr = requestDto.getShopAddr();
+        this.shopLat = requestDto.getShopLat();
+        this.shopLng = requestDto.getShopLng();
         this.category = requestDto.getCategory();
     }
     public void updateShopSeller(ShopRequestDto requestDto, Member seller) {
@@ -84,6 +89,8 @@ public class Shop extends BaseEntity {
         this.tel = requestDto.getTel();
         this.sellerName = requestDto.getSellerName();
         this.shopAddr = requestDto.getShopAddr();
+        this.shopLat = requestDto.getShopLat();
+        this.shopLng = requestDto.getShopLng();
         this.category = requestDto.getCategory();
     }
 
