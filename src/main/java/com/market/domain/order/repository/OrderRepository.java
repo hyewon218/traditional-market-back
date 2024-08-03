@@ -41,6 +41,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findOrdersByMemberWithPaging(@Param("memberNo") Long memberNo,
         @Param("orderStatus") OrderStatus orderStatus, Pageable pageable);
 
+    // 삭제될 ORDER 주문
+    Order findByMember_MemberNoAndOrderStatus(Long memberNo, OrderStatus orderStatus);
+
     // 삭제될 ORDER 주문 목록(전체)
     @Query("select o from Order o where o.orderStatus = :orderStatus")
     List<Order> findAllByOrderStatus(@Param("orderStatus") OrderStatus orderStatus);
