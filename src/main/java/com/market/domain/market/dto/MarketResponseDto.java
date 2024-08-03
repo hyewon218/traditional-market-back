@@ -28,6 +28,24 @@ public class MarketResponseDto {
 
     private Long viewCount;
 
+    private String parkingInfo1;
+
+    private String parkingInfo2;
+
+    private String busInfo;
+
+//    private String busAddr;
+    private String busLat; // 버스 정류장의 위도값
+
+    private String busLng; // 버스 정류장의 경도값
+
+    private String subwayInfo;
+
+//    private String subwayAddr;
+    private String subwayLat; // 지하철역 출구의 위도값
+
+    private String subwayLng; // 지하철역 출구의 경도값
+
     private List<ShopResponseDto> shopList;
 
     private List<ImageResponseDto> imageList;
@@ -43,6 +61,14 @@ public class MarketResponseDto {
             .marketDetail(market.getMarketDetail())
             .likes(market.getMarketLikeList().size())
             .viewCount(market.getViewCount())
+            .parkingInfo1(market.getParkingInfo1())
+            .parkingInfo2(market.getParkingInfo2())
+            .busInfo(market.getBusInfo())
+            .busLat(market.getBusLat())
+            .busLng(market.getBusLng())
+            .subwayInfo(market.getSubwayInfo())
+            .subwayLat(market.getSubwayLat())
+            .subwayLng(market.getSubwayLng())
             .shopList(market.getShopList().stream().map(ShopResponseDto::of).toList())
             .imageList(market.getImageList().stream().map(ImageResponseDto::of).toList())
             .commentList(market.getMarketCommentList().stream().map(MarketCommentResponseDto::of).toList())

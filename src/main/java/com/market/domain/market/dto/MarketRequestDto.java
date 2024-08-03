@@ -31,12 +31,38 @@ public class MarketRequestDto {
 
     private List<String> imageUrls; // 시장 수정 화면에서 남은 기존 이미지들
 
+    private String parkingInfo1; // 주차장 주소 1
+
+    private String parkingInfo2; // 주차장 주소 2
+
+    private String busInfo; // 가까운 버스 정류장 정보(정류장 이름과 버스 번호)
+
+//    private String busAddr; // 가까운 버스 정류장 주소(이 정보를 이용해 지도 위에 핀 설정)
+    private String busLat; // 버스 정류장의 위도값
+
+    private String busLng; // 버스 정류장의 경도값
+
+    private String subwayInfo; // 가까운 지하철역 정보(지하철역 이름과 시장과 가까운 출구)
+
+//    private String subwayAddr; // 가까운 지하철역 출구 주소(이 정보를 이용해 지도 위에 핀 설정)
+    private String subwayLat; // 지하철역 출구의 위도값
+    
+    private String subwayLng; // 지하철역 출구의 경도값
+
     public Market toEntity() {
         return Market.builder()
             .marketName(this.marketName)
             .marketAddr(this.marketAddr)
             .category(this.category)
             .marketDetail(this.marketDetail)
+            .parkingInfo1(this.parkingInfo1)
+            .parkingInfo2(this.parkingInfo2)
+            .busInfo(this.busInfo)
+            .busLat(this.busLat)
+            .busLng(this.busLng)
+            .subwayInfo(this.subwayInfo)
+            .subwayLat(this.subwayLat)
+            .subwayLng(this.subwayLng)
             .viewCount(0L)
             .build();
     }

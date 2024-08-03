@@ -55,6 +55,15 @@ public class Market extends BaseEntity {
 
     private Long viewCount; // 조회수
 
+    private String parkingInfo1; // 주차장 주소 1
+    private String parkingInfo2; // 주차장 주소 2
+    private String busInfo; // 가까운 버스 정류장 정보(정류장 이름과 버스 번호)
+    private String busLat; // 버스 정류장의 위도값
+    private String busLng; // 버스 정류장의 경도값
+    private String subwayInfo; // 가까운 지하철역 정보(지하철역 이름과 시장과 가까운 출구)
+    private String subwayLat; // 지하철역 출구의 위도값
+    private String subwayLng; // 지하철역 출구의 경도값
+
     @Builder.Default
     @OneToMany(mappedBy = "market", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Shop> shopList = new ArrayList<>();
@@ -76,6 +85,14 @@ public class Market extends BaseEntity {
         this.marketAddr = requestDto.getMarketAddr();
         this.category = requestDto.getCategory();
         this.marketDetail = requestDto.getMarketDetail();
+        this.parkingInfo1 = requestDto.getParkingInfo1();
+        this.parkingInfo2 = requestDto.getParkingInfo2();
+        this.busInfo = requestDto.getBusInfo();
+        this.busLat = requestDto.getBusLat();
+        this.busLng = requestDto.getBusLng();
+        this.subwayInfo = requestDto.getSubwayInfo();
+        this.subwayLat = requestDto.getSubwayLat();
+        this.subwayLng = requestDto.getSubwayLng();
     }
 
     public void setViewCount(Long viewCount) {
