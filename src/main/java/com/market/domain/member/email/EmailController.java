@@ -54,7 +54,7 @@ public class EmailController {
     }
 
     // 비밀번호 찾기 시 '임시비밀번호 발급' 버튼
-    @PostMapping("/email/findpw")
+    @PostMapping("/email/temppw")
     public ResponseEntity sendMailForFindPw(@RequestBody FindPwRequestDto findPwRequestDto) {
         boolean isMemberExist = memberService.findMemberByIdAndEmail(
                 findPwRequestDto.getMemberId(), findPwRequestDto.getMemberEmail());

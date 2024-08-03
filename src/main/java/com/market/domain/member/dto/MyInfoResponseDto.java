@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 // 내정보 조회 시 반환 Dto
 public class MyInfoResponseDto {
 
+    private Long memberNo;
     private String memberId;
     private String memberEmail;
     private String memberNickname;
@@ -25,6 +26,7 @@ public class MyInfoResponseDto {
 
     public static MyInfoResponseDto of(Member member) {
         return MyInfoResponseDto.builder()
+                .memberNo(member.getMemberNo())
                 .memberId(member.getMemberId())
                 .memberEmail(member.getMemberEmail())
                 .memberNickname(member.getMemberNickname())

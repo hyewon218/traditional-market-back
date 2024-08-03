@@ -1,60 +1,23 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>시장 상세보기</title>
     <link rel="stylesheet" th:href="@{/css/market/marketinfo.css}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:src="@{/js/market/marketinfo.js}" defer="defer"></script>
     <script th:src="@{/js/mapWeather.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=wbg83yihp2&submodules=geocoder"></script>
-    <script>
-        $(document).ready(function() {
-            // URL에서 marketNo를 가져오기
-            var url = window.location.href;
-            var marketNo = url.substring(url.lastIndexOf('/') + 1);
-            console.log("marketNo : " + marketNo);
-
-            $.ajax({
-                url: "/api/markets/" + marketNo,
-                type: "GET",
-                contentType: 'application/json',
-                success: function(data) {
-                    // 시장 이름을 동적으로 설정
-                    var marketName = data.marketName;
-
-                    // 시장 정보 설정
-                    $('#marketName').text(marketName);
-                    $('#marketAddr').text(data.marketAddr);
-                    $('#marketDetail').text(data.marketDetail);
-                    $('#likes').text(data.likes);
-
-                    $('title').text(marketName + " 상세보기");
-                    $('#h2').text(marketName + " 상세정보");
-                    $('h3').text(marketName + " 날씨정보");
-
-                    // 이미지 리스트 출력
-                    if (data.imageList.length > 0) {
-                        data.imageList.forEach(function(image) {
-                            $('#image-container').append('<img src="' + image.imageUrl + '" alt="' + marketName + ' 이미지" style="width:100px;height:auto;margin:5px;">');
-                        });
-                    } else {
-                        $('#image-container').append('<p>이미지가 없습니다.</p>');
-                    }
-
-                    // 시장 주소를 이용해 해당 시장의 주소를 검색하여 지도에 표시하고, 날씨 정보 가져오기
-                    showMarketInfo(data.marketAddr, marketName);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error fetching 시장 상세보기 : " + error);
-                }
-            });
-        });
-    </script>
 </head>
 <body>
 <div th:replace="~{fragments/common/header :: headerFragment}"></div>
 <div class="market-info">
     <h2 id="h2">시장 상세정보</h2>
+    <div>
+        <strong>이미지 :</strong>
+        <div id="imageContainer" style="margin-top: 10px;"></div> <!-- 이미지 출력 영역 -->
+    </div>
     <div>
         <strong>시장 이름 :</strong> <span id="marketName"></span>
     </div>
@@ -68,12 +31,26 @@
         <strong>좋아요 수 :</strong> <span id="likes"></span>
     </div>
     <div>
-        <strong>이미지 :</strong>
-        <div id="image-container" style="margin-top: 10px;"></div> <!-- 이미지 출력 영역 -->
+        <strong>상점 목록 :</strong>
+        <ul id="shopContainer"></ul>
     </div>
+    <div>
+        <strong>댓글 목록 :</strong>
+        <div id="commentContainer"></div>
+    </div>
+    <th:block sec:authorize="hasAnyRole('ADMIN')">
+        <button id="addShopButton">상점 추가</button>
+        <button class="button-info" id="updateButton">수정</button>
+        <button class="button-info" id="deleteButton">삭제</button>
+        <div style="display: none;"><span id="marketNo"></span></div>
+    </th:block>
 </div>
+
 <!-- 지도가 표시되는 영역 -->
 <div id="map" style="width:500px;height:400px;"></div>
+<button id="parkingInfoBtn">주차 정보</button>
+<button id="nearTransport">근처 대중교통</button>
+
 <!-- 날씨 정보가 표시되는 영역 -->
 <div id="weather-info" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; width: 400px;">
     <h3>날씨 정보</h3>
@@ -85,6 +62,45 @@
     <p id="weather-description"></p>
     <div id="weather-image-container"></div> <!-- 날씨 이미지를 표시할 컨테이너 -->
 </div>
-<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+
+<!-- 이미지 모달 -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="img01">
+    <div id="caption"></div>
+</div>
+
+<!-- 주차 정보 모달 -->
+<div id="parkingModal" class="modal">
+    <span class="close" onclick="closeParkingModal()">&times;</span>
+    <div class="modal-content">
+        <h2 class="modal-title">주차 정보</h2>
+        <div id="parkingMap" style="width:600px;height:600px;"></div>
+    </div>
+</div>
+
+<!-- 대중교통 모달 -->
+<div id="transportModal" class="modal">
+    <span class="close" onclick="closeTransportModal()">&times;</span>
+    <div class="modal-content">
+        <h2 class="modal-title">근처 대중교통</h2>
+        <div id="transportMap" style="width:600px;height:600px;"></div>
+    </div>
+</div>
+
+<!-- 비밀번호 확인 모달창 -->
+<div class="modalPw" id="verifyPwModal" style="display:none;">
+    <div class="modal-content-pw">
+        <h2>시장 삭제</h2>
+        <form id="verifyPwForm">
+            <label for="adminPw">관리자 비밀번호 입력</label>
+            <input type="password" id="adminPw" name="adminPw" required><br>
+            <button type="button" id="deleteExecuteBtn">확인</button>
+            <button type="button" id="deleteCancelBtn" class="close">취소</button>
+        </form>
+        <div id="checkPwError" style="color: red;"></div> <!-- 오류 메시지 표시 -->
+    </div>
+</div>
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
 </body>
 </html>

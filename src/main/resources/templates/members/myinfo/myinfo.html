@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <title>내정보</title>
     <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:src="@{/js/members/myinfo/update.js}" defer="defer"></script>
-    <script>
-
-    </script>
+    <script th:src="@{/js/members/myinfo/changepassword.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 <div th:replace="~{fragments/common/header :: headerFragment}"></div>
@@ -20,7 +18,7 @@
             <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
             <li><a th:href="@{/myinfo/list}">구매목록</a></li>
             <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
-            <li><a th:href="@{/myinfo/deliveries}">배송지관리</a></li>
+            <li><a th:href="@{/myinfo/deliveries}">배송지 관리</a></li>
         </ul>
     </div>
     <div class="myinfo-contents">
@@ -41,10 +39,11 @@
             <strong>가입일:</strong> <span id="createTime"></span>
         </div>
         <button id="updateBtn">닉네임 수정</button>
-        <button id="deleteBtn" onclick="location.href='/myinfo/v'">회원 탈퇴</button>
+        <button id="changePwBtn">비밀번호변경</button>
+        <button id="deleteBtn" onclick="location.href='/myinfo/v'">회원탈퇴</button>
     </div>
 </div>
-<!-- 배송지 수정 모달창 -->
+<!-- 회원정보 수정 모달창 -->
 <div class="modal" id="updateModal" style="display:none;">
     <div class="modal-content">
         <h2>회원정보 수정</h2>
@@ -56,6 +55,38 @@
             <button type="button" id="updateExecuteBtn">수정하기</button>
             <button type="button" id="cancelBtn" class="close">취소</button>
         </form>
+    </div>
+</div>
+<!-- 현재 비밀번호 확인(비밀번호 변경) 모달창 -->
+<div class="modal" id="checkPwModal" style="display:none;">
+    <div class="modal-content">
+        <h2>현재 비밀번호 확인</h2>
+        <form id="checkPwForm">
+            <label for="currentPw">현재 비밀번호</label>
+            <input type="password" id="currentPw" name="currentPw" required><br>
+
+            <button type="button" id="checkPwExecuteBtn">비밀번호 확인 실행</button>
+            <button type="button" id="checkPwCancelBtn" class="close">취소</button>
+        </form>
+        <div id="checkPwError" style="color: red;"></div> <!-- 오류 메시지 표시 -->
+    </div>
+</div>
+<!-- 비밀번호 변경(비밀번호 변경) 모달창 -->
+<div class="modal" id="changePwModal" style="display:none;">
+    <div class="modal-content">
+        <h2>비밀번호 변경</h2>
+        <form id="changePwForm">
+            <label for="newPw">새로운 비밀번호</label>
+            <input type="password" id="newPw" name="newPw" required><br>
+
+            <label for="confirmPw">새로운 비밀번호 확인</label>
+            <input type="password" id="confirmPw" name="confirmPw" required><br>
+            <font id="checkMessage" size="2"></font>
+
+            <button type="button" id="changePwExecuteBtn">비밀번호 변경</button>
+            <button type="button" id="changePwCancelBtn" class="close">취소</button>
+        </form>
+        <div id="changePwError" style="color: red;"></div> <!-- 오류 메시지 표시 -->
     </div>
 </div>
 </body>

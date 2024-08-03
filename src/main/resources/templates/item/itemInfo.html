@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 상세보기</title>
+    <link rel="stylesheet" th:href="@{/css/item/iteminfo.css}">
+    <script th:src="@{/js/item/iteminfo.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<div class="item-info">
+    <h2 id="h2">상품 상세정보</h2>
+    <div>
+        <strong>이미지 :</strong>
+        <div id="imageContainer"></div>
+    </div>
+    <div>
+        <strong>소속 시장 :</strong> <span id="marketName"></span>
+    </div>
+    <div>
+        <strong>소속 상점 :</strong> <span id="shopName"></span>
+    </div>
+    <div>
+        <strong>상품명 :</strong> <span id="itemName"></span>
+    </div>
+    <div>
+        <strong>상품 가격 :</strong> <span id="price"></span>
+    </div>
+    <div>
+        <strong>재고 :</strong> <span id="stockNumber"></span>
+    </div>
+    <div>
+        <strong>상품 상세 :</strong> <span id="itemDetail"></span>
+    </div>
+    <div>
+        <strong>상품 분류 :</strong> <span id="itemCategory"></span>
+    </div>
+    <div>
+        <strong>판매 상태 :</strong> <span id="itemSellStatus"></span>
+    </div>
+    <div>
+        <strong>좋아요 수 :</strong> <span id="likes"></span>
+    </div>
+    <div>
+        <strong>댓글 목록 :</strong>
+        <div id="commentContainer"></div>
+    </div>
+    <th:block sec:authorize="hasAnyRole('ADMIN')">
+        <button class="button-info" id="updateButton">수정</button>
+        <button class="button-info" id="deleteButton">삭제</button>
+    </th:block>
+</div>
+<!-- 모달 -->
+<div id="myModal" class="modal">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="img01">
+    <div id="caption"></div>
+</div>
+
+<!-- 비밀번호 입력 모달창 -->
+<div class="modalPw" id="verifyPwModal" style="display:none;">
+    <div class="modal-content-pw">
+        <h2>상품 삭제</h2>
+        <form id="verifyPwForm">
+            <label for="adminPw">관리자 비밀번호 입력</label>
+            <input type="password" id="adminPw" name="adminPw" required><br>
+            <button type="button" id="deleteExecuteBtn">확인</button>
+            <button type="button" id="deleteCancelBtn" class="close">취소</button>
+        </form>
+        <div id="checkPwError" style="color: red;"></div> <!-- 오류 메시지 표시 -->
+    </div>
+</div>
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
+</body>
+</html>

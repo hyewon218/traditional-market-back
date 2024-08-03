@@ -7,6 +7,7 @@ import com.market.domain.member.service.MemberServiceImpl;
 import com.market.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -123,6 +124,7 @@ public class MainController {
 //            return "unauthorized";
 //        }
 //    }
+
     @GetMapping("/myinfo/inquiry/{inquiryNo}")
     public String getMyInquiry(@PathVariable Long inquiryNo,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -344,4 +346,45 @@ public class MainController {
         return "admin/visitorCount";
     }
 
+    // 회원 정보 조회(권한 수정 가능, admin만)
+    @GetMapping("/admin/memberinfo/{memberNo}")
+    public String memberDetail() {
+        return "admin/memberinfo";
+    }
+
+    // 상품 관리 페이지
+    @GetMapping("/admin/items")
+    public String getItemManage() {
+        return "admin/itemManage";
+    }
+
+    // 상품 추가 페이지
+    @GetMapping("/admin/items/a")
+    public String addItem() {
+        return "admin/addItem";
+    }
+
+    // 특정 상품 조회
+    @GetMapping("/items/{itemNo}")
+    public String itemDetail() {
+        return "item/itemInfo";
+    }
+
+    // 특정 상품 조회(관리자)
+    @GetMapping("/admin/items/{itemNo}")
+    public String getItem() {
+        return "admin/iteminfo";
+    }
+
+    // 상품 수정 페이지
+    @GetMapping("/admin/items/u/{itemNo}")
+    public String updateItem() {
+        return "admin/updateItem";
+    }
+
+    // 좌표 찾기 페이지
+    @GetMapping("/admin/findcoord")
+    public String findCoordinate() {
+        return "admin/findCoordinate";
+    }
 }

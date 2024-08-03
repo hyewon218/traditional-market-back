@@ -1,5 +1,6 @@
 package com.market.domain.member.controller;
 
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.*;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,14 +53,14 @@ public class MemberController {
         return ResponseEntity.ok(new ApiResponse("로그아웃 성공", HttpStatus.OK.value()));
     }
 
-    // 전체 회원 조회
+    // 전체 회원 조회(admin만 가능)
     @GetMapping("")
     public ResponseEntity<Page<MyInfoResponseDto>> findAllMember(Pageable pageable) {
         Page<MyInfoResponseDto> members = memberService.findAll(pageable);
         return ResponseEntity.ok().body(members);
     }
 
-    // 특정 회원 조회
+    // 특정 회원 조회(일반 회원이 자신의 상세정보 열람)
     @GetMapping("/myinfo")
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Member member = memberService.findById(userDetails.getMember().getMemberNo());
@@ -66,24 +68,19 @@ public class MemberController {
     }
 
     // admin 권한일 경우 다른 회원의 상세정보 열람 가능, 일반회원은 자신의 정보만 열람 가능
-//    @GetMapping("/myinfo/{memberNo}")
-//    public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long memberNo) {
-//        Member member;
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-//        // admin 권한일 경우
-//        if (isAdmin) {
-//            member = memberService.findById(memberNo);
-//        // 로그인중인 사용자가 자신의 정보를 열람할 경우
-//        } else if (userDetails.getMember().getMemberNo().equals(memberNo)) {
-//            member = memberService.findById(userDetails.getMember().getMemberNo());
-//        } else {
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body("접근이 거부되었습니다");
-//        }
-//        return ResponseEntity.ok()
-//                .body(new MemberResponseDto(member));
-//    }
+    @GetMapping("/myinfo/{memberNo}")
+    public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long memberNo) {
+        Member member;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        // admin 권한일 경우
+        if (isAdmin) {
+            member = memberService.findById(memberNo);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근이 거부되었습니다");
+        }
+        return ResponseEntity.ok().body(MyInfoResponseDto.of(member));
+    }
 
     // 회원 수정
     @PutMapping("")
@@ -93,11 +90,47 @@ public class MemberController {
         return ResponseEntity.ok().body(updatedMember);
     }
 
+    // 회원 권한 수정
+    @PutMapping("/admin/u/{memberNo}")
+    public ResponseEntity<?> updateMemberRole(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestBody MemberRequestDto memberRequestDto,
+        @PathVariable Long memberNo) {
+        Member member;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        // admin 권한일 경우
+        if (isAdmin) {
+            member = memberService.findById(memberNo);
+            memberService.updateRole(member.getMemberNo(), memberRequestDto);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근이 거부되었습니다");
+        }
+        return ResponseEntity.ok().body(MemberResponseDto.of(member));
+    }
+
     // 회원 삭제
     @DeleteMapping("")
     public ResponseEntity<ApiResponse> deleteMember(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                     HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         memberService.deleteMember(userDetails.getMember().getMemberNo(), userDetails.getMember().getMemberId(), httpRequest, httpResponse);
+        return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
+    }
+
+    // 회원 삭제(admin이 다른 회원 삭제)
+    @DeleteMapping("/admin/r/{memberNo}")
+    public ResponseEntity<?> deleteMemberAdmin(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+        @PathVariable Long memberNo) {
+        Member member;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        // admin 권한일 경우
+        if (isAdmin) {
+            member = memberService.findById(memberNo);
+            memberService.deleteMemberAdmin(member.getMemberNo(), member.getMemberId(), httpRequest, httpResponse);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근이 거부되었습니다");
+        }
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 
@@ -183,6 +216,13 @@ public class MemberController {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse("비밀번호가 틀립니다", HttpStatus.BAD_REQUEST.value()));
         }
+    }
+
+    // 권한 조회(admin만 가능)
+    @GetMapping("/admin/role")
+    public ResponseEntity<Page<MyInfoResponseDto>> getRole(Role role, Pageable pageable) {
+        Page<MyInfoResponseDto> members = memberService.getRole(role, pageable);
+        return ResponseEntity.ok().body(members);
     }
 
 }

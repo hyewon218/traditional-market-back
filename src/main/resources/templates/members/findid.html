@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>아이디 찾기</title>
+  <script th:src="@{/js/members/findid.js}" defer="defer"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" th:href="@{/css/members/findid.css}">
+</head>
+<body>
+<div th:replace="~{fragments/common/header :: headerFragment}"></div>
+<p>아이디찾기 페이지 입니다</p>
+<form id="findidForm">
+  <li>
+    <label for="memberEmail">이메일</label>
+    <input type="text" name="memberEmail" id="memberEmail" placeholder="이메일 입력" required>
+  </li>
+  <!-- 인증번호 입력란 -->
+  <li>
+    <div class="code">
+      <label for="emailVerificationCode" >인증번호</label>
+      <input type="text" id="emailVerificationCode" placeholder="인증번호 입력" required>
+      <!-- 이메일 인증 버튼 -->
+      <button type="button" id="certifyEmailButton" class="submitBtn">인증번호 전송</button>
+      <button type="button" id="verifyEmailButton" class="checkBtn">인증번호 확인</button>
+    </div>
+  </li>
+  <li>
+    <!-- 인증 결과 메시지 영역 -->
+    <div id="certifyEmailMessage" class="valid-feedback" style="display: none;"></div>
+  </li>
+  <li>
+    <button type="button" id="findIdButton">아이디 찾기</button>
+  </li>
+</form>
+<!-- 아이디 반환 모달 -->
+<div class="modal" id="idModal">
+  <div class="modal-content">
+    <h2>찾은 아이디</h2>
+    <div id="foundIdMessage"></div>
+    <button type="button" id="cancelBtn" class="close">닫기</button>
+  </div>
+</div>
+</body>
+<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+</html>

@@ -1,26 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>시장 찾기</title>
     <link rel="stylesheet" th:href="@{/css/market/market.css}">
+    <script th:src="@{/js/market/marketlist.js}" defer="defer"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .active {
+          background-color: blue;
+          color: white;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        img {
-            width: 100px; /* 이미지 크기 조정 */
-            height: auto;
+        .page-btn {
+        /* 기존 스타일 */
+        font-size: 25px; /* 원하는 크기로 변경 */
         }
     </style>
 </head>
@@ -28,64 +21,21 @@
 <div th:replace="~{fragments/common/header :: headerFragment}"></div>
 
 <div class="market-find">
-    <h2>시장 찾기</h2>
+    <div class="marketList-searchKeyword">
+        <input type="text" id="searchInput" placeholder="시장 이름 검색">
+        <button id="searchButton">검색</button>
+    </div>
+    <div class="marketList-category">
+        <button id="viewAllButton">전체보기</button> <!-- 전체보기 버튼 추가 -->
+        <!-- 카테고리 버튼들을 여기에 추가 -->
+    </div>
     <div class="marketList-contents">
+        <h2>시장 찾기</h2>
         <!-- 시장 목록 테이블 여기에 출력 -->
     </div>
+    <div class="pagination">
+    </div>
 </div>
-
-<script>
-    $(document).ready(function() {
-        $.ajax({
-            url: "/api/markets",
-            type: "GET",
-            contentType: 'application/json',
-            success: function(data) {
-                console.log(data)
-                let marketTable = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>시장 이름</th>
-                                <th>주소</th>
-                                <th>상세 설명</th>
-                                <th>좋아요 수</th>
-                                <th>이미지</th>
-                                <th>상세보기</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                data.content.forEach(function(market) {
-                    let marketUrl = "/markets/" + market.marketNo; // URL 조합
-                    marketTable += `
-                        <tr>
-                            <td>${market.marketName}</td>
-                            <td>${market.marketAddr}</td>
-                            <td>${market.marketDetail}</td>
-                            <td>${market.likes}</td>
-                            <td>
-                                ${market.imageList.length > 0 ? `<img src="${market.imageList[0].imageUrl}" alt="${market.marketName} 이미지">` : '이미지 없음'}
-                            </td>
-                            <td>
-                                <a href="${marketUrl}" class="view-details">상세보기</a>
-                            </td>
-                        </tr>`;
-                });
-
-                marketTable += `
-                        </tbody>
-                    </table>`;
-
-                $(".marketList-contents").html(marketTable); // marketList-contents에 테이블 추가
-            },
-            error: function(xhr, status, error) {
-                console.error("시장 목록을 불러오는 중 오류 발생: " + error);
-            }
-        });
-    });
-</script>
-
-<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
 </body>
 </html>

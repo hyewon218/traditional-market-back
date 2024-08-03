@@ -19,6 +19,12 @@ $(document).ready(function() {
     // 인증번호 전송 버튼 클릭 시 이벤트 처리
     $("#certifyEmailButton").click(function() {
         var memberEmail = $('#memberEmail').text();
+        if (!memberEmail) {
+          alert("이메일을 입력해주세요.");
+          return;
+        }
+
+        $("#certifyEmailMessage").text("인증번호 전송중...").show();
 
         // 서버로 이메일 주소 전송 및 인증 요청
         $.ajax({

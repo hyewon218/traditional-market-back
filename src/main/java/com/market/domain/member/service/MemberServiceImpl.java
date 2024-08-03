@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.delivery.repository.DeliveryRepository;
 import com.market.domain.deliveryMessage.repository.DeliveryMessageRepository;
 import com.market.domain.inquiry.repository.InquiryRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MemberResponseDto;
@@ -186,10 +187,33 @@ public class MemberServiceImpl implements MemberService {
         return member;
     }
 
+    @Override
+    @Transactional
+    public Member updateRole(long memberNo, MemberRequestDto requestDto) {
+        Member member = memberRepository.findById(memberNo)
+            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+        member.updateRole(requestDto);
+        return member;
+    }
+
     // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
     @Transactional
     public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
+        deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
+        deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
+        redisUtils.deleteValues(memberId); // 리프레시토큰 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified"); // 회원 정보 확인 시 발급받은 쿠키 삭제
+        memberRepository.deleteById(memberNo); // 계정 삭제
+    }
+
+    // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
+    @Override
+    @Transactional
+    public void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
         deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
@@ -358,6 +382,14 @@ public class MemberServiceImpl implements MemberService {
             }
         }
         return false;
+    }
+
+    // 권한(ROLE) 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MyInfoResponseDto> getRole(Role role, Pageable pageable) {
+        Page<Member> members = memberRepository.findAllByRole(role, pageable);
+        return members.map(MyInfoResponseDto::of);
     }
 
     // 회원 아이디 마스킹 처리

@@ -2,6 +2,8 @@ package com.market.domain.member.repository;
 
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +19,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Boolean existsByMemberEmail(String memberEmail);
     Member findByMemberIdAndMemberPw(String memberId, String memberPw);
     Optional<Member> findByRole(Role role);
+    Page<Member> findAllByRole(Role role, Pageable pageable);
 
     // 아이디 찾기(닉네임과 이메일 이용)
     Member findByMemberNicknameAndMemberEmail(String memberNickname, String memberEmail);

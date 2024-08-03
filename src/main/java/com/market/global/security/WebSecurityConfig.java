@@ -61,6 +61,7 @@ public class WebSecurityConfig {
             http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/api/members").hasAnyRole("ADMIN") // 전체 회원 목록 조회
+                        .requestMatchers(HttpMethod.GET, "/api/members/admin/r/**").hasAnyRole("ADMIN") // 회원 권한 수정
                         .requestMatchers(HttpMethod.GET, "/api/inquiries").hasAnyRole("ADMIN") // 전체 문의사항 조회
                         .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyRole("ADMIN") // 공지사항 생성
                         .requestMatchers(HttpMethod.PUT, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 수정

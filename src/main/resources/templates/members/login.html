@@ -17,12 +17,16 @@
         </li>
         <li>
             <label for="memberPw">비밀번호</label>
-            <input type="text" name="memberPw" id="memberPw" required="required" placeholder="비밀번호 입력">
+            <input type="password" name="memberPw" id="memberPw" required="required" placeholder="비밀번호 입력">
         </li>
         <li>
             <input type="submit" value="로그인">
         </li>
     </form>
+    <li>
+        <button id="findIdButton" onclick="location.href='/members/findid'">아이디 찾기</button>
+        <button id="tempPwButton" onclick="location.href='/members/temppw'">임시비밀번호 발급</button>
+    </li>
 <script>
     $(document).ready(function() {
         $('#loginForm').submit(function(e) {

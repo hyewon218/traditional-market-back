@@ -4,10 +4,19 @@
     <meta charset="UTF-8">
     <title>배송지 관리</title>
     <link rel="stylesheet" th:href="@{/css/members/myinfo.css}">
-    <link rel="stylesheet" th:href="@{/css/delivery/mydelivery.css}">
-    <script th:src="@{/js/delivery/mydelivery.js}" defer="defer"></script>
+    <script th:src="@{/js/members/myinfo/mydelivery.js}" defer="defer"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <style>
+        .active {
+          background-color: blue;
+          color: white;
+        }
+        .page-btn {
+        /* 기존 스타일 */
+        font-size: 25px; /* 원하는 크기로 변경 */
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/common/header :: headerFragment}"></div>
@@ -19,12 +28,16 @@
             <li><a th:href="@{/myinfo/myinfo}">내정보</a></li>
             <li><a th:href="@{/myinfo/list}">구매목록</a></li>
             <li><a th:href="@{/myinfo/inquiries}">문의내역</a></li>
-            <li><a th:href="@{/myinfo/deliveries}">배송지관리</a></li>
+            <li><a th:href="@{/myinfo/deliveries}">배송지 관리</a></li>
         </ul>
     </div>
     <button id="addDeliveryBtn">배송지 추가</button>
+    <button id="viewDeliveryListBtn">배송지 목록</button> <!-- 배송지 목록 버튼 추가 -->
     <div class="deliveryList-contents">
+        <h2>배송지 목록</h2>
         <!-- 배송지 목록 테이블 여기에 출력 -->
+    </div>
+    <div class="pagination">
     </div>
 </div>
 <!-- 배송지 추가 모달창 -->
@@ -98,6 +111,14 @@
         </form>
     </div>
 </div>
+<script>
+    $(document).ready(function() {
+        // 배송지 목록 버튼 클릭 시 새 창 열기
+        $('#viewDeliveryListBtn').on('click', function() {
+            window.open('/delivery/deliverylist', '_blank', 'width=800,height=600'); // 배송지 목록 URL로 새 창 열기
+        });
+    });
+</script>
 </body>
-<div th:replace="~{fragments/common/footer :: footerFragment}"></div>
+<!--<div th:replace="~{fragments/common/footer :: footerFragment}"></div>-->
 </html>

@@ -69,6 +69,15 @@ function showMarketInfo(address, marketName) {
                 }
             });
 
+            // 마커 외 클릭 시 정보창 닫기
+            naver.maps.Event.addListener(map, 'click', function() {
+                infoWindow.close();
+            });
+
+            // 자동으로 정보창 열기
+            infoWindow.open(map, marker);
+
+            /* 여기서부터 날씨 API */
             // OpenWeather API로 날씨 정보 가져오기
             var apiKey = '49a8252265aef937b366a8506d1fec4f';
             var weatherUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + y + '&lon=' + x + '&appid=' + apiKey + '&units=metric';
@@ -213,7 +222,7 @@ function showMarketInfo(address, marketName) {
                     alert('날씨 정보를 가져오는 중 오류가 발생했습니다.');
                 });
         } else {
-            alert('주소에 대한 검색 결과가 없습니다.');
+            console.log('주소에 대한 검색 결과가 없습니다');
         }
     });
 }

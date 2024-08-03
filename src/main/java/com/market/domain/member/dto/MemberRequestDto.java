@@ -33,6 +33,8 @@ public class MemberRequestDto {
     @NotBlank(message = "비밀번호 확인을 반드시 입력해주세요")
     private String confirmPw;
 
+    private Role role;
+
     // 테스트에서만 사용함
     public MemberRequestDto(String modifiedMemberNickname, String modifiedMemberPw) {
         this.memberNickname = modifiedMemberNickname;

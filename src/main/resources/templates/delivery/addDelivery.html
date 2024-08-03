@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script th:src="@{/js/delivery/addDelivery.js}" defer="defer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+    <div class="add-container">
+        <h2>배송지 추가</h2>
+        <form id="addDeliveryForm">
+            <label for="addTitle">배송지 이름</label>
+            <input type="text" id="addTitle" name="title" required><br>
+
+            <label for="addReceiver">받는 사람</label>
+            <input type="text" id="addReceiver" name="receiver" required><br>
+
+            <label for="addPhone">휴대전화번호</label>
+            <input type="text" id="addPhone" name="phone" required><br>
+
+            <label for="addPostCode">우편번호</label>
+            <input type="text" id="addPostCode" name="postCode" required><br>
+            <input type="button" onclick="sample4_execDaumPostcode('add')" value="주소 검색"><br>
+
+            <label for="addRoadAddr">도로명주소</label>
+            <input type="text" id="addRoadAddr" name="roadAddr"><br>
+
+            <label for="addJibunAddr">지번주소</label>
+            <input type="text" id="addJibunAddr" name="jibunAddr"><br>
+
+            <label for="addDetailAddr">상세주소</label>
+            <input type="text" id="addDetailAddr" name="detailAddr" required><br>
+
+            <label for="addExtraAddr">참고사항</label>
+            <input type="text" id="addExtraAddr" name="extraAddr"><br>
+
+            <button type="button" id="saveDeliveryBtn">배송지 추가</button>
+        </form>
+    </div>
+</body>
+</html>
