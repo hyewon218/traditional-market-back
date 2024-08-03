@@ -37,6 +37,10 @@ public class OrderServiceImpl implements OrderService {
         Item item = itemRepository.findById(orderItemDto.getItemNo()).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
         );
+        // 이전 주문(결제하지 않은, 주문 상태 ORDER) 이 있는지 확인
+        if (hasStatusOrder(member)) { // 이전 주문이 있으면
+            deleteOrderAndRestoreStock(member); // 재고 증가(복원) 후 주문 삭제
+        }
         List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
         orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
         Order order = Order.toEntity(member, orderItemList, false); // (주문 상품 담아) 주문 생성
@@ -91,12 +95,34 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true) // 주문 상태 ORDER 주문 조회
+    public Order getStatusOrder(Member member) {
+        return orderRepository.findByMember_MemberNoAndOrderStatus(member.getMemberNo(),
+            OrderStatus.ORDER);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasStatusOrder(Member member) {
+        Order order = getStatusOrder(member);
+        return order != null; //  null 이 아닌 경우 true
+    }
+
+    @Override /* 새로운 주문 생성 전 삭제*/
+    @Transactional // 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가(복원) 후 주문 목록 삭제
+    public void deleteOrderAndRestoreStock(Member member) {
+        Order order = getStatusOrder(member);
+        order.statusOrderAddStock();
+        orderRepository.delete(order);
+    }
+
+    @Override
     @Transactional(readOnly = true) // 주문 상태 ORDER 주문 목록 조회(전체)
     public List<Order> getAllStatusOrders() {
         return orderRepository.findAllByOrderStatus(OrderStatus.ORDER);
     }
 
-    @Override /* 스케줄러로 주기적으로 삭제*/
+    @Override /* 스케줄러로 주기적으로 삭제 - 보류*/
     @Transactional // 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가 후 주문 목록 삭제
     public void deleteAllOrdersAndRestoreStock() {
         List<Order> orderList = getAllStatusOrders();
