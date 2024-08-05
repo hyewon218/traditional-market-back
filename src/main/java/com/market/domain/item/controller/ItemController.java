@@ -135,9 +135,10 @@ public class ItemController {
     }
 
     @GetMapping("/items/{itemNo}/likes")
-    public ResponseEntity<Integer> getItemLike( // 좋아요 갯수 조회
-        @PathVariable Long itemNo, HttpServletRequest request) {
-        return ResponseEntity.ok(itemService.getItem(itemNo, request).getLikes());
+    public ResponseEntity<Boolean> getItemLike( // 좋아요 여부 확인
+        @PathVariable Long itemNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        boolean hasLiked = itemService.checkItemLike(itemNo, userDetails.getMember());
+        return ResponseEntity.ok(hasLiked);
     }
 
     @DeleteMapping("/items/{itemNo}/likes")

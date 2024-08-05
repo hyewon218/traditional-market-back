@@ -21,12 +21,11 @@ import com.market.domain.shop.shopLike.entity.ShopLike;
 import com.market.domain.shop.shopLike.repository.ShopLikeRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import com.market.global.ip.IpService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-
-import com.market.global.ip.IpService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,7 +76,8 @@ public class ShopServiceImpl implements ShopService {
             }
         } else {
             // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shop.getNo())) {
+            if (!imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
+                shop.getNo())) {
                 imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
             }
         }
@@ -109,15 +109,10 @@ public class ShopServiceImpl implements ShopService {
     @Transactional(readOnly = true) // 특정 시장 내 상점 카테고리별 조회
     public Page<ShopResponseDto> getShopsByCategory(Long marketNo,
         CategoryEnum category, Pageable pageable) {
-        Page<Shop> shopList = shopRepository.findByMarketNoAndCategory(marketNo, category, pageable);
+        Page<Shop> shopList = shopRepository.findByMarketNoAndCategory(marketNo, category,
+            pageable);
         return shopList.map(ShopResponseDto::of);
     }
-
-//    @Transactional(readOnly = true) // 상점 단건 조회
-//    public ShopResponseDto getShop(Long shopNo) {
-//        Shop shop = findShop(shopNo);
-//        return ShopResponseDto.of(shop);
-//    }
 
     @Transactional // 상점 단건 조회 // IP 주소당 하루에 조회수 1회 증가
     public ShopResponseDto getShop(Long shopNo, HttpServletRequest request) {
@@ -125,7 +120,7 @@ public class ShopServiceImpl implements ShopService {
 
         String ipAddress = ipService.getIpAddress(request);
 
-        if(!ipService.hasTypeBeenViewed(ipAddress, "shop", shopNo)) {
+        if (!ipService.hasTypeBeenViewed(ipAddress, "shop", shopNo)) {
             ipService.markTypeAsViewed(ipAddress, "shop", shopNo);
             shop.setViewCount(shop.getViewCount() + 1);
         }
@@ -134,7 +129,8 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 수정
-    public ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto, List<MultipartFile> files)
+    public ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto,
+        List<MultipartFile> files)
         throws IOException {
         Shop shop = findShop(shopNo);
 
@@ -150,7 +146,6 @@ public class ShopServiceImpl implements ShopService {
         List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
         List<Image> existingImages = imageRepository.findByShop_No(shopNo); // DB
 
-
         if (files != null) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "market " + shop.getNo());
@@ -161,8 +156,10 @@ public class ShopServiceImpl implements ShopService {
                 imageRepository.save(new Image(shop, fileUrl));
             }
             // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
-            if (imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shop.getNo())) {
-                imageRepository.deleteByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shop.getNo());
+            if (imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
+                shop.getNo())) {
+                imageRepository.deleteByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
+                    shop.getNo());
             }
         } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
             // 이미지 URL 비교 및 삭제
@@ -210,6 +207,14 @@ public class ShopServiceImpl implements ShopService {
         notificationService.send(
             NotificationType.NEW_LIKE_ON_SHOP,
             new NotificationArgs(member.getMemberNo(), shop.getNo()), receiver);
+    }
+
+    @Override
+    @Transactional
+    public boolean checkShopLike(Long shopNo, Member member) { // 좋아요 여부 확인
+        Shop shop = findShop(shopNo);
+        Optional<ShopLike> shopLike = shopLikeRepository.findByShopAndMember(shop, member);
+        return shopLike.isPresent(); // 좋아요 존재하면 true
     }
 
     @Override

@@ -27,6 +27,8 @@ import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import com.market.global.ip.IpService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -38,9 +40,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import com.market.global.ip.IpService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -291,6 +290,14 @@ public class ItemServiceImpl implements ItemService {
             receiver = item.getShop().getSeller();
         }
         notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
+    }
+
+    @Override
+    @Transactional
+    public boolean checkItemLike(Long itemNo, Member member) { // 좋아요 여부 확인
+        Item item = findItem(itemNo);
+        Optional<ItemLike> itemLike = itemLikeRepository.findByItemAndMember(item, member);
+        return itemLike.isPresent(); // 좋아요 존재하면 true
     }
 
     @Override

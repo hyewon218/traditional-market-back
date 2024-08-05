@@ -76,7 +76,7 @@ public class ShopController {
 
     @GetMapping("/shops/{shopNo}") // 상점 단건 조회
     public ResponseEntity<ShopResponseDto> getShop(
-            @PathVariable Long shopNo, HttpServletRequest request) {
+        @PathVariable Long shopNo, HttpServletRequest request) {
         return ResponseEntity.ok(shopService.getShop(shopNo, request));
     }
 
@@ -106,9 +106,10 @@ public class ShopController {
     }
 
     @GetMapping("/shops/{shopNo}/likes")
-    public ResponseEntity<Integer> getShopLike( // 좋아요 갯수 조회
-        @PathVariable Long shopNo, HttpServletRequest request) {
-        return ResponseEntity.ok(shopService.getShop(shopNo, request).getLikes());
+    public ResponseEntity<Boolean> getShopLike( // 좋아요 여부 확인
+        @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        boolean hasLiked = shopService.checkShopLike(shopNo, userDetails.getMember());
+        return ResponseEntity.ok(hasLiked);
     }
 
     @DeleteMapping("/shops/{shopNo}/likes")
