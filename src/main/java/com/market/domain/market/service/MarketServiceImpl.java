@@ -179,6 +179,14 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional
+    public boolean checkMarketLike(Long marketNo, Member member) { // 좋아요 여부 확인
+        Market market = findMarket(marketNo);
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market, member);
+        return marketLike.isPresent(); // 좋아요 존재하면 true
+    }
+
+    @Override
+    @Transactional
     public void deleteMarketLike(Long marketNo, Member member) { // 좋아요 삭제
         Market market = findMarket(marketNo);
         Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market, member);

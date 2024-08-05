@@ -68,14 +68,24 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/notices/**").hasAnyRole("ADMIN") // 공지사항 삭제
                         .requestMatchers(HttpMethod.DELETE, "/api/inquiries").hasAnyRole("ADMIN") // 모든 사람 문의사항 전체 삭제
                         .requestMatchers(HttpMethod.POST, "/api/inquiryanswer/**").hasAnyRole("ADMIN") // 문의사항에 답변 등록
+                        .requestMatchers(HttpMethod.POST, "/api/markets/{marketNo}/likes").authenticated() // 시장 좋아요 생성
+                        .requestMatchers(HttpMethod.GET, "/api/markets/{marketNo}/likes").authenticated() // 시장 좋아요 조회
+                        .requestMatchers(HttpMethod.DELETE, "/api/markets/{marketNo}/likes").authenticated() // 시장 좋아요 삭제
                         .requestMatchers(HttpMethod.POST, "/api/markets").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/markets/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/markets/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/shops/{shopNo}/likes").authenticated() // 상점 좋아요 생성
+                        .requestMatchers(HttpMethod.GET, "/api/shops/{shopNo}/likes").authenticated() // 상점 좋아요 조회
+                        .requestMatchers(HttpMethod.DELETE, "/api/shops/{shopNo}/likes").authenticated() // 상점 좋아요 삭제
                         .requestMatchers(HttpMethod.POST, "/api/shops").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/shops/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/shops/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 생성
+                        .requestMatchers(HttpMethod.GET, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 조회
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 삭제
                         .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**").hasAnyRole("ADMIN")
                         .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login",
                                 "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",

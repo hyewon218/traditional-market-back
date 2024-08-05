@@ -97,9 +97,10 @@ public class MarketController {
     }
 
     @GetMapping("/markets/{marketNo}/likes")
-    public ResponseEntity<Integer> getMarketLike( // 좋아요 갯수 조회
-        @PathVariable Long marketNo, HttpServletRequest request) {
-        return ResponseEntity.ok(marketService.getMarket(marketNo, request).getLikes());
+    public ResponseEntity<Boolean> getMarketLike( // 좋아요 여부 확인
+        @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        boolean hasLiked = marketService.checkMarketLike(marketNo, userDetails.getMember());
+        return ResponseEntity.ok(hasLiked);
     }
 
     @DeleteMapping("/markets/{marketNo}/likes")

@@ -99,6 +99,14 @@ public interface ItemService {
     void createItemLike(Long itemNo, Member member);
 
     /**
+     * 좋아요 여부 확인
+     *
+     * @param itemNo : 종아요 확인 no
+     * @param member   : 좋아요 확인 member
+     */
+    boolean checkItemLike(Long itemNo, Member member);
+
+    /**
      * 좋아요 삭제
      *
      * @param itemNo : 종아요 삭제할 상품 no

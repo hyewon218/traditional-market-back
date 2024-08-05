@@ -8,7 +8,6 @@ import com.market.domain.market.repository.MarketSearchCond;
 import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +22,8 @@ public interface MarketService {
      * @param files      : 시장 생성 첨부파일
      * @return MarketResponseDto : 생성된 시장 정보
      */
-    MarketResponseDto createMarket(MarketRequestDto requestDto, List<MultipartFile> files) throws IOException;
+    MarketResponseDto createMarket(MarketRequestDto requestDto, List<MultipartFile> files)
+        throws IOException;
 
     /**
      * 시장 목록 조회
@@ -63,7 +63,8 @@ public interface MarketService {
      * @param files      : 시장 수정 첨부파일
      * @return MarketResponseDto : 수정된 시장 정보
      */
-    MarketResponseDto updateMarket(Long marketNo, MarketRequestDto requestDto, List<MultipartFile> files)
+    MarketResponseDto updateMarket(Long marketNo, MarketRequestDto requestDto,
+        List<MultipartFile> files)
         throws IOException;
 
     /**
@@ -82,6 +83,14 @@ public interface MarketService {
     void createMarketLike(Long marketNo, Member member);
 
     /**
+     * 좋아요 여부 확인
+     *
+     * @param marketNo : 종아요 확인 no
+     * @param member   : 좋아요 확인 member
+     */
+    boolean checkMarketLike(Long marketNo, Member member);
+
+    /**
      * 좋아요 삭제
      *
      * @param marketNo : 종아요 삭제할 시장 no
@@ -96,6 +105,4 @@ public interface MarketService {
      * @return : 시장 Entity
      */
     Market findMarket(Long marketNo);
-
-
 }

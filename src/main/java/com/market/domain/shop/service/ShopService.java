@@ -88,6 +88,14 @@ public interface ShopService {
     void createShopLike(Long shopNo, Member member);
 
     /**
+     * 좋아요 여부 확인
+     *
+     * @param shopNo : 종아요 확인 no
+     * @param member   : 좋아요 확인 member
+     */
+    boolean checkShopLike(Long shopNo, Member member);
+
+    /**
      * 좋아요 삭제
      *
      * @param shopNo : 종아요 삭제할 상점 no
