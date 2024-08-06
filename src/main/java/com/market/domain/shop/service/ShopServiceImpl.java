@@ -166,6 +166,7 @@ public class ShopServiceImpl implements ShopService {
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
                     imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
+                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
                 }
             }
         } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
@@ -173,7 +174,10 @@ public class ShopServiceImpl implements ShopService {
         }
 
         if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
-            imageRepository.deleteAll(existingImages);
+            for (Image existingImage : existingImages) {
+                imageRepository.delete(existingImage);
+                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+            }
         }
         return ShopResponseDto.of(shop);
     }
@@ -182,6 +186,11 @@ public class ShopServiceImpl implements ShopService {
     @Transactional // 상점 삭제
     public void deleteShop(Long shopNo) {
         Shop shop = findShop(shopNo);
+
+        List<Image> images = imageRepository.findByShop_No(shopNo);
+        for (Image image : images) {
+            awsS3upload.delete(image.getImageUrl()); // Delete from S3
+        }
         shopRepository.delete(shop);
     }
 
