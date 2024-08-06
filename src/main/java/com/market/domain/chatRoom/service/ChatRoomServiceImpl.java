@@ -22,16 +22,17 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방 생성
     @Override
     @Transactional
-    public void createChatRoom(ChatRoomRequestDto requestDto, Member member) {
+    public ChatRoomResponseDto createChatRoom(ChatRoomRequestDto requestDto, Member member) {
         ChatRoom chatRoom = requestDto.toEntity(member);
         chatRoomRepository.save(chatRoom);
+        return ChatRoomResponseDto.of(chatRoom);
     }
 
     // 채팅방 목록 조회
     @Override
     @Transactional(readOnly = true)
     public ChatRoomListResponseDto getChatRooms() {
-        List<ChatRoom> chatRoomList = chatRoomRepository.findAllByOrderByCreateTimeAsc();
+        List<ChatRoom> chatRoomList = chatRoomRepository.findAllByOrderByCreateTimeDesc();
         return ChatRoomListResponseDto.of(chatRoomList);
     }
 
@@ -39,7 +40,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional(readOnly = true)
     public ChatRoomListResponseDto getMyChatRooms(Member member) {
-        List<ChatRoom> chatRoomList = chatRoomRepository.findAllByMember_MemberNo(
+        List<ChatRoom> chatRoomList = chatRoomRepository.findAllByMember_MemberNoOrderByCreateTimeDesc(
             member.getMemberNo());
 
         return ChatRoomListResponseDto.of(chatRoomList);

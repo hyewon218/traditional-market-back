@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
-    List<ChatRoom> findAllByOrderByCreateTimeAsc();
-    List<ChatRoom> findAllByMember_MemberNo(Long id);
+    List<ChatRoom> findAllByOrderByCreateTimeDesc();
+    List<ChatRoom> findAllByMember_MemberNoOrderByCreateTimeDesc(Long id);
 }
