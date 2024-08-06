@@ -31,13 +31,12 @@ public class ChatRoomController {
     private final ChatService chatService;
 
     @PostMapping("/chatrooms") // 채팅방 생성
-    public ResponseEntity<ApiResponse> createChatRoom(
+    public ResponseEntity<ChatRoomResponseDto> createChatRoom(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @ModelAttribute ChatRoomRequestDto requestDto)
         throws IOException {
-        chatRoomService.createChatRoom(requestDto, userDetails.getMember());
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new ApiResponse("채팅방 생성 성공", HttpStatus.CREATED.value()));
+        ChatRoomResponseDto result = chatRoomService.createChatRoom(requestDto, userDetails.getMember());
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/chatrooms") // 채팅방 목록 조회 (관리자)
@@ -67,6 +66,5 @@ public class ChatRoomController {
         chatRoomService.deleteChatRoom(id, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("채팅방 삭제 성공", HttpStatus.OK.value()));
-
     }
 }

@@ -14,7 +14,7 @@ public interface ChatRoomService {
      * @param requestDto 채팅방 저장 요청정보
      * @param member     채팅방 생성 요청자
      */
-    void createChatRoom(ChatRoomRequestDto requestDto, Member member) throws IOException;
+    ChatRoomResponseDto createChatRoom(ChatRoomRequestDto requestDto, Member member) throws IOException;
 
     /**
      * 채팅방 목록 조회
