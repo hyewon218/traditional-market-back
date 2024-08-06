@@ -140,6 +140,7 @@ public class MarketServiceImpl implements MarketService {
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
                     imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
+                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
                 }
             }
         } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
@@ -147,7 +148,10 @@ public class MarketServiceImpl implements MarketService {
         }
 
         if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
-            imageRepository.deleteAll(existingImages);
+            for (Image existingImage : existingImages) {
+                imageRepository.delete(existingImage);
+                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+            }
         }
         return MarketResponseDto.of(market);
     }
@@ -156,6 +160,11 @@ public class MarketServiceImpl implements MarketService {
     @Transactional // 시장 삭제
     public void deleteMarket(Long marketNo) {
         Market market = findMarket(marketNo);
+
+        List<Image> images = imageRepository.findByMarket_No(marketNo);
+        for (Image image : images) {
+            awsS3upload.delete(image.getImageUrl()); // Delete from S3
+        }
         marketRepository.delete(market);
     }
 
