@@ -67,15 +67,25 @@ public class ItemController {
     }
 
     @GetMapping("/items/category") // 상품 카테고리별 조회
-    public ResponseEntity<Page<ItemResponseDto>> getCategoryShop(ItemCategoryEnum itemCategory,
+    public ResponseEntity<Page<ItemResponseDto>> getCategoryItem(ItemCategoryEnum itemCategory,
         Pageable pageable) {
         Page<ItemResponseDto> result = itemService.getCategoryItem(itemCategory, pageable);
         return ResponseEntity.ok().body(result);
     }
 
+    @GetMapping("/{shopNo}/items/category-by-shop") // 상점 번호와 상품 카테고리로 해당하는 상품 목록 조회
+    public ResponseEntity<Page<ItemResponseDto>> getItemsByCategoryAndShopNo(
+        @PathVariable("shopNo") Long shopNo,
+        @RequestParam("category") ItemCategoryEnum itemCategory, Pageable pageable) {
+        Page<ItemResponseDto> categories = itemService.getItemsByCategoryAndShopNo(shopNo,
+            itemCategory, pageable);
+        return ResponseEntity.ok().body(categories);
+    }
+
     @GetMapping("/{marketNo}/items/category") // 시장 번호와 상품 카테고리로 해당하는 상품 목록 조회
     public ResponseEntity<List<ItemCategoryResponseDto>> getItemsByCategory(
-        @PathVariable("marketNo") Long marketNo, @RequestParam("category") ItemCategoryEnum itemCategory) {
+        @PathVariable("marketNo") Long marketNo,
+        @RequestParam("category") ItemCategoryEnum itemCategory) {
         List<ItemCategoryResponseDto> categories = itemService.getItemsByCategory(marketNo,
             itemCategory);
         return ResponseEntity.ok().body(categories);

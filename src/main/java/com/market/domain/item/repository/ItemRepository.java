@@ -16,12 +16,18 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Page<Item> findAllByShop_No(Long shopNo, Pageable pageable);
 
+    Page<Item> findByShopNoAndItemCategory(Long shopNo, ItemCategoryEnum itemCategory,
+        Pageable pageable);
+
     List<Item> findByShopMarketNoAndItemCategory(Long marketNo, ItemCategoryEnum itemCategory);
-    Page<Item> findByShopMarketNoAndItemCategory(Long marketNo, ItemCategoryEnum itemCategory, Pageable pageable);
+
+    Page<Item> findByShopMarketNoAndItemCategory(Long marketNo, ItemCategoryEnum itemCategory,
+        Pageable pageable);
 
     List<Item> findByShopMarketNoAndItemName(Long marketNo, String itemName);
 
-    Page<Item> findByItemCategoryOrderByItemCategoryDesc(ItemCategoryEnum itemCategory, Pageable pageable);
+    Page<Item> findByItemCategoryOrderByItemCategoryDesc(ItemCategoryEnum itemCategory,
+        Pageable pageable);
 
     Page<Item> findAllByShop_Market_No(Long marketNo, Pageable pageable);
 
