@@ -43,4 +43,16 @@ public class ChatRoom extends BaseEntity {
     @OneToMany(mappedBy = "chatRoom", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Chat> ChatMessages = new ArrayList<>();
 
+    @Builder.Default
+    private boolean isRead = false; // 채팅방 읽음 여부
+
+    // 채팅방을 읽은 상태로 변경
+    public void markAsRead() {
+        this.isRead = true;
+    }
+
+    // 채팅방을 읽지 않은 상태로 변경
+    public void markAsUnread() {
+        this.isRead = false;
+    }
 }

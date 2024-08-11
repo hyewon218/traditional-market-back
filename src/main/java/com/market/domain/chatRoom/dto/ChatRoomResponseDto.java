@@ -23,12 +23,15 @@ public class ChatRoomResponseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDateTime createTime;
 
+    private boolean isRead;
+
     public static ChatRoomResponseDto of(ChatRoom chatRoom) {
         return ChatRoomResponseDto.builder()
             .no(chatRoom.getNo())
             .title(chatRoom.getTitle())
             .username(chatRoom.getMember().getMemberId())
             .createTime(chatRoom.getCreateTime())
+            .isRead(chatRoom.isRead())
             .build();
     }
 }
