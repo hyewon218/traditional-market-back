@@ -5,6 +5,7 @@ import com.market.domain.member.dto.MemberNicknameRequestDto;
 import com.market.domain.member.dto.MemberRequestDto;
 import com.market.domain.member.dto.MyInfoResponseDto;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberSearchCond;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
@@ -56,6 +57,14 @@ public interface MemberService {
      * @return : 회원 Entity
      */
     Member findById(long memberNo);
+
+    /**
+     * 키워드 검색 회원 목록 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 회원 목록 조회
+     */
+    Page<MyInfoResponseDto> searchMembers(MemberSearchCond cond, Pageable pageable);
 
     /**
      * 회원 수정
@@ -201,6 +210,20 @@ public interface MemberService {
      * @return : role에 일치하는 회원 목록 반환
      */
     Page<MyInfoResponseDto> getRole(Role role, Pageable pageable);
+
+    /**
+     * 총 회원 수 구하기
+     *
+     * @return : 총 회원 수
+     */
+    Long countMembers();
+
+    /**
+     * 권한이 admin인지 확인
+     *
+     * @return : true / false
+     */
+    boolean isAdmin();
 
     /**
      * 회원 아이디 마스킹 처리

@@ -102,12 +102,12 @@ $(document).ready(function() {
 
     // 특정 시장에 해당하는 상품 목록을 가져오는 함수
     function loadItemList(marketNo, shopNo, page, itemCategory) {
-        let url = `/api/${marketNo}/items?page=${page}&size=3&sort=${sortBy}`;
+        let url = `/api/market/${marketNo}/items?page=${page}&size=3&sort=${sortBy}`;
 
         if (itemCategory) {
             url = `/api/${marketNo}/items/category/paging?page=${page}&size=3&sort=${sortBy}&itemCategory=${itemCategory}`;
         } else if(shopNo === "all") {
-            url =  `/api/${marketNo}/items?page=${page}&size=3&sort=${sortBy}`;
+            url = `/api/market/${marketNo}/items?page=${page}&size=3&sort=${sortBy}`;
         } else if(marketNo && shopNo) {
             url = `/api/${shopNo}/items?page=${page}&size=3&sort=${sortBy}`;
         } else {

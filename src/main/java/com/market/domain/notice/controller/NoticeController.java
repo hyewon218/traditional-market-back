@@ -2,8 +2,7 @@ package com.market.domain.notice.controller;
 
 import com.market.domain.notice.dto.NoticeRequestDto;
 import com.market.domain.notice.dto.NoticeResponseDto;
-import com.market.domain.notice.dto.NoticeUpdateRequestDto;
-import com.market.domain.notice.entity.Notice;
+import com.market.domain.notice.repository.NoticeSearchCond;
 import com.market.domain.notice.service.NoticeServiceImpl;
 import com.market.global.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +38,14 @@ public class NoticeController {
     public ResponseEntity<Page<NoticeResponseDto>> findNotices(Pageable pageable) {
         Page<NoticeResponseDto> notices = noticeService.findAll(pageable);
         return ResponseEntity.ok().body(notices);
+    }
+
+    // 키워드 검색 공지사항 목록 조회
+    @GetMapping("/search")
+    public ResponseEntity<Page<NoticeResponseDto>> searchNotices(NoticeSearchCond cond,
+        Pageable pageable) {
+        Page<NoticeResponseDto> result = noticeService.searchNotices(cond, pageable);
+        return ResponseEntity.ok().body(result);
     }
 
     // 특정 공지사항 조회

@@ -66,7 +66,8 @@ $(document).ready(function() {
                     if (confirmRedirect) {
                         window.location.href = '/notice/' + noticeNo; // 예를 선택하면 이동
                     } else {
-                        window.location.href = '/noticelist'; // 아니오 선택 시 홈으로 이동
+//                        window.location.href = '/noticelist';
+                        window.location.href = '/admin/notices';
                     }
                 },
                 error: function(xhr) {

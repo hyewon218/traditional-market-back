@@ -3,6 +3,7 @@ package com.market.domain.shop.controller;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.CategoryEnum;
+import com.market.domain.shop.repository.ShopSearchCond;
 import com.market.domain.shop.service.ShopService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
@@ -13,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,6 +50,14 @@ public class ShopController {
     @GetMapping("/shops") // 상점 목록 조회
     public ResponseEntity<Page<ShopResponseDto>> getShops(Pageable pageable) {
         Page<ShopResponseDto> result = shopService.getShops(pageable);
+        return ResponseEntity.ok().body(result);
+    }
+
+    @GetMapping("/shops/search") // 키워드 검색 상점 목록 조회
+    public ResponseEntity<Page<ShopResponseDto>> searchShops(ShopSearchCond cond,
+        @PageableDefault(size = 20, sort = "shopName", direction = Sort.Direction.ASC)
+        Pageable pageable) {
+        Page<ShopResponseDto> result = shopService.searchShops(cond, pageable);
         return ResponseEntity.ok().body(result);
     }
 
@@ -118,5 +129,15 @@ public class ShopController {
         shopService.deleteShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 삼점에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
+    }
+
+    @GetMapping("/admin/shops/count")
+    public ResponseEntity<Long> countShops() {
+        return ResponseEntity.ok().body(shopService.countShops());
+    }
+
+    @GetMapping("/admin/{marketNo}/shops/count")
+    public ResponseEntity<Long> countShopsByMarket(@PathVariable Long marketNo) {
+        return ResponseEntity.ok().body(shopService.countShopsByMarket(marketNo));
     }
 }

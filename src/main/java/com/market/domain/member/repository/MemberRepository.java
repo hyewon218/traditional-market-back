@@ -26,4 +26,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     // 비밀번호 찾기(아이디와 이메일 이용)
     Member findByMemberIdAndMemberEmail(String memberId, String memberEmail);
+
+    Role findRoleByMemberNo(Long memberNo);
 }

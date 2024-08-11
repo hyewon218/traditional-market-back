@@ -23,16 +23,21 @@
   <div class="admin-sidebar">
     <h3>관리자 메뉴</h3>
     <ul>
+      <li><a th:href="@{/admin}">관리자 페이지 홈</a></li>
       <li><a th:href="@{/admin/markets}">시장 관리</a></li>
       <li><a th:href="@{/admin/shops}">상점 관리</a></li>
       <li><a th:href="@{/admin/items}">상품 관리</a></li>
-      <li><a th:href="@{/admin/members}">회원목록 조회</a></li>
-      <li><a th:href="@{/admin/inquiries}">문의사항 목록</a></li>
+      <li><a th:href="@{/admin/members}">회원 관리</a></li>
+      <li><a th:href="@{/admin/inquiries}">문의사항 관리</a></li>
       <li><a th:href="@{/admin/notices}">공지사항 관리</a></li>
       <li><a th:href="@{/admin/visitor}">방문자 수</a></li>
     </ul>
   </div>
   <button id="addShopButton" onclick="location.href='/admin/shops/a'">상점 추가</button>
+  <div class="shopList-searchKeyword">
+    <input type="text" id="searchInput" placeholder="상점 이름 검색">
+    <button id="searchButton">검색</button>
+  </div>
   <div class="shopList-marketList">
     <div>
       <select id="marketNo" name="marketNo" required>
