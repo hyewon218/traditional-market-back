@@ -110,4 +110,9 @@ public class MarketController {
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 시장에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
+
+    @GetMapping("/admin/markets/count")
+    public ResponseEntity<?> countMarkets() { // 총 시장 수
+        return ResponseEntity.ok().body(marketService.countMarkets());
+    }
 }

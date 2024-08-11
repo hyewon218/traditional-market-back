@@ -105,4 +105,13 @@ public interface MarketService {
      * @return : 시장 Entity
      */
     Market findMarket(Long marketNo);
+
+
+    /**
+     * 총 시장 수
+     *
+     * @return : 총 시장 수
+     */
+    Long countMarkets();
+
 }

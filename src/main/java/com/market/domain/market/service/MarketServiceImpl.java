@@ -212,4 +212,11 @@ public class MarketServiceImpl implements MarketService {
         return marketRepository.findById(marketNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
     }
+    
+    @Override // 총 시장 수
+    @Transactional(readOnly = true)
+    public Long countMarkets() {
+        return marketRepository.count();
+    }
+
 }
