@@ -4,6 +4,7 @@ import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.*;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.member.repository.MemberSearchCond;
 import com.market.domain.member.service.MemberServiceImpl;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
@@ -20,7 +21,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -65,6 +67,13 @@ public class MemberController {
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Member member = memberService.findById(userDetails.getMember().getMemberNo());
         return ResponseEntity.ok().body(MyInfoResponseDto.of(member));
+    }
+
+    @GetMapping("/search") // 키워드 검색 회원 목록 조회
+    public ResponseEntity<Page<MyInfoResponseDto>> searchMembers(MemberSearchCond cond,
+        Pageable pageable) {
+        Page<MyInfoResponseDto> result = memberService.searchMembers(cond, pageable);
+        return ResponseEntity.ok().body(result);
     }
 
     // admin 권한일 경우 다른 회원의 상세정보 열람 가능, 일반회원은 자신의 정보만 열람 가능
@@ -204,17 +213,31 @@ public class MemberController {
     }
 
     // 내정보 열람 시 본인 비밀번호 확인
+//    @PostMapping("/myinfo/check")
+//    public ResponseEntity<ApiResponse> verifyPassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
+//                                                      HttpServletRequest request, HttpServletResponse response,
+//                                                      String password) {
+//        boolean isValid = memberService.checkPassword(request, response, password, userDetails.getMember().getMemberNo());
+//        if (isValid) {
+//            return ResponseEntity.ok()
+//                    .body(new ApiResponse("성공", HttpStatus.OK.value()));
+//        } else {
+//            return ResponseEntity.badRequest()
+//                    .body(new ApiResponse("비밀번호가 틀립니다", HttpStatus.BAD_REQUEST.value()));
+//        }
+//    }
+
     @PostMapping("/myinfo/check")
     public ResponseEntity<ApiResponse> verifyPassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                      HttpServletRequest request, HttpServletResponse response,
-                                                      String password) {
+        HttpServletRequest request, HttpServletResponse response,
+        String password) {
         boolean isValid = memberService.checkPassword(request, response, password, userDetails.getMember().getMemberNo());
         if (isValid) {
             return ResponseEntity.ok()
-                    .body(new ApiResponse("성공", HttpStatus.OK.value()));
+                .body(new ApiResponse("성공", HttpStatus.OK.value()));
         } else {
             return ResponseEntity.badRequest()
-                    .body(new ApiResponse("비밀번호가 틀립니다", HttpStatus.BAD_REQUEST.value()));
+                .body(new ApiResponse("비밀번호가 틀립니다", HttpStatus.BAD_REQUEST.value()));
         }
     }
 
@@ -223,6 +246,25 @@ public class MemberController {
     public ResponseEntity<Page<MyInfoResponseDto>> getRole(Role role, Pageable pageable) {
         Page<MyInfoResponseDto> members = memberService.getRole(role, pageable);
         return ResponseEntity.ok().body(members);
+    }
+    
+    // 총 회원 수
+    @GetMapping("/admin/count")
+    public ResponseEntity<?> countMembers() {
+        return ResponseEntity.ok().body(memberService.countMembers());
+    }
+
+    // 권한 admin인지 확인
+    @GetMapping("/check-admin")
+    public ResponseEntity<Map<String, Boolean>> checkAdminRole() {
+        // 서비스에서 관리자 권한 확인
+        boolean isAdmin = memberService.isAdmin();
+
+        // 결과를 JSON 형식으로 반환
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("isAdmin", isAdmin);
+
+        return ResponseEntity.ok(response);
     }
 
 }

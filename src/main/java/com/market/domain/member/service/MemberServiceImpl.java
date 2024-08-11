@@ -11,6 +11,8 @@ import com.market.domain.member.dto.MemberResponseDto;
 import com.market.domain.member.dto.MyInfoResponseDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.member.repository.MemberRepositoryQuery;
+import com.market.domain.member.repository.MemberSearchCond;
 import com.market.global.jwt.config.TokenProvider;
 import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.redis.RedisUtils;
@@ -29,6 +31,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +53,7 @@ public class MemberServiceImpl implements MemberService {
     private final DeliveryRepository deliveryRepository;
     private final InquiryRepository inquiryRepository;
     private final DeliveryMessageRepository deliveryMessageRepository;
+    private final MemberRepositoryQuery memberRepositoryQuery;
 
     // 회원 생성
     @Override
@@ -177,6 +181,13 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
     }
 
+    // 키워드 검색 회원 목록 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<MyInfoResponseDto> searchMembers(MemberSearchCond cond, Pageable pageable) {
+        return memberRepositoryQuery.searchMembers(cond, pageable).map(MyInfoResponseDto::of);
+    }
+
     // 회원 수정
     @Override
     @Transactional
@@ -187,6 +198,7 @@ public class MemberServiceImpl implements MemberService {
         return member;
     }
 
+    // 권한 수정
     @Override
     @Transactional
     public Member updateRole(long memberNo, MemberRequestDto requestDto) {
@@ -390,6 +402,35 @@ public class MemberServiceImpl implements MemberService {
     public Page<MyInfoResponseDto> getRole(Role role, Pageable pageable) {
         Page<Member> members = memberRepository.findAllByRole(role, pageable);
         return members.map(MyInfoResponseDto::of);
+    }
+
+    // 총 회원 수
+    @Override
+    @Transactional(readOnly = true)
+    public Long countMembers() {
+        return memberRepository.count();
+    }
+
+    // 권한이 admin인지 확인
+    @Override
+    public boolean isAdmin() {
+        // 현재 인증된 사용자 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+
+            // principal이 UserDetails 타입인지 확인
+            if (principal instanceof UserDetails userDetails) {
+
+                // 사용자의 권한 목록에서 ROLE_ADMIN이 있는지 확인
+                return userDetails.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
+            }
+        }
+
+        // 권한이 없거나 인증되지 않은 경우 false 반환
+        return false;
     }
 
     // 회원 아이디 마스킹 처리

@@ -17,6 +17,8 @@ import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.CategoryEnum;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
+import com.market.domain.shop.repository.ShopRepositoryQuery;
+import com.market.domain.shop.repository.ShopSearchCond;
 import com.market.domain.shop.shopLike.entity.ShopLike;
 import com.market.domain.shop.shopLike.repository.ShopLikeRepository;
 import com.market.global.exception.BusinessException;
@@ -45,6 +47,7 @@ public class ShopServiceImpl implements ShopService {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
     private final IpService ipService;
+    private final ShopRepositoryQuery shopRepositoryQuery;
 
     @Override
     @Transactional // 상점 생성
@@ -103,6 +106,12 @@ public class ShopServiceImpl implements ShopService {
     public Page<ShopResponseDto> getCategoryShop(CategoryEnum category, Pageable pageable) {
         Page<Shop> shopList = shopRepository.findByCategoryOrderByCategoryDesc(category, pageable);
         return shopList.map(ShopResponseDto::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 키워드 검색 상점 목록 조회
+    public Page<ShopResponseDto> searchShops(ShopSearchCond cond, Pageable pageable) {
+        return shopRepositoryQuery.searchShops(cond, pageable).map(ShopResponseDto::of);
     }
 
     @Override
@@ -243,5 +252,17 @@ public class ShopServiceImpl implements ShopService {
     public Shop findShop(Long shopNo) {
         return shopRepository.findById(shopNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_SHOP));
+    }
+
+    @Override // 총 상점 수
+    @Transactional(readOnly = true)
+    public Long countShops() {
+        return shopRepository.count();
+    }
+
+    @Override // 시장별 상점 수
+    @Transactional(readOnly = true)
+    public Long countShopsByMarket(Long marketNo) {
+        return shopRepository.countByMarket_No(marketNo);
     }
 }

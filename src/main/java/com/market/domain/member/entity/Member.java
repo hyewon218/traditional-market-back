@@ -49,7 +49,7 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProviderType providerType; // Google, Naver, Kakao, Local 로그인
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "cart_no")
     private Cart cart;
 

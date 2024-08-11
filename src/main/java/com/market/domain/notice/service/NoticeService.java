@@ -2,6 +2,7 @@ package com.market.domain.notice.service;
 
 import com.market.domain.notice.dto.NoticeRequestDto;
 import com.market.domain.notice.dto.NoticeResponseDto;
+import com.market.domain.notice.repository.NoticeSearchCond;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,14 @@ public interface NoticeService {
      * @return : 공지사항 전체 목록
      */
     Page<NoticeResponseDto> findAll(Pageable pageable);
+
+    /**
+     * 키워드 검색 공지사항 목록 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 공지사항 목록 조회
+     */
+    Page<NoticeResponseDto> searchNotices(NoticeSearchCond cond, Pageable pageable);
 
     /**
      * 특정 공지사항 조회

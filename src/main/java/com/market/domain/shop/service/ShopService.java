@@ -8,6 +8,7 @@ import com.market.domain.shop.entity.Shop;
 import java.io.IOException;
 import java.util.List;
 
+import com.market.domain.shop.repository.ShopSearchCond;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,14 @@ public interface ShopService {
      * @return : 조회된 상점들 정보
      */
     Page<ShopResponseDto> getShops(Pageable pageable);
+
+    /**
+     * 키워드 검색 상점 목록 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 상점 목록 조회
+     */
+    Page<ShopResponseDto> searchShops(ShopSearchCond cond, Pageable pageable);
 
     /**
      * 시장 내 상점 목록 조회
@@ -110,4 +119,18 @@ public interface ShopService {
      * @return : 상점 Entity
      */
     Shop findShop(Long shopNo);
+
+    /**
+     * 총 상점 수
+     *
+     * @return : 총 상점 수
+     */
+    Long countShops();
+
+    /**
+     * 시장별 상점 수
+     *
+     * @return : 시장별 상점 수
+     */
+    Long countShopsByMarket(Long marketNo);
 }

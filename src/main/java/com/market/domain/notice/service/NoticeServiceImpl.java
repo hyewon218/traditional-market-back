@@ -6,6 +6,8 @@ import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.notice.dto.NoticeRequestDto;
 import com.market.domain.notice.dto.NoticeResponseDto;
 import com.market.domain.notice.entity.Notice;
+import com.market.domain.notice.repository.NoticeRepositoryQuery;
+import com.market.domain.notice.repository.NoticeSearchCond;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.ip.IpService;
@@ -31,6 +33,7 @@ public class NoticeServiceImpl implements NoticeService {
     private final IpService ipService;
     private final AwsS3upload awsS3upload;
     private final ImageRepository imageRepository;
+    private final NoticeRepositoryQuery noticeRepositoryQuery;
 
     // 공지사항 생성
     @Override
@@ -64,6 +67,13 @@ public class NoticeServiceImpl implements NoticeService {
     public Page<NoticeResponseDto> findAll(Pageable pageable) {
         Page<Notice> notices = noticeRepository.findAll(pageable);
         return notices.map(NoticeResponseDto::of);
+    }
+
+    // 키워드 검색 공지사항 목록 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<NoticeResponseDto> searchNotices(NoticeSearchCond cond, Pageable pageable) {
+        return noticeRepositoryQuery.searchNotices(cond, pageable).map(NoticeResponseDto::of);
     }
 
     // 특정 공지사항 조회
