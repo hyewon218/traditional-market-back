@@ -86,6 +86,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/chatrooms/{chatRoomNo}/read").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**").hasAnyRole("ADMIN")
                         .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login",
                                 "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
@@ -93,7 +94,7 @@ public class WebSecurityConfig {
                                 "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**", "/api/members/myinfo/myinfo",
                                 "/api/members/changepw", "/api/members/login", "/api/members/myinfo/check",
                                 "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
-                        .requestMatchers("/api/members/**","/api/chatroom", "/api/chatroom/**", "/myinfo/inquiry/**",
+                        .requestMatchers("/api/members/**","/api/chatrooms", "/api/chatrooms/**", "/myinfo/inquiry/**",
                                 "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
                                 "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
                         .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2

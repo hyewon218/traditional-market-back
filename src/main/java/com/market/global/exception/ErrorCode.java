@@ -57,8 +57,10 @@ public enum ErrorCode {
     //채팅
     INVALID_AUTH_TOKEN(HttpStatus.BAD_REQUEST,"C001", "잘못된 인증 토큰입니다."),
     NOT_FOUND_CHATROOM (HttpStatus. BAD_REQUEST, "C002", "존재하지 않는 채팅방입나다."),
-    ONLY_MASTER_EDIT(HttpStatus.BAD_REQUEST, "CO03", "채팅방 개설자만 수정할 수 있습니다."),
-    ONLY_MASTER_DELETE(HttpStatus. BAD_REQUEST, "C005", "채팅방 개설자만 삭제할 수 있습니다."),
+    ONLY_MASTER_AND_ADMIN_EDIT(HttpStatus.BAD_REQUEST, "CO03", "채팅방 개설자와 관리자만 수정할 수 있습니다."),
+    ONLY_MASTER_AND_ADMIN_DELETE(HttpStatus.BAD_REQUEST, "CO04", "채팅방 개설자와 관리자만 삭제할 수 있습니다."),
+    ONLY_MASTER_AND_ADMIN_HAVE_AUTHORITY(HttpStatus. BAD_REQUEST, "C005", "채팅방 개설자와 관리자만 권한이 있습니다."),
+    ONLY_ADMIN_HAVE_AUTHORITY(HttpStatus. BAD_REQUEST, "C006", "관리자만 권한이 있습니다."),
     // aws s3
     EXISTED_FILE(HttpStatus.BAD_REQUEST, "AS001", "중복된 파일명입니다."),
     // 문의사항

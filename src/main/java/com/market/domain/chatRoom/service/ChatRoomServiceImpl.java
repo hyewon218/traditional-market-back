@@ -1,15 +1,16 @@
 package com.market.domain.chatRoom.service;
 
-import com.market.domain.chatRoom.dto.ChatRoomListResponseDto;
 import com.market.domain.chatRoom.dto.ChatRoomRequestDto;
 import com.market.domain.chatRoom.dto.ChatRoomResponseDto;
 import com.market.domain.chatRoom.entity.ChatRoom;
 import com.market.domain.chatRoom.repository.ChatRoomRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,57 +20,89 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
 
-    // 채팅방 생성
     @Override
-    @Transactional
+    @Transactional // 채팅방 생성
     public ChatRoomResponseDto createChatRoom(ChatRoomRequestDto requestDto, Member member) {
         ChatRoom chatRoom = requestDto.toEntity(member);
         chatRoomRepository.save(chatRoom);
         return ChatRoomResponseDto.of(chatRoom);
     }
 
-    // 채팅방 목록 조회
     @Override
-    @Transactional(readOnly = true)
-    public ChatRoomListResponseDto getChatRooms() {
-        List<ChatRoom> chatRoomList = chatRoomRepository.findAllByOrderByCreateTimeDesc();
-        return ChatRoomListResponseDto.of(chatRoomList);
+    @Transactional(readOnly = true)  // 채팅방 목록 조회
+    public Page<ChatRoomResponseDto> getChatRooms(Pageable pageable) {
+        Page<ChatRoom> chatRoomList = chatRoomRepository.findAllByOrderByCreateTimeDesc(pageable);
+        return chatRoomList.map(ChatRoomResponseDto::of);
     }
 
-    // 내 채팅방 목록 조회
     @Override
-    @Transactional(readOnly = true)
-    public ChatRoomListResponseDto getMyChatRooms(Member member) {
-        List<ChatRoom> chatRoomList = chatRoomRepository.findAllByMember_MemberNoOrderByCreateTimeDesc(
-            member.getMemberNo());
-
-        return ChatRoomListResponseDto.of(chatRoomList);
+    @Transactional(readOnly = true)  // 내 채팅방 목록 조회
+    public Page<ChatRoomResponseDto> getMyChatRooms(Member member, Pageable pageable) {
+        Page<ChatRoom> chatRoomList = chatRoomRepository.findAllByMember_MemberNoOrderByCreateTimeDesc(
+            member.getMemberNo(), pageable);
+        return chatRoomList.map(ChatRoomResponseDto::of);
     }
 
-    // 채팅방 단건 조회
     @Override
-    @Transactional(readOnly = true)
-    public ChatRoomResponseDto getChatRoom(Long id) {
-        ChatRoom chatRoom = findChatRoom(id);
-
+    @Transactional(readOnly = true)  // 채팅방 단건 조회
+    public ChatRoomResponseDto getChatRoom(Long chatRoomNo) {
+        ChatRoom chatRoom = findChatRoom(chatRoomNo);
         return ChatRoomResponseDto.of(chatRoom);
     }
 
-    // 채팅방 삭제
     @Override
-    @Transactional
-    public void deleteChatRoom(Long id, Member member) {
-        ChatRoom chatRoom = findChatRoom(id);
-
-        if (!chatRoom.getMember().getMemberNo().equals(member.getMemberNo())) {
-            throw new BusinessException(ErrorCode.ONLY_MASTER_DELETE);
-        }
+    @Transactional // 채팅방 삭제
+    public void deleteChatRoom(Long chatRoomNo, Member member) {
+        ChatRoom chatRoom = findChatRoom(chatRoomNo);
+        validateIsMasterAndAdmin(chatRoomNo, member);
         chatRoomRepository.delete(chatRoom);
     }
 
-    // 채팅방 찾기
-    private ChatRoom findChatRoom(Long id) {
-        return chatRoomRepository.findById(id).orElseThrow(() ->
+    @Override
+    @Transactional(readOnly = true) // 채팅방 찾기
+    public ChatRoom findChatRoom(Long chatRoomNo) {
+        return chatRoomRepository.findById(chatRoomNo).orElseThrow(() ->
             new BusinessException(ErrorCode.NOT_FOUND_CHATROOM));
+    }
+
+    @Override
+    @Transactional // 채팅방 읽은 상태로 변경
+    public void markChatRoomAsRead(Long chatRoomNo, Member member) {
+        ChatRoom chatRoom = findChatRoom(chatRoomNo);
+        validateIsAdmin(chatRoomNo, member);
+        chatRoom.markAsRead();
+    }
+
+    @Override
+    @Transactional(readOnly = true)  // 채팅방 단건 조회
+    public ChatRoomResponseDto getChatRoomIsRead(Long chatRoomNo) {
+        ChatRoom chatRoom = findChatRoom(chatRoomNo);
+        return ChatRoomResponseDto.of(chatRoom);
+    }
+
+    @Override
+    @Transactional // 채팅방 읽지 않은 상태로 변경
+    public void markChatRoomAsUnRead(Long chatRoomNo, Member member) {
+        ChatRoom chatRoom = findChatRoom(chatRoomNo);
+        validateIsAdmin(chatRoomNo, member);
+        chatRoom.markAsUnread();
+    }
+
+    @Override
+    @Transactional // 작성자거나 관리자인지 확인
+    public void validateIsMasterAndAdmin(Long chatRoomNo, Member member) {
+        boolean isOwner = chatRoomRepository.existsByNoAndMember_MemberNo(chatRoomNo,
+            member.getMemberNo());
+        if (!isOwner && !member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.ONLY_MASTER_AND_ADMIN_HAVE_AUTHORITY);
+        }
+    }
+
+    @Override
+    @Transactional // 관리자인지 확인
+    public void validateIsAdmin(Long chatRoomNo, Member member) {
+        if (!member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
+        }
     }
 }
