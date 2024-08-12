@@ -207,6 +207,12 @@ public class MarketServiceImpl implements MarketService {
         }
     }
 
+    @Override // 좋아요 수 조회
+    @Transactional(readOnly = true)
+    public Long countMarketLikes() {
+        return marketLikeRepository.count();
+    }
+
     @Override // 시장 찾기
     public Market findMarket(Long marketNo) {
         return marketRepository.findById(marketNo)

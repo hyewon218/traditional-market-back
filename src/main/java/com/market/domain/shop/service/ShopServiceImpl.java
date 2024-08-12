@@ -204,8 +204,8 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional
-    public void createShopLike(Long shopNo, Member member) { // 좋아요 생성
+    @Transactional // 좋아요 생성
+    public void createShopLike(Long shopNo, Member member) {
         Shop shop = findShop(shopNo);
 
         shopLikeRepository.findByShopAndMember(shop, member).ifPresent(shopLike -> {
@@ -228,16 +228,16 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional
-    public boolean checkShopLike(Long shopNo, Member member) { // 좋아요 여부 확인
+    @Transactional // 좋아요 여부 확인
+    public boolean checkShopLike(Long shopNo, Member member) {
         Shop shop = findShop(shopNo);
         Optional<ShopLike> shopLike = shopLikeRepository.findByShopAndMember(shop, member);
         return shopLike.isPresent(); // 좋아요 존재하면 true
     }
 
     @Override
-    @Transactional
-    public void deleteShopLike(Long shopNo, Member member) { // 좋아요 삭제
+    @Transactional // 좋아요 삭제
+    public void deleteShopLike(Long shopNo, Member member) {
         Shop shop = findShop(shopNo);
         Optional<ShopLike> shopLike = shopLikeRepository.findByShopAndMember(shop, member);
 
@@ -246,6 +246,12 @@ public class ShopServiceImpl implements ShopService {
         } else {
             throw new BusinessException(ErrorCode.NOT_EXISTS_SHOP_LIKE);
         }
+    }
+
+    @Override // 좋아요 수 조회
+    @Transactional(readOnly = true)
+    public Long countShopLikes() {
+        return shopLikeRepository.count();
     }
 
     @Override // 시장 찾기

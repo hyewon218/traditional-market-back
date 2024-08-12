@@ -342,6 +342,12 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    @Override // 좋아요 수 조회
+    @Transactional(readOnly = true)
+    public Long countItemLikes() {
+        return itemLikeRepository.count();
+    }
+
     @Override // 상품 찾기
     public Item findItem(Long itemNo) {
         return itemRepository.findById(itemNo)

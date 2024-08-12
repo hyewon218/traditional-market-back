@@ -158,4 +158,9 @@ public class ItemController {
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 상품에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
+
+    @GetMapping("/items/likes")
+    public ResponseEntity<Long> getItemLike() { // 좋아요 수 조회
+        return ResponseEntity.ok(itemService.countItemLikes());
+    }
 }

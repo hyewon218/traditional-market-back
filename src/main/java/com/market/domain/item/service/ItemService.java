@@ -162,6 +162,13 @@ public interface ItemService {
     void deleteItemLike(Long itemNo, Member member);
 
     /**
+     * 좋아요 수
+     *
+     * @return : 좋아요 수
+     */
+    Long countItemLikes();
+
+    /**
      * 상점 찾기
      *
      * @param itemNo : 찾을 상품 no

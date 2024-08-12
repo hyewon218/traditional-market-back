@@ -131,6 +131,11 @@ public class ShopController {
             .body(new ApiResponse("해당 삼점에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
 
+    @GetMapping("/shops/likes")
+    public ResponseEntity<Long> getShopLike() { // 좋아요 수 조회
+        return ResponseEntity.ok(shopService.countShopLikes());
+    }
+
     @GetMapping("/admin/shops/count")
     public ResponseEntity<Long> countShops() {
         return ResponseEntity.ok().body(shopService.countShops());
