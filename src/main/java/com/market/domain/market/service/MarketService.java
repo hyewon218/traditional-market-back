@@ -99,6 +99,13 @@ public interface MarketService {
     void deleteMarketLike(Long marketNo, Member member);
 
     /**
+     * 좋아요 수
+     *
+     * @return : 좋아요 수
+     */
+    Long countMarketLikes();
+
+    /**
      * 시장 찾기
      *
      * @param marketNo : 찾을 시장 no

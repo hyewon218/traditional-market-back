@@ -111,6 +111,11 @@ public class MarketController {
             .body(new ApiResponse("해당 시장에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
 
+    @GetMapping("/markets/likes")
+    public ResponseEntity<Long> getMarketLike() { // 좋아요 수 조회
+        return ResponseEntity.ok(marketService.countMarketLikes());
+    }
+
     @GetMapping("/admin/markets/count")
     public ResponseEntity<?> countMarkets() { // 총 시장 수
         return ResponseEntity.ok().body(marketService.countMarkets());

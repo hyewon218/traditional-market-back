@@ -113,6 +113,13 @@ public interface ShopService {
     void deleteShopLike(Long shopNo, Member member);
 
     /**
+     * 좋아요 수
+     *
+     * @return : 좋아요 수
+     */
+    Long countShopLikes();
+
+    /**
      * 상점 찾기
      *
      * @param shopNo : 찾을 상점 no
