@@ -15,8 +15,6 @@ public class NotificationResponseDto {
 
     private NotificationType notificationType;
 
-    private String notificationContent;
-
     private NotificationArgs args;
 
     private boolean isRead;
@@ -27,7 +25,6 @@ public class NotificationResponseDto {
         return NotificationResponseDto.builder()
             .no(notification.getNo())
             .notificationType(notification.getNotificationType())
-            .notificationContent(notification.getNotificationType().toString())
             .args(notification.getArgs())
             .createdAt(notification.getCreateTime())
             .isRead(false)

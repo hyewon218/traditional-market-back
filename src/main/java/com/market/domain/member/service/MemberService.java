@@ -12,8 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
-import java.util.List;
-
 public interface MemberService {
 
     /**
@@ -25,12 +23,12 @@ public interface MemberService {
      * @return : 회원 authentication
      */
     Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                         MemberRequestDto request) throws Exception;
+        MemberRequestDto request) throws Exception;
 
     /**
      * 로그아웃
      *
-     * @param httpRequest :
+     * @param httpRequest  :
      * @param httpResponse :
      */
     void logOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse);
@@ -59,6 +57,14 @@ public interface MemberService {
     Member findById(long memberNo);
 
     /**
+     * 특정 회원 조회
+     *
+     * @param memberId : 조회할 회원 아이디
+     * @return : 회원 Entity
+     */
+    Member findByMemberId(String memberId);
+
+    /**
      * 키워드 검색 회원 목록 조회
      *
      * @param cond 조건
@@ -69,7 +75,7 @@ public interface MemberService {
     /**
      * 회원 수정
      *
-     * @param memberNo : 수정할 회원 고유번호
+     * @param memberNo         : 수정할 회원 고유번호
      * @param memberRequestDto : 회원 수정 요청 정보
      * @return : 회원 Entity
      */
@@ -78,35 +84,38 @@ public interface MemberService {
     /**
      * 회원 권한 수정(admin만 가능)
      *
-     * @param memberNo : 수정할 회원 고유번호
+     * @param memberNo         : 수정할 회원 고유번호
      * @param memberRequestDto : 회원 수정 요청 정보
      * @return : 회원 Entity
      */
     Member updateRole(long memberNo, MemberRequestDto memberRequestDto);
-    
+
     /**
      * 회원 삭제
      *
-     * @param memberNo : 삭제할 회원 고유번호
-     * @param memberId : 삭제할 회원 아이디
-     * @param httpRequest :
+     * @param memberNo     : 삭제할 회원 고유번호
+     * @param memberId     : 삭제할 회원 아이디
+     * @param httpRequest  :
      * @param httpResponse :
      */
-    void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
+    void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse);
 
     /**
      * 회원 삭제(admin이 다른 회원 삭제)
      *
-     * @param memberNo : 삭제할 회원 고유번호
-     * @param memberId : 삭제할 회원 아이디
-     * @param httpRequest :
+     * @param memberNo     : 삭제할 회원 고유번호
+     * @param memberId     : 삭제할 회원 아이디
+     * @param httpRequest  :
      * @param httpResponse :
      */
-    void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
+    void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse);
+
     /**
      * OAuth2 최초 로그인 시 닉네임 수정
      *
-     * @param memberNo : 수정할 회원 고유번호
+     * @param memberNo                 : 수정할 회원 고유번호
      * @param memberNicknameRequestDto : 회원 수정 요청 정보
      */
     Member updateNickname(long memberNo, MemberNicknameRequestDto memberNicknameRequestDto);
@@ -115,14 +124,14 @@ public interface MemberService {
      * 회원가입 시 인증번호 일치하는지 확인(검증)
      *
      * @param memberEmail : 해당 회원의 이메일
-     * @param inputCode : 입력한 인증번호
+     * @param inputCode   : 입력한 인증번호
      */
     boolean verifyCode(String memberEmail, String inputCode);
 
     /**
      * 임시비밀번호 발급
      *
-     * @param memberEmail : 해당 회원의 이메일
+     * @param memberEmail  : 해당 회원의 이메일
      * @param tempPassword : 임시비밀번호
      */
     void SetTempPassword(String memberEmail, String tempPassword);
@@ -131,8 +140,8 @@ public interface MemberService {
      * 아이디 찾기
      *
      * @param memberNickname : 해당 회원의 닉네임
-     * @param memberEmail : 해당 회원의 이메일
-     * @param inputCode : 입력한 인증번호
+     * @param memberEmail    : 해당 회원의 이메일
+     * @param inputCode      : 입력한 인증번호
      */
     String findIdByNicknameEmail(String memberNickname, String memberEmail, String inputCode);
 
@@ -140,14 +149,14 @@ public interface MemberService {
      * 아이디 찾기 시 아래 인자로 해당 회원 있는지 검증
      *
      * @param memberNickname : 해당 회원의 닉네임
-     * @param memberEmail : 해당 회원의 이메일
+     * @param memberEmail    : 해당 회원의 이메일
      */
     boolean findMemberByNicknameAndEmail(String memberNickname, String memberEmail);
 
     /**
      * 비밀번호 찾기 시 아래 인자로 해당 회원 있는지 검증
      *
-     * @param memberId : 해당 회원의 아이디
+     * @param memberId    : 해당 회원의 아이디
      * @param memberEmail : 해당 회원의 이메일
      */
     boolean findMemberByIdAndEmail(String memberId, String memberEmail);
@@ -155,8 +164,8 @@ public interface MemberService {
     /**
      * 비밀번호 변경
      *
-     * @param memberNo : 회원 있는지 확인할 memberNo
-     * @param changePw : 변경할 비밀번호
+     * @param memberNo  : 회원 있는지 확인할 memberNo
+     * @param changePw  : 변경할 비밀번호
      * @param confirmPw : 변경할 비밀번호 재확인
      */
     boolean changePassword(long memberNo, String changePw, String confirmPw);
@@ -181,23 +190,25 @@ public interface MemberService {
      * 비밀번호 확인
      *
      * @param inputPassword : 비밀번호 확인 위해 입력한 비밀번호
-     * @param memberNo : 비밀번호 확인할 회원의 고유번호
+     * @param memberNo      : 비밀번호 확인할 회원의 고유번호
      * @return : true / false
      */
-    boolean checkPassword(HttpServletRequest request, HttpServletResponse response, String inputPassword, long memberNo);
+    boolean checkPassword(HttpServletRequest request, HttpServletResponse response,
+        String inputPassword, long memberNo);
 
     /**
      * 비밀번호 확인 시 쿠키에 비밀번호 상태 저장
      *
-     * @param response : 클라이언트에게 응답 보내기 위한 객체
+     * @param response  : 클라이언트에게 응답 보내기 위한 객체
      * @param randomTag : 해당 회원의 randomTag
      */
-    void setPasswordVerifiedToCookie(HttpServletRequest request, HttpServletResponse response, String randomTag);
+    void setPasswordVerifiedToCookie(HttpServletRequest request, HttpServletResponse response,
+        String randomTag);
 
     /**
      * 쿠키에서 비밀번호 확인 상태 체크
      *
-     * @param request : 클라이언트의 요청
+     * @param request   : 클라이언트의 요청
      * @param randomTag : 해당 회원의 randomTag
      * @return : true / false
      */
@@ -239,4 +250,12 @@ public interface MemberService {
      */
     String emailMasking(String memberEmail);
 
+    /**
+     * 특정 채팅방의 채팅 메시지 수신자 찾기
+     *
+     * @param roomId 채팅방
+     * @param sender 메세지 보낸 사람
+     * @return 채팅 메세지의 수신자
+     */
+    Member findChatRoomRecipient(Long roomId, Member sender);
 }

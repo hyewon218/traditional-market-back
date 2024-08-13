@@ -52,6 +52,7 @@ public enum ErrorCode {
     NOT_AUTHORITY_DELIVERY(HttpStatus.BAD_REQUEST, "C002", "배송지 권한이 없습니다."),
     // 알람
     NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "N001", "notification 연결 에러입니다."),
+    INVALID_ROLE(HttpStatus.BAD_REQUEST, "N002", "수신자 역할이 올바르지 않습니다."),
     // 관리자
     NOT_EXISTS_ADMIN(HttpStatus.BAD_REQUEST, "A001", "관리자가 존재하지 않습니다."),
     //채팅
@@ -61,6 +62,8 @@ public enum ErrorCode {
     ONLY_MASTER_AND_ADMIN_DELETE(HttpStatus.BAD_REQUEST, "CO04", "채팅방 개설자와 관리자만 삭제할 수 있습니다."),
     ONLY_MASTER_AND_ADMIN_HAVE_AUTHORITY(HttpStatus. BAD_REQUEST, "C005", "채팅방 개설자와 관리자만 권한이 있습니다."),
     ONLY_ADMIN_HAVE_AUTHORITY(HttpStatus. BAD_REQUEST, "C006", "관리자만 권한이 있습니다."),
+    CHAT_ROOM_NOT_FOUND(HttpStatus. BAD_REQUEST, "C007", "해당 채팅방을 찾을 수 없습니다."),
+    SENDER_NOT_FOUND(HttpStatus. BAD_REQUEST, "C008", "보낸 사람은 이 채팅방에 속해 있지 않습니다."),
     // aws s3
     EXISTED_FILE(HttpStatus.BAD_REQUEST, "AS001", "중복된 파일명입니다."),
     // 문의사항
