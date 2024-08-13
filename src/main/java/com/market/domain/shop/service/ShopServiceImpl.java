@@ -222,9 +222,12 @@ public class ShopServiceImpl implements ShopService {
         } else {
             receiver = shop.getSeller();
         }
+        NotificationArgs notificationArgs = NotificationArgs.builder()
+            .fromMemberNo(member.getMemberNo())
+            .targetId(shop.getNo())
+            .build();
         notificationService.send(
-            NotificationType.NEW_LIKE_ON_SHOP,
-            new NotificationArgs(member.getMemberNo(), shop.getNo()), receiver);
+            NotificationType.NEW_LIKE_ON_SHOP, notificationArgs, receiver);
     }
 
     @Override

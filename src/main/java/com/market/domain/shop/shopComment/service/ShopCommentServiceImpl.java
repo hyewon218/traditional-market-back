@@ -49,9 +49,12 @@ public class ShopCommentServiceImpl implements ShopCommentService {
         } else {
             receiver = shop.getSeller();
         }
+        NotificationArgs notificationArgs = NotificationArgs.builder()
+            .fromMemberNo(member.getMemberNo())
+            .targetId(shop.getNo())
+            .build();
         notificationService.send(
-            NotificationType.NEW_COMMENT_ON_SHOP,
-            new NotificationArgs(member.getMemberNo(), shop.getNo()), receiver);
+            NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs, receiver);
     }
 
     @Override

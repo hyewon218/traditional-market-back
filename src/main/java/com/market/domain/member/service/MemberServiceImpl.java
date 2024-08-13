@@ -1,6 +1,8 @@
 package com.market.domain.member.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.market.domain.chatRoom.entity.ChatRoom;
+import com.market.domain.chatRoom.repository.ChatRoomRepository;
 import com.market.domain.delivery.repository.DeliveryRepository;
 import com.market.domain.deliveryMessage.repository.DeliveryMessageRepository;
 import com.market.domain.inquiry.repository.InquiryRepository;
@@ -13,6 +15,8 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.repository.MemberRepositoryQuery;
 import com.market.domain.member.repository.MemberSearchCond;
+import com.market.global.exception.BusinessException;
+import com.market.global.exception.ErrorCode;
 import com.market.global.jwt.config.TokenProvider;
 import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.redis.RedisUtils;
@@ -21,7 +25,7 @@ import com.market.global.security.UserDetailsImpl;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,9 +39,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -54,11 +55,12 @@ public class MemberServiceImpl implements MemberService {
     private final InquiryRepository inquiryRepository;
     private final DeliveryMessageRepository deliveryMessageRepository;
     private final MemberRepositoryQuery memberRepositoryQuery;
+    private final ChatRoomRepository chatRoomRepository;
 
     // 회원 생성
     @Override
     @Transactional
-    public Member createMember(MemberRequestDto memberRequestDto){
+    public Member createMember(MemberRequestDto memberRequestDto) {
         return memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
     }
 
@@ -77,22 +79,23 @@ public class MemberServiceImpl implements MemberService {
     // 로그인
     @Override
     public Authentication logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                                MemberRequestDto request) throws Exception {
+        MemberRequestDto request) throws Exception {
         try {
             Authentication authentication = authenticationConfiguration.getAuthenticationManager()
-                    .authenticate(
-                            new UsernamePasswordAuthenticationToken(
-                                    request.getMemberId(),
-                                    request.getMemberPw(),
-                                    null
-                            )
-                    );
+                .authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                        request.getMemberId(),
+                        request.getMemberPw(),
+                        null
+                    )
+                );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
 
             // access 토큰 생성
-            String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
+            String accessToken = tokenProvider.generateToken(member,
+                TokenProvider.ACCESS_TOKEN_DURATION);
             log.info("access 토큰이 생성되었습니다 : " + accessToken);
 
             // 쿠키 생성
@@ -103,35 +106,43 @@ public class MemberServiceImpl implements MemberService {
 
             // refresh 토큰 없는 경우
             if (findRefreshToken == null) {
-                RefreshToken refreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
-                redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
-                tokenProvider.addRefreshTokenToCookie(httpRequest, httpResponse, refreshToken.getRefreshToken());
+                RefreshToken refreshToken = tokenProvider.generateRefreshToken(member,
+                    TokenProvider.REFRESH_TOKEN_DURATION);
+                redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(),
+                    TokenProvider.REFRESH_TOKEN_DURATION);
+                tokenProvider.addRefreshTokenToCookie(httpRequest, httpResponse,
+                    refreshToken.getRefreshToken());
                 log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + refreshToken.getRefreshToken());
-                log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
+                log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(
+                    member.getMemberId()));
 
-            // refresh 토큰이 유효하지않은 경우
+                // refresh 토큰이 유효하지않은 경우
             } else if (!tokenProvider.validRefreshToken(findRefreshToken)) {
                 redisUtils.deleteValues(member.getMemberId());
-                RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
-                redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
-                tokenProvider.addRefreshTokenToCookie(httpRequest, httpResponse, newRefreshToken.getRefreshToken());
+                RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member,
+                    TokenProvider.REFRESH_TOKEN_DURATION);
+                redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(),
+                    TokenProvider.REFRESH_TOKEN_DURATION);
+                tokenProvider.addRefreshTokenToCookie(httpRequest, httpResponse,
+                    newRefreshToken.getRefreshToken());
                 log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + newRefreshToken.getRefreshToken());
-                log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
+                log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(
+                    member.getMemberId()));
             }
 
             MemberResponseDto memberResponseDto = MemberResponseDto.builder()
-                    .memberNo(member.getMemberNo())
-                    .memberId(member.getMemberId())
-                    .memberEmail(member.getMemberEmail())
-                    .nicknameWithRandomTag(member.getNicknameWithRandomTag())
-                    .memberPw(member.getMemberPw())
-                    .providerType(member.getProviderType())
-                    .role(member.getRole())
-                    .createTime(member.getCreateTime())
-                    .updateTime(member.getUpdateTime())
-                    .accessToken(accessToken)
-                    .refreshToken(redisUtils.getValues(member.getMemberId())) // 삭제할 것
-                    .build();
+                .memberNo(member.getMemberNo())
+                .memberId(member.getMemberId())
+                .memberEmail(member.getMemberEmail())
+                .nicknameWithRandomTag(member.getNicknameWithRandomTag())
+                .memberPw(member.getMemberPw())
+                .providerType(member.getProviderType())
+                .role(member.getRole())
+                .createTime(member.getCreateTime())
+                .updateTime(member.getUpdateTime())
+                .accessToken(accessToken)
+                .refreshToken(redisUtils.getValues(member.getMemberId())) // 삭제할 것
+                .build();
 
             // memberResponseDto 객체를 JSON 문자열로 직렬화
             String jsonResponse = objectMapper.writeValueAsString(memberResponseDto);
@@ -178,7 +189,15 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public Member findById(long memberNo) {
         return memberRepository.findById(memberNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+    }
+
+    // 특정 회원 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Member findByMemberId(String memberNo) {
+        return memberRepository.findByMemberId(memberNo)
+            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
     }
 
     // 키워드 검색 회원 목록 조회
@@ -193,7 +212,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public Member update(long memberNo, MemberRequestDto requestDto) {
         Member member = memberRepository.findById(memberNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
         member.updateNickname(requestDto.getMemberNickname()); // 닉네임만 수정
         return member;
     }
@@ -211,28 +230,36 @@ public class MemberServiceImpl implements MemberService {
     // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
     @Transactional
-    public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse) {
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
         deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
         redisUtils.deleteValues(memberId); // 리프레시토큰 삭제
-        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
-        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제
-        CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified"); // 회원 정보 확인 시 발급받은 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse,
+            TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse,
+            TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse,
+            "isPasswordVerified"); // 회원 정보 확인 시 발급받은 쿠키 삭제
         memberRepository.deleteById(memberNo); // 계정 삭제
     }
 
     // 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
     @Transactional
-    public void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    public void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse) {
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
         deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
         redisUtils.deleteValues(memberId); // 리프레시토큰 삭제
-        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
-        CookieUtil.deleteCookie(httpRequest, httpResponse, TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제
-        CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified"); // 회원 정보 확인 시 발급받은 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse,
+            TokenProvider.HEADER_AUTHORIZATION); // 액세스토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse,
+            TokenProvider.REFRESH_TOKEN_COOKIE_NAME); // 리프레시토큰 쿠키 삭제
+        CookieUtil.deleteCookie(httpRequest, httpResponse,
+            "isPasswordVerified"); // 회원 정보 확인 시 발급받은 쿠키 삭제
         memberRepository.deleteById(memberNo); // 계정 삭제
     }
 
@@ -241,7 +268,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public Member updateNickname(long memberNo, MemberNicknameRequestDto memberNicknameRequestDto) {
         Member member = memberRepository.findById(memberNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
 
         member.updateNickname(memberNicknameRequestDto.getMemberNickname());
         return member;
@@ -269,8 +296,10 @@ public class MemberServiceImpl implements MemberService {
 
     // 아이디 찾기(닉네임, 이메일 이용)
     @Override
-    public String findIdByNicknameEmail(String memberNickname, String memberEmail, String inputCode) {
-        Member member = memberRepository.findByMemberNicknameAndMemberEmail(memberNickname, memberEmail);
+    public String findIdByNicknameEmail(String memberNickname, String memberEmail,
+        String inputCode) {
+        Member member = memberRepository.findByMemberNicknameAndMemberEmail(memberNickname,
+            memberEmail);
         String savedCode = redisUtils.getValues(memberEmail);
         if (member != null) {
             if (inputCode.equals(savedCode)) {
@@ -285,7 +314,8 @@ public class MemberServiceImpl implements MemberService {
     // 아이디 찾기 시 닉네임, 이메일에 해당하는 회원이 있는지 검증
     @Override
     public boolean findMemberByNicknameAndEmail(String memberNickname, String memberEmail) {
-        Member member = memberRepository.findByMemberNicknameAndMemberEmail(memberNickname, memberEmail);
+        Member member = memberRepository.findByMemberNicknameAndMemberEmail(memberNickname,
+            memberEmail);
         if (member != null) {
             log.info("member : {}", member);
             return true;
@@ -344,9 +374,9 @@ public class MemberServiceImpl implements MemberService {
     // 비밀번호 확인
     @Override
     public boolean checkPassword(HttpServletRequest request, HttpServletResponse response,
-                                 String inputPassword, long memberNo) {
+        String inputPassword, long memberNo) {
         Member member = memberRepository.findById(memberNo)
-                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
+            .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
 
         if (passwordEncoder.matches(inputPassword, member.getMemberPw())) {
             setPasswordVerifiedToCookie(request, response, member.getRandomTag());
@@ -357,7 +387,8 @@ public class MemberServiceImpl implements MemberService {
 
     // 쿠키에 비밀번호 확인 상태 저장
     @Override
-    public void setPasswordVerifiedToCookie(HttpServletRequest request, HttpServletResponse response, String randomTag) {
+    public void setPasswordVerifiedToCookie(HttpServletRequest request,
+        HttpServletResponse response, String randomTag) {
         Cookie[] cookies = request.getCookies();
         boolean cookieExists = false;
 
@@ -388,7 +419,8 @@ public class MemberServiceImpl implements MemberService {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("isPasswordVerified".equals(cookie.getName()) && randomTag.equals(cookie.getValue())) {
+                if ("isPasswordVerified".equals(cookie.getName()) && randomTag.equals(
+                    cookie.getValue())) {
                     return true;
                 }
             }
@@ -425,7 +457,8 @@ public class MemberServiceImpl implements MemberService {
 
                 // 사용자의 권한 목록에서 ROLE_ADMIN이 있는지 확인
                 return userDetails.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
+                    .anyMatch(
+                        grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
             }
         }
 
@@ -450,5 +483,11 @@ public class MemberServiceImpl implements MemberService {
         return memberEmail.replaceAll("(?<=.{3}).(?=[^@]*?@)", "*");
     }
 
-
+    @Override
+    public Member findChatRoomRecipient(Long roomId, Member sender) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+        // getRecipient 메서드를 사용하여 수신자 찾기
+        return chatRoom.getRecipient(sender);
+    }
 }

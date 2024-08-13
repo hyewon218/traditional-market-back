@@ -57,7 +57,7 @@ public interface ChatRoomService {
     ChatRoom findChatRoom(Long chatRoomNo);
 
     /**
-     * 채팅방 읽은 상태로 변경
+     * 채팅방 읽음 상태 조회
      *
      * @param chatRoomNo 찾을 채팅방 no
      */

@@ -181,9 +181,13 @@ public class MarketServiceImpl implements MarketService {
         // create alarm
         Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
+
+        NotificationArgs notificationArgs = NotificationArgs.builder()
+            .fromMemberNo(member.getMemberNo())
+            .targetId(market.getNo())
+            .build();
         notificationService.send(
-            NotificationType.NEW_LIKE_ON_MARKET,
-            new NotificationArgs(member.getMemberNo(), market.getNo()), receiver);
+            NotificationType.NEW_LIKE_ON_MARKET, notificationArgs, receiver);
     }
 
     @Override

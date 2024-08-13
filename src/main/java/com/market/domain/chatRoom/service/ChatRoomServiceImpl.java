@@ -6,6 +6,7 @@ import com.market.domain.chatRoom.entity.ChatRoom;
 import com.market.domain.chatRoom.repository.ChatRoomRepository;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatRoomServiceImpl implements ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional // 채팅방 생성
     public ChatRoomResponseDto createChatRoom(ChatRoomRequestDto requestDto, Member member) {
-        ChatRoom chatRoom = requestDto.toEntity(member);
+        Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)); // 채팅방 생성 -> 관리자가 받음
+        ChatRoom chatRoom = requestDto.toEntity(member, receiver);
         chatRoomRepository.save(chatRoom);
         return ChatRoomResponseDto.of(chatRoom);
     }

@@ -49,7 +49,7 @@ public class NotificationService {
         return emitter;
     }
 
-    // 댓글, 좋아요, 상품 판매 시 SseEmitter 보내줌
+    // 댓글, 좋아요, 상품 판매, 상담 요청 및 답변 시 SseEmitter 보내줌
     public void send(NotificationType type, NotificationArgs args, Member receiver) {
         Notification notification = Notification.toEntity(type, args, receiver);
         notificationRepository.save(notification); // save alarm
