@@ -317,8 +317,11 @@ public class ItemServiceImpl implements ItemService {
         } else {
             receiver = item.getShop().getSeller();
         }
-        notificationService.send(NotificationType.NEW_LIKE_ON_ITEM,
-            new NotificationArgs(member.getMemberNo(), item.getShop().getNo()), receiver);
+        NotificationArgs notificationArgs = NotificationArgs.builder()
+            .fromMemberNo(member.getMemberNo())
+            .targetId(item.getShop().getNo())
+            .build();
+        notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs, receiver);
     }
 
     @Override
