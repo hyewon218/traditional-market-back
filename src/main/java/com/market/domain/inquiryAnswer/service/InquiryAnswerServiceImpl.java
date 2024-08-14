@@ -10,21 +10,23 @@ import com.market.domain.inquiryAnswer.dto.InquiryAnswerRequestDto;
 import com.market.domain.inquiryAnswer.dto.InquiryAnswerResponseDto;
 import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.inquiryAnswer.repository.InquiryAnswerRepository;
+import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
-import com.market.domain.member.service.MemberServiceImpl;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.member.service.MemberService;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
 import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -35,19 +37,32 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     private final InquiryService inquiryService;
     private final AwsS3upload awsS3upload;
     private final ImageRepository imageRepository;
+    private final MemberService memberService;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
-    // 문의사항 답변 생성
     @Override
-    @Transactional
+    @Transactional // 문의사항 답변 생성
     public InquiryAnswerResponseDto createAnswer(
-            InquiryAnswerRequestDto requestDto, Long inquiryNo, List<MultipartFile> files)
-            throws IOException {
-
+        InquiryAnswerRequestDto requestDto, Long inquiryNo, List<MultipartFile> files)
+        throws IOException {
         Inquiry inquiry = inquiryService.findById(inquiryNo);
         InquiryAnswer inquiryAnswer = requestDto.toEntity(inquiry);
         inquiry.updateState(InquiryState.ANSWER_COMPLETED);
 
-        log.info("작성 내용 : " + requestDto.getAnswerContent());
+        /*문의사항 남긴 사용자에게 알람*/
+        Member admin = memberRepository.findByRole(Role.ADMIN).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
+        Member receiver = memberService.findById(inquiry.getMemberNo());
+
+        NotificationArgs notificationArgs = NotificationArgs.builder()
+            .fromMemberNo(admin.getMemberNo()) // 관리자 No
+            .targetId(inquiry.getInquiryNo())
+            .build();
+        notificationService.send(
+            NotificationType.NEW_INQUIRY_ANSWER, notificationArgs, receiver);
+
+        //log.info("작성 내용 : " + requestDto.getAnswerContent());
 
         inquiryAnswerRepository.save(inquiryAnswer);
 
@@ -56,10 +71,10 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
                 if (file.isEmpty()) {
                     continue;
                 }
-
                 String fileUrl = awsS3upload.upload(file, "answer " + inquiryAnswer.getAnswerNo());
 
-                if (imageRepository.existsByImageUrlAndInquiryAnswer_AnswerNo(fileUrl, inquiryAnswer.getAnswerNo())) {
+                if (imageRepository.existsByImageUrlAndInquiryAnswer_AnswerNo(fileUrl,
+                    inquiryAnswer.getAnswerNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(inquiryAnswer, fileUrl));
@@ -68,25 +83,26 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
         return InquiryAnswerResponseDto.of(inquiryAnswer);
     }
 
-    // 특정 문의사항 답변 조회
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) // 특정 문의사항 답변 조회
     public InquiryAnswerResponseDto getAnswer(Member member, Long inquiryNo) {
-        validateAnswer(member, inquiryNo);
-        InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryNo(inquiryNo);
-        return InquiryAnswerResponseDto.of(inquiryAnswer);
+        Optional<InquiryAnswer> inquiryAnswerOpt = inquiryAnswerRepository.findByInquiryNo(
+            inquiryNo);
+        validateIsMasterAndIsAdmin(member, inquiryNo); // 작성자인지 관리자인지 확인
+        return inquiryAnswerOpt.map(InquiryAnswerResponseDto::of)
+            .orElseGet(InquiryAnswerResponseDto::new); // orElse 를 활용하여 빈 객체 반환
     }
 
-    // 문의사항 답변 수정 // 아직 사용하지않음
     @Override
-    @Transactional
-    public InquiryAnswerResponseDto updateAnswer(Long answerNo, InquiryAnswerRequestDto updateRequestDto, List<MultipartFile> files)
-            throws IOException {
+    @Transactional // 문의사항 답변 수정 // 아직 사용하지 않음
+    public InquiryAnswerResponseDto updateAnswer(Member member, Long answerNo,
+        InquiryAnswerRequestDto updateRequestDto, List<MultipartFile> files)
+        throws IOException {
         InquiryAnswer inquiryAnswer = findAnswer(answerNo);
-
-        log.info("입력받은 내용 : " + updateRequestDto.getAnswerContent());
-
+        validateIsAdmin(member);
+        //log.info("입력받은 내용 : " + updateRequestDto.getAnswerContent());
         inquiryAnswer.updateAnswer(updateRequestDto);
+
         List<String> imageUrls = updateRequestDto.getImageUrls(); // 클라이언트
         List<Image> existingImages = imageRepository.findByInquiryAnswer_AnswerNo(answerNo); // DB
 
@@ -94,58 +110,59 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "answer " + inquiryAnswer.getAnswerNo());
 
-                if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl, inquiryAnswer.getAnswerNo())) {
+                if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl,
+                    inquiryAnswer.getAnswerNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(inquiryAnswer, fileUrl));
             }
-
         } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
             // 이미지 URL 비교 및 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
                     imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
+                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
                 }
             }
-
-            if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
-                imageRepository.deleteAll(existingImages);
-            }
         }
+       /* if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
+            for (Image existingImage : existingImages) {
+                imageRepository.delete(existingImage);
+                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+            }
+        }*/
         return InquiryAnswerResponseDto.of(inquiryAnswer);
     }
 
-    // 문의사항 답변 삭제 // 아직 사용하지않음
     @Override
-    @Transactional
-    public void deleteAnswer(Long answerNo) {
+    @Transactional // 문의사항 답변 삭제 // 아직 사용하지 않음
+    public void deleteAnswer(Member member, Long answerNo) {
         InquiryAnswer inquiryAnswer = findAnswer(answerNo);
+        validateIsAdmin(member);
         inquiryAnswerRepository.deleteById(inquiryAnswer.getAnswerNo());
     }
 
-    // 문의사항 답변 찾기
     @Override
+    @Transactional(readOnly = true)  // 문의사항 답변 찾기
     public InquiryAnswer findAnswer(Long answerNo) {
         return inquiryAnswerRepository.findById(answerNo)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_INQUIRY_ANSWER));
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_INQUIRY_ANSWER));
     }
 
-    // 답변 열람 검증
     @Override
-    @Transactional(readOnly = true)
-    public boolean validateAnswer(Member member, Long inquiryNo) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(
-                authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-
-        log.info("Admin true or false : " + isAdmin);
-
-        boolean exists = inquiryAnswerRepository.existsByInquiryWriterNoAndInquiryNo(member.getMemberNo(), inquiryNo);
-
-        if (!exists && !isAdmin) {
-            throw new BusinessException(ErrorCode.NOT_AUTHORITY_ANSWER);
+    @Transactional // 작성자인지 관리자인지 확인
+    public void validateIsMasterAndIsAdmin(Member member, Long inquiryNo) {
+        boolean isOwner = inquiryService.validateIsMaster(member.getMemberNo(), inquiryNo); // 작성자인지 확인
+        if (!isOwner && !member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
         }
-        return true;
     }
 
+    @Override
+    @Transactional // 관리자인지 확인
+    public void validateIsAdmin(Member member) {
+        if (!member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
+        }
+    }
 }
