@@ -34,4 +34,9 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.alarmList(
             userDetails.getMember().getMemberNo(), pageable));
     }
+
+    @GetMapping("/notifications/count") // 로그인한 사용자 알람 수 조회
+    public ResponseEntity<Long> getMarketLike(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(notificationService.countNotifications(userDetails.getMember().getMemberNo()));
+    }
 }
