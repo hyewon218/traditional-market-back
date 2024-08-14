@@ -146,7 +146,6 @@ public class MarketServiceImpl implements MarketService {
         } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
             imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
         }
-
         if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
             for (Image existingImage : existingImages) {
                 imageRepository.delete(existingImage);
@@ -218,6 +217,7 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override // 시장 찾기
+    @Transactional(readOnly = true)
     public Market findMarket(Long marketNo) {
         return marketRepository.findById(marketNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));

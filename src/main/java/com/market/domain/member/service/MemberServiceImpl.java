@@ -195,9 +195,9 @@ public class MemberServiceImpl implements MemberService {
     // 특정 회원 조회
     @Override
     @Transactional(readOnly = true)
-    public Member findByMemberId(String memberNo) {
-        return memberRepository.findByMemberId(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+    public Member findByMemberId(String memberId) {
+        return memberRepository.findByMemberId(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberId));
     }
 
     // 키워드 검색 회원 목록 조회
@@ -340,7 +340,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean changePassword(long memberNo, String changePw, String confirmPw) {
         Optional<Member> optionalMember = memberRepository.findById(memberNo);
-        Member member = optionalMember.get();
+        Member member = optionalMember. get();
         if (member != null) {
             log.info("member : {}", member);
             // 변경할 비밀번호와 변경할 비밀번호 재확인 일치하는지 확인

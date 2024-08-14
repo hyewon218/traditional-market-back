@@ -75,4 +75,9 @@ public class NotificationService {
         return notificationRepository.findAllByMember_MemberNo(memberNo, pageable)
             .map(NotificationResponseDto::of);
     }
+
+    @Transactional(readOnly = true) // 로그인한 사용자 알람 수 조회
+    public Long countNotifications(Long memberNo) {
+        return notificationRepository.countByMember_MemberNo(memberNo);
+    }
 }
