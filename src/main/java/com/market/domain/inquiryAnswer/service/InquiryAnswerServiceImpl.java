@@ -86,9 +86,9 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     @Override
     @Transactional(readOnly = true) // 특정 문의사항 답변 조회
     public InquiryAnswerResponseDto getAnswer(Member member, Long inquiryNo) {
+        validateIsMasterAndIsAdmin(member, inquiryNo); // 작성자인지 관리자인지 확인
         Optional<InquiryAnswer> inquiryAnswerOpt = inquiryAnswerRepository.findByInquiryNo(
             inquiryNo);
-        validateIsMasterAndIsAdmin(member, inquiryNo); // 작성자인지 관리자인지 확인
         return inquiryAnswerOpt.map(InquiryAnswerResponseDto::of)
             .orElseGet(InquiryAnswerResponseDto::new); // orElse 를 활용하여 빈 객체 반환
     }

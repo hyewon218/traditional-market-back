@@ -3,7 +3,7 @@ package com.market.domain.inquiry.entity;
 import com.market.domain.base.BaseEntity;
 import com.market.domain.image.entity.Image;
 import com.market.domain.inquiry.constrant.InquiryState;
-import com.market.domain.member.entity.Member;
+import com.market.domain.inquiry.dto.InquiryUpdateRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,15 +40,9 @@ public class Inquiry extends BaseEntity {
     @OneToMany(mappedBy = "inquiry", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Image> imageList = new ArrayList<>();
 
-    public Inquiry(String inquiryTitle, String inquiryContent, Member member) {
-        this.inquiryWriter = member.getNicknameWithRandomTag();
-        this.inquiryTitle = inquiryTitle;
-        this.inquiryContent = inquiryContent;
-    }
-
-    public void update(String inquiryTitle, String inquiryContent) {
-        this.inquiryTitle = inquiryTitle;
-        this.inquiryContent = inquiryContent;
+    public void updateInquiry(InquiryUpdateRequestDto updateRequestDto) {
+        this.inquiryTitle = updateRequestDto.getInquiryTitle();
+        this.inquiryContent = updateRequestDto.getInquiryContent();
     }
 
     public void updateState(InquiryState newState) {

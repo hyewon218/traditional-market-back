@@ -1,23 +1,24 @@
 package com.market.domain.inquiry.repository;
 
 import com.market.domain.inquiry.entity.Inquiry;
+import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
 @Repository
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
-    Page<Inquiry> findAllByMemberNo(long memberNo, Pageable pageable);
+    Page<Inquiry> findAllByMemberNo(Long memberNo, Pageable pageable);
 
-    void deleteAllByMemberNo(long memberNo);
+    void deleteAllByMemberNo(Long memberNo);
 
     Page<Inquiry> findAll(Pageable pageable);
+
     // 하루동안 작성한 문의사항 개수 조회
-    int countByMemberNoAndCreateTimeBetween(long memberNo, LocalDateTime startOfDay, LocalDateTime endOfDay); // 하루동안 작성한 문의사항 개수 조회
+    int countByMemberNoAndCreateTimeBetween(long memberNo, LocalDateTime startOfDay,
+        LocalDateTime endOfDay); // 하루동안 작성한 문의사항 개수 조회
+
+    boolean existsByMemberNoAndInquiryNo(Long memberNo, Long inquiryNo);
 }
