@@ -26,20 +26,21 @@ public class InquiryAnswerController {
     // 문의사항 답변 생성
     @PostMapping("/{inquiryNo}")
     public ResponseEntity<InquiryAnswerResponseDto> createAnswer(
-            @ModelAttribute InquiryAnswerRequestDto requestDto,
-            @RequestPart (value = "imageFiles", required = false) List<MultipartFile> files,
-            @PathVariable Long inquiryNo) throws IOException {
-        InquiryAnswerResponseDto savedInquiryAnswer = inquiryAnswerService.createAnswer(requestDto, inquiryNo, files);
+        @ModelAttribute InquiryAnswerRequestDto requestDto,
+        @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files,
+        @PathVariable Long inquiryNo) throws IOException {
+        InquiryAnswerResponseDto savedInquiryAnswer = inquiryAnswerService.createAnswer(requestDto,
+            inquiryNo, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedInquiryAnswer);
     }
 
     // 문의사항에 해당하는 답변 조회
     @GetMapping("/{inquiryNo}")
-    public ResponseEntity<InquiryAnswerResponseDto> findAnswer(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                               @PathVariable Long inquiryNo) {
-        InquiryAnswerResponseDto inquiryAnswer = inquiryAnswerService.getAnswer(userDetails.getMember(), inquiryNo);
+    public ResponseEntity<InquiryAnswerResponseDto> findAnswer(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long inquiryNo) {
+        InquiryAnswerResponseDto inquiryAnswer = inquiryAnswerService.getAnswer(
+            userDetails.getMember(), inquiryNo);
         return ResponseEntity.ok().body(inquiryAnswer);
     }
-
-
 }

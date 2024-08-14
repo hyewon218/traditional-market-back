@@ -9,7 +9,5 @@ import java.util.Optional;
 @Repository
 public interface InquiryAnswerRepository extends JpaRepository<InquiryAnswer, Long> {
 
-    InquiryAnswer findByInquiryNo(Long inquiryNo);
-
-    boolean existsByInquiryWriterNoAndInquiryNo(Long memberNo, Long inquiryNo);
+    Optional<InquiryAnswer> findByInquiryNo(Long inquiryNo);
 }
