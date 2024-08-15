@@ -16,9 +16,9 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     List<Image> findByInquiry_InquiryNo(Long inquiryNo);
 
-    List<Image> findByNotice_NoticeNo(Long noticeNo);
-
     List<Image> findByInquiryAnswer_AnswerNo(Long answerNo);
+
+    List<Image> findByNotice_NoticeNo(Long noticeNo);
 
     Boolean existsByImageUrlAndMarket_No(String imageUrl, Long marketNo);
 

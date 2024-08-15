@@ -1,6 +1,7 @@
 package com.market.domain.inquiry.service;
 
 import com.market.domain.image.config.AwsS3upload;
+import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.inquiry.dto.InquiryRequestDto;
@@ -60,7 +61,7 @@ public class InquiryServiceImpl implements InquiryService {
                 if (file.isEmpty()) {
                     continue; // 빈 파일은 건너뜀
                 }
-                String fileUrl = awsS3upload.upload(file, "inquiry/" + inquiry.getInquiryNo());
+                String fileUrl = awsS3upload.upload(file, "inquiry " + inquiry.getInquiryNo());
                 // 중복 파일 체크
                 if (imageRepository.existsByImageUrlAndInquiry_InquiryNo(fileUrl,
                     inquiry.getInquiryNo())) {
@@ -108,18 +109,34 @@ public class InquiryServiceImpl implements InquiryService {
     @Override
     @Transactional // 문의사항 개별 삭제
     public void deleteInquiry(Member member, Long inquiryNo) {
-        Inquiry inquiry = findById(inquiryNo);
         validateIsMasterAndAdmin(member, inquiryNo);
+        Inquiry inquiry = findById(inquiryNo);
+        // 해당 문의사항의 답변 + S3 도 함께 삭제
+        deleteInquiryAnswer(inquiryNo);
+        // S3 에서도 이미지 삭제
+        deleteImagesByInquiry(inquiryNo);
+        // 문의사항 삭제
         inquiryRepository.delete(inquiry);
-        // 해당 문의사항의 답변도 함께 삭제
+    }
+
+    private void deleteInquiryAnswer(Long inquiryNo) {
         Optional<InquiryAnswer> inquiryAnswer = inquiryAnswerRepository.findByInquiryNo(inquiryNo);
-        inquiryAnswer.ifPresent(
-            Answer -> inquiryAnswerRepository.deleteById(Answer.getAnswerNo()));
+        inquiryAnswer.ifPresent(answer -> {
+            // S3 이미지들 삭제
+            List<Image> images = imageRepository.findByInquiryAnswer_AnswerNo(answer.getAnswerNo());
+            for (Image image : images) {
+                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+                    awsS3upload.delete(image.getImageUrl());
+                }
+            }
+            inquiryAnswerRepository.deleteById(answer.getAnswerNo());
+        });
     }
 
     @Override
     @Transactional // 문의사항 전체 삭제(본인것만)
     public void deleteAllMine(Long memberNo) {
+        deleteImages(false, memberNo);
         inquiryRepository.deleteAllByMemberNo(memberNo);
     }
 
@@ -127,7 +144,33 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional // 문의사항 전체 삭제(모두, admin 만 가능)
     public void deleteAll(Member member) {
         validateIsAdmin(member);
+        deleteImages(true, null);
         inquiryRepository.deleteAll();
+    }
+
+    @Override
+    @Transactional // 문의사항 내 S3 에서도 이미지 삭제
+    public void deleteImages(boolean deleteAll, Long memberNo) {
+        List<Inquiry> inquiries = getInquiries(deleteAll, memberNo);
+        for (Inquiry inquiry : inquiries) {
+            // S3 에서도 이미지 삭제
+            deleteImagesByInquiry(inquiry.getInquiryNo());
+        }
+    }
+
+    private List<Inquiry> getInquiries(boolean deleteAll, Long memberNo) {
+        return deleteAll ? inquiryRepository.findAll()
+            : inquiryRepository.findAllByMemberNo(memberNo);
+    }
+
+    private void deleteImagesByInquiry(Long inquiryNo) {
+        List<Image> images = imageRepository.findByInquiry_InquiryNo(inquiryNo);
+        // 이미지가 존재하는 경우에만 S3 삭제 작업 수행
+        if (images != null && !images.isEmpty()) {
+            for (Image image : images) {
+                awsS3upload.delete(image.getImageUrl());
+            }
+        }
     }
 
     @Override

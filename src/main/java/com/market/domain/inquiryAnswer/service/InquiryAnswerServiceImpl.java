@@ -5,6 +5,7 @@ import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.inquiry.constrant.InquiryState;
 import com.market.domain.inquiry.entity.Inquiry;
+import com.market.domain.inquiry.repository.InquiryRepository;
 import com.market.domain.inquiry.service.InquiryService;
 import com.market.domain.inquiryAnswer.dto.InquiryAnswerRequestDto;
 import com.market.domain.inquiryAnswer.dto.InquiryAnswerResponseDto;
@@ -34,9 +35,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class InquiryAnswerServiceImpl implements InquiryAnswerService {
 
     private final InquiryAnswerRepository inquiryAnswerRepository;
+    private final InquiryRepository inquiryRepository;
     private final InquiryService inquiryService;
-    private final AwsS3upload awsS3upload;
     private final ImageRepository imageRepository;
+    private final AwsS3upload awsS3upload;
     private final MemberService memberService;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
@@ -98,8 +100,8 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     public InquiryAnswerResponseDto updateAnswer(Member member, Long answerNo,
         InquiryAnswerRequestDto updateRequestDto, List<MultipartFile> files)
         throws IOException {
-        InquiryAnswer inquiryAnswer = findAnswer(answerNo);
         validateIsAdmin(member);
+        InquiryAnswer inquiryAnswer = findAnswer(answerNo);
         //log.info("입력받은 내용 : " + updateRequestDto.getAnswerContent());
         inquiryAnswer.updateAnswer(updateRequestDto);
 
@@ -110,7 +112,7 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "answer " + inquiryAnswer.getAnswerNo());
 
-                if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl,
+                if (imageRepository.existsByImageUrlAndInquiryAnswer_AnswerNo(fileUrl,
                     inquiryAnswer.getAnswerNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
@@ -120,15 +122,13 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
             // 이미지 URL 비교 및 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
-                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
-                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+                    deleteImage(existingImage);
                 }
             }
         }
        /* if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
             for (Image existingImage : existingImages) {
                 imageRepository.delete(existingImage);
-                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
             }
         }*/
         return InquiryAnswerResponseDto.of(inquiryAnswer);
@@ -137,9 +137,27 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     @Override
     @Transactional // 문의사항 답변 삭제 // 아직 사용하지 않음
     public void deleteAnswer(Member member, Long answerNo) {
-        InquiryAnswer inquiryAnswer = findAnswer(answerNo);
         validateIsAdmin(member);
-        inquiryAnswerRepository.deleteById(inquiryAnswer.getAnswerNo());
+        InquiryAnswer inquiryAnswer = findAnswer(answerNo);
+        // S3에서 이미지 삭제
+        deleteImagesByInquiryAnswer(answerNo);
+        // 문의사항 답변 삭제
+        inquiryAnswerRepository.delete(inquiryAnswer);
+    }
+
+    private void deleteImagesByInquiryAnswer(Long answerNo) {
+        List<Image> images = imageRepository.findByInquiryAnswer_AnswerNo(answerNo);
+        // 이미지가 존재하는 경우에만 삭제 작업 수행
+        if (images != null && !images.isEmpty()) {
+            for (Image image : images) {
+                deleteImage(image);
+            }
+        }
+    }
+
+    private void deleteImage(Image image) {
+        awsS3upload.delete(image.getImageUrl()); // S3에서 이미지 삭제
+        imageRepository.delete(image); // 클라이언트에서 저거된 데이터 DB 삭제
     }
 
     @Override
@@ -152,7 +170,8 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     @Override
     @Transactional // 작성자인지 관리자인지 확인
     public void validateIsMasterAndIsAdmin(Member member, Long inquiryNo) {
-        boolean isOwner = inquiryService.validateIsMaster(member.getMemberNo(), inquiryNo); // 작성자인지 확인
+        boolean isOwner = inquiryRepository.existsByMemberNoAndInquiryNo(member.getMemberNo(),
+            inquiryNo); // 작성자인지 확인
         if (!isOwner && !member.getRole().equals(Role.ADMIN)) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
         }
