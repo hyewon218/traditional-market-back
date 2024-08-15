@@ -17,7 +17,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ItemResponseDto {
 
-    private Long shopNo; // 소속 상점 불러오기위해 설정
+    private Long shopNo; // 소속 상점 불러오기 위해 설정
 
     private Long itemNo;
 

@@ -22,14 +22,14 @@ public class ShopCommentResponseDto {
 
     private LocalDateTime updateTime;
 
-    public static ShopCommentResponseDto of(ShopComment shopComment){
+    public static ShopCommentResponseDto of(ShopComment shopComment) {
         return ShopCommentResponseDto.builder()
-                .id(shopComment.getNo())
-                .comment(shopComment.getComment())
-                .shopName(shopComment.getShop().getShopName())
-                .username(shopComment.getMember().getMemberId())
-                .createTime(shopComment.getCreateTime())
-                .updateTime(shopComment.getUpdateTime())
-                .build();
+            .id(shopComment.getNo())
+            .comment(shopComment.getComment())
+            .shopName(shopComment.getShop().getShopName())
+            .username(shopComment.getMember().getMemberId())
+            .createTime(shopComment.getCreateTime())
+            .updateTime(shopComment.getUpdateTime())
+            .build();
     }
 }
