@@ -17,6 +17,7 @@ import com.market.domain.item.repository.ItemRepositoryQuery;
 import com.market.domain.item.repository.ItemSearchCond;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.repository.MarketRepository;
+import com.market.domain.market.service.MarketService;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
@@ -61,6 +62,7 @@ public class ItemServiceImpl implements ItemService {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
     private final ItemRepositoryQuery itemRepositoryQuery;
+    private final MarketService marketService;
     private final MarketRepository marketRepository;
     private final RedisTemplate<String, List<ItemTop5ResponseDto>> redisTemplate;
     private final IpService ipService;
@@ -88,10 +90,7 @@ public class ItemServiceImpl implements ItemService {
             }
         } else {
             // 상품 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
-                item.getNo())) {
-                imageRepository.save(new Image(item, ImageConfig.DEFAULT_ITEM_IMAGE_URL));
-            }
+            addDefaultImageIfNotExists(item);
         }
         return ItemResponseDto.of(item);
     }
@@ -166,7 +165,7 @@ public class ItemServiceImpl implements ItemService {
         ItemCategoryEnum itemCategory) {
         List<Item> items = itemRepository.findByShopMarketNoAndItemCategory(marketNo, itemCategory);
         List<Item> distinctItems = distinctByItemName(items);
-        return distinctItems.stream().map(ItemCategoryResponseDto::of).collect(Collectors.toList());
+        return distinctItems.stream().map(ItemCategoryResponseDto::of).toList();
     }
 
     private List<Item> distinctByItemName(List<Item> items) {  // 상품명이 같은 경우 중복을 제거하는 메서드
@@ -189,8 +188,12 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)  // 상품 저렴한 순으로 5개 조회(redis 로 저장하고 반환)
     public List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo,
         String itemName) {
-        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery.searchItemsByShopNoAndItemName(
-            marketNo, itemName).stream().map(ItemTop5ResponseDto::of).toList();
+        // 해당 마켓의 상품 조회 및 DTO 변환
+        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery
+            .searchItemsByShopNoAndItemName(marketNo, itemName)
+            .stream()
+            .map(ItemTop5ResponseDto::of)
+            .toList();
 
         // 각 상품에 rank 추가
         for (int i = 0; i < top5Items.size(); i++) {
@@ -198,8 +201,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         // redis 에 저장할 때 필요한 정보
-        Market market = marketRepository.findById(marketNo)
-            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
+        Market market = marketService.findMarket(marketNo);
         String marketName = market.getMarketName();
 
         // redis 에 저장 후 반환
@@ -209,35 +211,33 @@ public class ItemServiceImpl implements ItemService {
     // redis 저장 후 반환하는 메서드
     private List<ItemTop5ResponseDto> saveRedisAndReturn(String marketName, String itemName,
         List<ItemTop5ResponseDto> top5ItemsResponse) {
-
-        // 시장 고유번호와 상품 이름으로 상품을 찾아서 만약 해당하는 상품이 없다면 오류 출력하고 redis 에 저장하지 않음
-        String findItemName = "";
+        // 시장 고유번호와 상품 이름으로 상품을 찾음
         Market market = marketRepository.findByMarketName(marketName);
         List<Item> findItems = itemRepository.findByShopMarketNoAndItemName(market.getNo(),
             itemName);
 
+        // 상품이 없다면 오류 출력하고 redis 에 저장하지 않음
         if (findItems.isEmpty()) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ITEMS);
-        } else {
-            for (Item item : findItems) {
-                findItemName = item.getItemName();
-            }
-
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            String key = marketName + "_" + findItemName + "_" + today;
-
-            // redis 에 데이터를 저장할 때 사용할 객체
-            ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
-            valueOps.set(key, top5ItemsResponse);
-
-            // 현재 시간에서 자정까지의 시간 간격을 계산하여 만료 시간을 설정
-            LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
-            long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight)
-                .getSeconds();
-            redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
-
-            return valueOps.get(key);
         }
+        // 상품 이름 가져오기 (리스트에서 마지막 상품 이름 사용)
+        String findItemName = findItems.get(findItems.size() - 1).getItemName();
+
+        // Redis 에 저장할 키 생성
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String key = marketName + "_" + findItemName + "_" + today;
+
+        // Redis 에 데이터를 저장
+        ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
+        valueOps.set(key, top5ItemsResponse);
+
+        // 자정까지의 시간 간격을 계산하여 만료 시간 설정
+        LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
+        long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight).getSeconds();
+        redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
+
+        // Redis 에 저장된 데이터를 반환
+        return valueOps.get(key);
     }
 
     @Override
@@ -245,13 +245,12 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponseDto updateItem(Long itemNo, ItemRequestDto requestDto,
         List<MultipartFile> files) throws IOException {
         Item item = findItem(itemNo);
-
         item.updateItem(requestDto);
 
-        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
-        List<Image> existingImages = imageRepository.findByItem_No(itemNo); // DB
+        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트로부터 받은 이미지 URL
+        List<Image> existingImages = imageRepository.findByItem_No(itemNo); // DB 에서 가져온 기존 이미지들
 
-        if (files != null) {
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
 
@@ -260,41 +259,65 @@ public class ItemServiceImpl implements ItemService {
                 }
                 imageRepository.save(new Image(item, fileUrl));
             }
-            // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
-            if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
-                item.getNo())) {
-                imageRepository.deleteByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
-                    item.getNo());
-            }
-        } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
-            // 이미지 URL 비교 및 삭제
+            // 새 이미지가 추가되면 기본 이미지를 삭제
+            deleteDefaultImageIfExists(item.getNo());
+        } else if (imageUrls != null) { // 기존 이미지 중 클라이언트에서 제거된 이미지를 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
-                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
-                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+                    deleteImage(existingImage);
                 }
             }
-        } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
-            imageRepository.save(new Image(item, ImageConfig.DEFAULT_ITEM_IMAGE_URL));
+        } else { // 파일과 이미지 URL 모두 없으면 기본 이미지 추가
+            addDefaultImageIfNotExists(item);
+        }
+        // 클라이언트에서 모든 이미지 URL 을 제거한 경우 기존 이미지를 전부 삭제
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            deleteAllImages(existingImages);
         }
 
-        if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
-            for (Image existingImage : existingImages) {
-                imageRepository.delete(existingImage);
-                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
-            }
-        }
         return ItemResponseDto.of(item);
+    }
+
+    private void deleteDefaultImageIfExists(Long itemNo) {
+        if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
+            itemNo)) {
+            imageRepository.deleteByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL, itemNo);
+        }
+    }
+
+
+    private void deleteAllImages(List<Image> images) {
+        for (Image image : images) {
+            deleteImage(image);
+        }
+    }
+
+    private void deleteImage(Image image) {
+        if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+            awsS3upload.delete(image.getImageUrl()); // S3에서 이미지 삭제
+        }
+        imageRepository.delete(image); // DB 에서 이미지 삭제
+    }
+
+    private void addDefaultImageIfNotExists(Item item) {
+        if (!imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
+            item.getNo())) {
+            imageRepository.save(new Image(item, ImageConfig.DEFAULT_ITEM_IMAGE_URL));
+        }
     }
 
     @Override
     @Transactional // 상품 삭제
     public void deleteItem(Long itemNo) {
         Item item = findItem(itemNo);
-
         List<Image> images = imageRepository.findByItem_No(itemNo);
-        for (Image image : images) {
-            awsS3upload.delete(image.getImageUrl()); // Delete from S3
+        // 이미지가 존재하는 경우에만 S3 삭제 작업 수행
+        if (images != null && !images.isEmpty()) {
+            for (Image image : images) {
+                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+                    awsS3upload.delete(image.getImageUrl()); // 기본이미지 제외 S3 에서도 이미지 삭제
+                }
+            }
         }
         itemRepository.delete(item);
     }

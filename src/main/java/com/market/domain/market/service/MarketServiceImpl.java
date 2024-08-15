@@ -70,9 +70,7 @@ public class MarketServiceImpl implements MarketService {
             }
         } else {
             // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
-                imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
-            }
+            addDefaultImageIfNotExists(market);
         }
         return MarketResponseDto.of(market);
     }
@@ -93,7 +91,8 @@ public class MarketServiceImpl implements MarketService {
     @Override
     @Transactional(readOnly = true) // 카테고리별 상점 목록 조회
     public Page<MarketResponseDto> getCategoryMarkets(CategoryEnum category, Pageable pageable) {
-        Page<Market> marketList = marketRepository.findByCategoryOrderByMarketName(category, pageable);
+        Page<Market> marketList = marketRepository.findByCategoryOrderByMarketName(category,
+            pageable);
         return marketList.map(MarketResponseDto::of);
     }
 
@@ -113,16 +112,14 @@ public class MarketServiceImpl implements MarketService {
     @Override
     @Transactional // 시장 수정
     public MarketResponseDto updateMarket(Long marketNo, MarketRequestDto requestDto,
-        List<MultipartFile> files)
-        throws IOException {
+        List<MultipartFile> files) throws IOException {
         Market market = findMarket(marketNo);
-
         market.update(requestDto);
 
-        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
-        List<Image> existingImages = imageRepository.findByMarket_No(marketNo); // DB
+        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트로부터 받은 이미지 URL
+        List<Image> existingImages = imageRepository.findByMarket_No(marketNo); // DB 에서 가져온 기존 이미지들
 
-        if (files != null) {
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
 
@@ -131,38 +128,64 @@ public class MarketServiceImpl implements MarketService {
                 }
                 imageRepository.save(new Image(market, fileUrl));
             }
-            // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
-            if (imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo())) {
-                imageRepository.deleteByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, market.getNo());
-            }
-        } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
-            // 이미지 URL 비교 및 삭제
+            // 새 이미지가 추가되면 기본 이미지를 삭제
+            deleteDefaultImageIfExists(market.getNo());
+        } else if (imageUrls != null) { // 기존 이미지 중 클라이언트에서 제거된 이미지를 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
-                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
-                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+                    deleteImage(existingImage);
                 }
             }
-        } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
-            imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
+        } else { // 파일과 이미지 URL 모두 없으면 기본 이미지 추가
+            addDefaultImageIfNotExists(market);
         }
-        if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
-            for (Image existingImage : existingImages) {
-                imageRepository.delete(existingImage);
-                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
-            }
+
+        // 클라이언트에서 모든 이미지 URL 을 제거한 경우 기존 이미지를 전부 삭제
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            deleteAllImages(existingImages);
         }
         return MarketResponseDto.of(market);
+    }
+
+    private void deleteDefaultImageIfExists(Long marketNo) {
+        if (imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, marketNo)) {
+            imageRepository.deleteByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL, marketNo);
+        }
+    }
+
+    private void deleteAllImages(List<Image> images) {
+        for (Image image : images) {
+            deleteImage(image);
+        }
+    }
+
+    private void deleteImage(Image image) {
+        if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+            awsS3upload.delete(image.getImageUrl()); // S3에서 이미지 삭제
+        }
+        imageRepository.delete(image); // 클라이언트에서 저거된 데이터 DB 삭제
+    }
+
+    private void addDefaultImageIfNotExists(Market market) {
+        if (!imageRepository.existsByImageUrlAndMarket_No(ImageConfig.DEFAULT_IMAGE_URL,
+            market.getNo())) {
+            imageRepository.save(new Image(market, ImageConfig.DEFAULT_IMAGE_URL));
+        }
     }
 
     @Override
     @Transactional // 시장 삭제
     public void deleteMarket(Long marketNo) {
         Market market = findMarket(marketNo);
-
         List<Image> images = imageRepository.findByMarket_No(marketNo);
-        for (Image image : images) {
-            awsS3upload.delete(image.getImageUrl()); // Delete from S3
+
+        // 이미지가 존재하는 경우에만 S3 삭제 작업 수행
+        if (images != null && !images.isEmpty()) {
+            for (Image image : images) {
+                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+                    awsS3upload.delete(image.getImageUrl()); // 기본이미지 제외 S3 에서도 이미지 삭제
+                }
+            }
         }
         marketRepository.delete(market);
     }
@@ -193,7 +216,8 @@ public class MarketServiceImpl implements MarketService {
     @Transactional
     public boolean checkMarketLike(Long marketNo, Member member) { // 좋아요 여부 확인
         Market market = findMarket(marketNo);
-        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market, member);
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market,
+            member);
         return marketLike.isPresent(); // 좋아요 존재하면 true
     }
 
@@ -201,7 +225,8 @@ public class MarketServiceImpl implements MarketService {
     @Transactional
     public void deleteMarketLike(Long marketNo, Member member) { // 좋아요 삭제
         Market market = findMarket(marketNo);
-        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market, member);
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market,
+            member);
 
         if (marketLike.isPresent()) {
             marketLikeRepository.delete(marketLike.get());
@@ -222,11 +247,18 @@ public class MarketServiceImpl implements MarketService {
         return marketRepository.findById(marketNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
     }
-    
+
     @Override // 총 시장 수
     @Transactional(readOnly = true)
     public Long countMarkets() {
         return marketRepository.count();
     }
 
+    @Override
+    @Transactional // 관리자인지 확인
+    public void validateIsAdmin(Member member) {
+        if (!member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
+        }
+    }
 }

@@ -79,10 +79,7 @@ public class ShopServiceImpl implements ShopService {
             }
         } else {
             // 시장 기본 이미지 추가
-            if (!imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
-                shop.getNo())) {
-                imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
-            }
+            addDefaultImageIfNotExists(shop);
         }
         return ShopResponseDto.of(shop);
     }
@@ -139,66 +136,89 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional // 상점 수정
     public ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto,
-        List<MultipartFile> files)
-        throws IOException {
+        List<MultipartFile> files) throws IOException {
         Shop shop = findShop(shopNo);
 
-        if (requestDto.getSellerNo() != null) { // 사장님이 후에 가입한다면 상점 수정으로 사장님 member 정보 추가
-            Member seller = memberRepository.findById(requestDto.getSellerNo()).orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_EXISTS_SELLER)
-            );
+        // 사장님 정보 추가 또는 상점 정보 업데이트
+        if (requestDto.getSellerNo() != null) {
+            // 사장님이 후에 가입한다면 상점 수정으로 사장님 member 정보 추가
+            Member seller = memberRepository.findById(requestDto.getSellerNo())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXISTS_SELLER));
             shop.updateShopSeller(requestDto, seller);
         } else {
             shop.updateShop(requestDto);
         }
 
-        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트
-        List<Image> existingImages = imageRepository.findByShop_No(shopNo); // DB
+        List<String> imageUrls = requestDto.getImageUrls(); // 클라이언트로부터 받은 이미지 URL
+        List<Image> existingImages = imageRepository.findByShop_No(shopNo); // DB 에서 가져온 기존 이미지들
 
-        if (files != null) {
+        // 새 파일이 업로드된 경우
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "market " + shop.getNo());
+                String fileUrl = awsS3upload.upload(file, "shop " + shop.getNo());
 
                 if (imageRepository.existsByImageUrlAndShop_No(fileUrl, shop.getNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(shop, fileUrl));
             }
-            // 기본이미지와 새로 등록하려는 이미지가 함깨 존재할 경우 기본이미지 삭제
-            if (imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
-                shop.getNo())) {
-                imageRepository.deleteByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
-                    shop.getNo());
-            }
-        } else if (imageUrls != null) { // 기존 이미지 중 삭제되지 않은(남은) 이미지만 남도록
-            // 이미지 URL 비교 및 삭제
+            // 새 이미지가 추가되면 기본 이미지를 삭제
+            deleteDefaultImageIfExists(shop.getNo());
+        } else if (imageUrls != null) { // 기존 이미지 중 클라이언트에서 제거된 이미지를 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
-                    imageRepository.delete(existingImage); // 클라이언트에서 삭제된 데이터 DB 삭제
-                    awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
+                    deleteImage(existingImage);
                 }
             }
-        } else { // 기본이미지와 파일이 모두 null 이면 기본이미지 추가
-            imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
+        } else { // 파일과 이미지 URL 모두 없으면 기본 이미지 추가
+            addDefaultImageIfNotExists(shop);
         }
 
-        if (imageUrls == null) { // 기존 미리보기 이미지 전부 삭제 시 기존 DB image 삭제
-            for (Image existingImage : existingImages) {
-                imageRepository.delete(existingImage);
-                awsS3upload.delete(existingImage.getImageUrl()); // Delete from S3
-            }
+        // 클라이언트에서 모든 이미지 URL 을 제거한 경우 기존 이미지를 전부 삭제
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            deleteAllImages(existingImages);
         }
         return ShopResponseDto.of(shop);
+    }
+
+    private void deleteDefaultImageIfExists(Long shopNo) {
+        if (imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shopNo)) {
+            imageRepository.deleteByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL, shopNo);
+        }
+    }
+
+    private void deleteAllImages(List<Image> images) {
+        for (Image image : images) {
+            deleteImage(image);
+        }
+    }
+
+    private void deleteImage(Image image) {
+        if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+            awsS3upload.delete(image.getImageUrl()); // S3에서 이미지 삭제
+        }
+        imageRepository.delete(image); // DB 에서 이미지 삭제
+    }
+
+    private void addDefaultImageIfNotExists(Shop shop) {
+        if (!imageRepository.existsByImageUrlAndShop_No(ImageConfig.DEFAULT_IMAGE_URL,
+            shop.getNo())) {
+            imageRepository.save(new Image(shop, ImageConfig.DEFAULT_IMAGE_URL));
+        }
     }
 
     @Override
     @Transactional // 상점 삭제
     public void deleteShop(Long shopNo) {
         Shop shop = findShop(shopNo);
-
         List<Image> images = imageRepository.findByShop_No(shopNo);
-        for (Image image : images) {
-            awsS3upload.delete(image.getImageUrl()); // Delete from S3
+        // 이미지가 존재하는 경우에만 S3 삭제 작업 수행
+        if (images != null && !images.isEmpty()) {
+            for (Image image : images) {
+                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+                    awsS3upload.delete(image.getImageUrl()); // 기본이미지 제외 S3 에서도 이미지 삭제
+                }
+            }
         }
         shopRepository.delete(shop);
     }

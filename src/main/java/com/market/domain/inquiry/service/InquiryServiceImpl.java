@@ -1,7 +1,6 @@
 package com.market.domain.inquiry.service;
 
 import com.market.domain.image.config.AwsS3upload;
-import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
 import com.market.domain.inquiry.dto.InquiryRequestDto;
@@ -125,9 +124,7 @@ public class InquiryServiceImpl implements InquiryService {
             // S3 이미지들 삭제
             List<Image> images = imageRepository.findByInquiryAnswer_AnswerNo(answer.getAnswerNo());
             for (Image image : images) {
-                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
-                    awsS3upload.delete(image.getImageUrl());
-                }
+                awsS3upload.delete(image.getImageUrl());
             }
             inquiryAnswerRepository.deleteById(answer.getAnswerNo());
         });
@@ -149,7 +146,7 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
     @Override
-    @Transactional // 문의사항 내 S3 에서도 이미지 삭제
+    @Transactional
     public void deleteImages(boolean deleteAll, Long memberNo) {
         List<Inquiry> inquiries = getInquiries(deleteAll, memberNo);
         for (Inquiry inquiry : inquiries) {

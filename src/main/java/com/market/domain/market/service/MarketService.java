@@ -121,4 +121,10 @@ public interface MarketService {
      */
     Long countMarkets();
 
+    /**
+     * 관리자인지 확인
+     *
+     * @param member : 로그인한 사용자
+     */
+    void validateIsAdmin(Member member);
 }
