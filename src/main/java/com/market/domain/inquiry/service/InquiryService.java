@@ -85,6 +85,11 @@ public interface InquiryService {
     void deleteAll(Member member);
 
     /**
+     * 문의사항 내 기본이미지 제외 S3 에서도 이미지 삭제
+     */
+    void deleteImages(boolean deleteAll, Long memberNo);
+
+    /**
      * 문의사항 전체 개수 조회
      */
     Long countInquiry();

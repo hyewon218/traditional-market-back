@@ -48,7 +48,7 @@ public interface InquiryAnswerService {
      *
      * @param answerNo : 문의사항 답변 고유번호
      */
-    void deleteAnswer(Member member, Long answerNo);
+    void deleteAnswer(Member member, Long answerNo) throws IOException;
 
     /**
      * 문의사항 답변 찾기
@@ -64,6 +64,7 @@ public interface InquiryAnswerService {
      * @param member : 로그인한 사용자
      */
     void validateIsMasterAndIsAdmin(Member member, Long inquiryNo);
+
     /**
      * 관리자인지 확인
      *
