@@ -1,7 +1,5 @@
 package com.market.global.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.market.domain.item.dto.ItemTop5ResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.Conditions;
@@ -16,10 +14,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -29,7 +24,6 @@ import java.util.List;
 public class RedisConfig {
 
     private final RedisProperties redisProperties;
-    private final ObjectMapper objectMapper;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -60,17 +54,4 @@ public class RedisConfig {
         template.setConnectionFactory(redisConnectionFactory());
         return template;
     }
-
-    @Bean
-    public RedisTemplate<String, List<ItemTop5ResponseDto>> rankRedisTemplate() {
-        final RedisTemplate<String, List<ItemTop5ResponseDto>> template = new RedisTemplate<>();
-        template.setKeySerializer(new StringRedisSerializer());
-        // Value Serializer 설정 (JSON Serializer)
-        Jackson2JsonRedisSerializer<List<ItemTop5ResponseDto>> jsonSerializer = new Jackson2JsonRedisSerializer(List.class);
-        jsonSerializer.setObjectMapper(objectMapper);
-        template.setValueSerializer(jsonSerializer);
-        template.setConnectionFactory(redisConnectionFactory());
-        return template;
-    }
-
 }
