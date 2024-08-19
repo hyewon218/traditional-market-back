@@ -15,9 +15,6 @@ import com.market.domain.item.itemLike.repository.ItemLikeRepository;
 import com.market.domain.item.repository.ItemRepository;
 import com.market.domain.item.repository.ItemRepositoryQuery;
 import com.market.domain.item.repository.ItemSearchCond;
-import com.market.domain.market.entity.Market;
-import com.market.domain.market.repository.MarketRepository;
-import com.market.domain.market.service.MarketService;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
@@ -31,21 +28,14 @@ import com.market.global.exception.ErrorCode;
 import com.market.global.ip.IpService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,9 +52,6 @@ public class ItemServiceImpl implements ItemService {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
     private final ItemRepositoryQuery itemRepositoryQuery;
-    private final MarketService marketService;
-    private final MarketRepository marketRepository;
-    private final RedisTemplate<String, List<ItemTop5ResponseDto>> redisTemplate;
     private final IpService ipService;
 
     @Override
@@ -185,59 +172,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional(readOnly = true)  // 상품 저렴한 순으로 5개 조회(redis 로 저장하고 반환)
+    @Transactional(readOnly = true)  // 상품 저렴한 순으로 5개 조회(-> Redis 저장-> Redis 에 존재하면 바로 반환)
+    @Cacheable(cacheNames = "getTop5Items", key = "'market:' + #marketNo + ':item:' + #itemName + ':top5'", cacheManager = "ItemTop5CacheManager")
     public List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo,
         String itemName) {
         // 해당 마켓의 상품 조회 및 DTO 변환
-        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery
-            .searchItemsByShopNoAndItemName(marketNo, itemName)
-            .stream()
-            .map(ItemTop5ResponseDto::of)
-            .toList();
-
+        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery.searchItemsByShopNoAndItemName(
+            marketNo, itemName);
         // 각 상품에 rank 추가
         for (int i = 0; i < top5Items.size(); i++) {
             top5Items.get(i).setRank(i + 1);
         }
-
-        // redis 에 저장할 때 필요한 정보
-        Market market = marketService.findMarket(marketNo);
-        String marketName = market.getMarketName();
-
-        // redis 에 저장 후 반환
-        return saveRedisAndReturn(marketName, itemName, top5Items);
-    }
-
-    // redis 저장 후 반환하는 메서드
-    private List<ItemTop5ResponseDto> saveRedisAndReturn(String marketName, String itemName,
-        List<ItemTop5ResponseDto> top5ItemsResponse) {
-        // 시장 고유번호와 상품 이름으로 상품을 찾음
-        Market market = marketRepository.findByMarketName(marketName);
-        List<Item> findItems = itemRepository.findByShopMarketNoAndItemName(market.getNo(),
-            itemName);
-
-        // 상품이 없다면 오류 출력하고 redis 에 저장하지 않음
-        if (findItems.isEmpty()) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ITEMS);
-        }
-        // 상품 이름 가져오기 (리스트에서 마지막 상품 이름 사용)
-        String findItemName = findItems.get(findItems.size() - 1).getItemName();
-
-        // Redis 에 저장할 키 생성
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String key = marketName + "_" + findItemName + "_" + today;
-
-        // Redis 에 데이터를 저장
-        ValueOperations<String, List<ItemTop5ResponseDto>> valueOps = redisTemplate.opsForValue();
-        valueOps.set(key, top5ItemsResponse);
-
-        // 자정까지의 시간 간격을 계산하여 만료 시간 설정
-        LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
-        long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight).getSeconds();
-        redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS);
-
-        // Redis 에 저장된 데이터를 반환
-        return valueOps.get(key);
+        return top5Items;
     }
 
     @Override

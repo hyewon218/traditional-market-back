@@ -14,6 +14,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,7 +51,7 @@ public class Item extends BaseEntity {
     @Column(nullable = false)
     private int stockNumber; // 재고 수량
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String itemDetail; // 상품 상세 설명
 
     @Enumerated(EnumType.STRING)
@@ -59,23 +60,23 @@ public class Item extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus; // 상품 판매 상태
-    
-    private Long viewCount; // 조회수
 
-    @ManyToOne
+    private Long viewCount = 0L; // 조회수
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_no")
     private Shop shop;
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Image> imageList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<ItemLike> itemLikeList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<ItemComment> itemCommentList = new ArrayList<>();
 
     public void updateItem(ItemRequestDto requestDto) {
@@ -86,8 +87,8 @@ public class Item extends BaseEntity {
         this.itemSellStatus = requestDto.getItemSellStatus();
     }
 
-    public void removeStock(int stockNumber) { // 주문 수량 갯수만큼 재고 차감
-        int restStock = this.stockNumber - stockNumber;
+    public void removeStock(int quantity) { // 주문 수량만큼 재고 차감
+        int restStock = this.stockNumber - quantity;
         if (restStock < 0) {
             throw new OutOfStockException(
                 ErrorCode.OUT_OF_STOCK.getMessage() + String.format("(현재 재고 수량: %d)",
@@ -95,14 +96,14 @@ public class Item extends BaseEntity {
         }
         this.stockNumber = restStock;
         if (this.stockNumber == 0) {
-            this.itemSellStatus = ItemSellStatus.SOLD_OUT; // 재고가 0이면 ItemSellStatus 필드 'SOLD_OUT'으로 변경
+            this.itemSellStatus = ItemSellStatus.SOLD_OUT; // 재고가 0이면 'SOLD_OUT'으로 상태 변경
         }
     }
 
-    public void addStock(int stockNumber) { // 주문 취소 시 상품의 재고를 증가
-        this.stockNumber += stockNumber;
+    public void addStock(int quantity) { // 주문 취소 시 재고 증가
+        this.stockNumber += quantity;
         if (this.stockNumber > 0) {
-            this.itemSellStatus = ItemSellStatus.SELL; // 재고가 있으면 'SELL'로 변경
+            this.itemSellStatus = ItemSellStatus.SELL; // 재고가 생기면 상태를 'SELL' 로 변경
         }
     }
 

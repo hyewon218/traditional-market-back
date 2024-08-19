@@ -2,20 +2,25 @@ package com.market.domain.item.repository;
 
 import static com.market.domain.item.entity.QItem.item;
 
+import com.market.domain.item.dto.ItemTop5ResponseDto;
 import com.market.domain.item.entity.Item;
 import com.market.domain.market.entity.QMarket;
 import com.market.domain.shop.entity.QShop;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ItemRepositoryQueryImpl implements ItemRepositoryQuery {
@@ -61,20 +66,34 @@ public class ItemRepositoryQueryImpl implements ItemRepositoryQuery {
 
     // 상점 고유번호와 상품 이름을 이용해 상품 조회
     @Override
-    public List<Item> searchItemsByShopNoAndItemName(Long marketNo, String itemName) {
+    public List<ItemTop5ResponseDto> searchItemsByShopNoAndItemName(Long marketNo, String itemName) {
         QShop shop = QShop.shop;
         QMarket market = QMarket.market;
 
-        var query = jpaQueryFactory.selectFrom(item)
-                .join(item.shop, shop).fetchJoin()
-                .join(shop.market, market).fetchJoin()
-                .where(market.no.eq(marketNo).and(item.itemName.eq(itemName)))
-                .orderBy(item.price.asc())
-                .limit(5);
+        var query = jpaQueryFactory.select(
+                item.itemName,
+                item.price,
+                market.marketName,
+                shop.shopName
+            )
+            .from(item)
+            .join(item.shop, shop)
+            .join(shop.market, market)
+            .where(market.no.eq(marketNo).and(item.itemName.eq(itemName)))
+            .orderBy(item.price.asc())
+            .limit(5);
 
-        System.out.println(query.toString()); // 생성된 SQL 쿼리 출력
+        // SQL 쿼리 로그 출력
+        log.debug("Executing query: {}", query);
 
-        List<Item> items = query.fetch();
-        return items;
+        List<Tuple> results = query.fetch(); // 쿼리 실행 및 결과 가져오기
+
+        // Tuple 을 DTO 로 변환
+        return results.stream()
+            .map(tuple -> ItemTop5ResponseDto.builder()
+                .price(tuple.get(item.price))
+                .shopName(tuple.get(shop.shopName))
+                .build())
+            .collect(Collectors.toList());
     }
 }
