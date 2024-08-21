@@ -7,8 +7,8 @@ import com.market.domain.item.dto.ItemRequestDto;
 import com.market.domain.item.itemComment.entity.ItemComment;
 import com.market.domain.item.itemLike.entity.ItemLike;
 import com.market.domain.shop.entity.Shop;
+import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
-import com.market.global.exception.OutOfStockException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -87,14 +87,15 @@ public class Item extends BaseEntity {
         this.itemSellStatus = requestDto.getItemSellStatus();
     }
 
-    public void removeStock(int quantity) { // 주문 수량만큼 재고 차감
+    public void decreaseStock(int quantity) { // 주문 수량만큼 재고 차감
         int restStock = this.stockNumber - quantity;
+
         if (restStock < 0) {
-            throw new OutOfStockException(
-                ErrorCode.OUT_OF_STOCK.getMessage() + String.format("(현재 재고 수량: %d)",
-                    this.stockNumber));
+            throw new BusinessException(ErrorCode.NOT_LESS_THAN_ZERO);
         }
-        this.stockNumber = restStock;
+
+        this.stockNumber = restStock; // 재고 수량 업데이트
+
         if (this.stockNumber == 0) {
             this.itemSellStatus = ItemSellStatus.SOLD_OUT; // 재고가 0이면 'SOLD_OUT'으로 상태 변경
         }
@@ -102,6 +103,7 @@ public class Item extends BaseEntity {
 
     public void addStock(int quantity) { // 주문 취소 시 재고 증가
         this.stockNumber += quantity;
+
         if (this.stockNumber > 0) {
             this.itemSellStatus = ItemSellStatus.SELL; // 재고가 생기면 상태를 'SELL' 로 변경
         }

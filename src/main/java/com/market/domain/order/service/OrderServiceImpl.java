@@ -8,6 +8,7 @@ import com.market.domain.order.dto.OrderHistResponseDto;
 import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.repository.OrderRepository;
+import com.market.domain.order.repository.OrderRepositoryQuery;
 import com.market.domain.orderItem.dto.OrderItemHistResponseDto;
 import com.market.domain.orderItem.dto.OrderItemRequestDto;
 import com.market.domain.orderItem.entity.OrderItem;
@@ -17,16 +18,19 @@ import com.market.global.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderRepositoryQuery orderRepositoryQuery;
     private final ItemRepository itemRepository;
     private final OrderItemRepository orderItemRepository;
 
@@ -34,12 +38,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Long order(OrderItemRequestDto orderItemDto, Member member) {
         // 선택한 상품 주문
-        Item item = itemRepository.findById(orderItemDto.getItemNo()).orElseThrow(
+        Item item = itemRepository.findByIdWithLock(orderItemDto.getItemNo()).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
         );
         // 이전 주문(결제하지 않은, 주문 상태 ORDER) 이 있는지 확인
-        if (hasStatusOrder(member)) { // 이전 주문이 있으면
-            deleteOrderAndRestoreStock(member); // 재고 증가(복원) 후 주문 삭제
+        Order existOrder = getStatusOrder(member);
+        if (existOrder != null) { // 이전 주문이 있으면 삭제
+            orderRepository.delete(existOrder);
         }
         List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
         orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
@@ -51,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public Order getFirstOrderByMemberNo(Member member) { // 가장 최근 주문 찾기 (주문페이지)
-        return orderRepository.findFirstByMemberOrderByCreateTimeDesc(member)
+        return orderRepositoryQuery.findLatestOrder(member.getMemberNo(), OrderStatus.ORDER)
             .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_EXISTS));
     }
 
@@ -73,8 +78,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true) // 가장 최근 COMPLETE 주문 조회 (결제 완료 후 주문 상세 정보 조회 시 사용)
     public OrderHistResponseDto findLatestOrder(Member member) {
-        Order order = orderRepository.findLatestOrder(member.getMemberNo(),
-            OrderStatus.COMPLETE);
+        Order order = orderRepositoryQuery.findLatestCompleteOrder(member.getMemberNo(),
+                OrderStatus.COMPLETE)
+            .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_EXISTS));
         return OrderHistResponseDto.of(order);
     }
 
@@ -82,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true) // COMPLETE 주문 목록 조회
     public Page<OrderHistResponseDto> getOrders(Member member, Pageable pageable) {
         // 회원 및 주문 데이터 조회
-        Page<Order> orderList = orderRepository.findOrdersByMemberWithPaging(member.getMemberNo(),
+        Page<Order> orderList = orderRepositoryQuery.findCompleteOrders(member.getMemberNo(),
             OrderStatus.COMPLETE, pageable);
         return orderList.map(OrderHistResponseDto::of);
     }
@@ -97,23 +103,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true) // 주문 상태 ORDER 주문 조회
     public Order getStatusOrder(Member member) {
-        return orderRepository.findByMember_MemberNoAndOrderStatus(member.getMemberNo(),
-            OrderStatus.ORDER);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean hasStatusOrder(Member member) {
-        Order order = getStatusOrder(member);
-        return order != null; //  null 이 아닌 경우 true
-    }
-
-    @Override /* 새로운 주문 생성 전 삭제*/
-    @Transactional // 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가(복원) 후 주문 목록 삭제
-    public void deleteOrderAndRestoreStock(Member member) {
-        Order order = getStatusOrder(member);
-        order.statusOrderAddStock();
-        orderRepository.delete(order);
+        return orderRepositoryQuery.findOrder(member.getMemberNo(), OrderStatus.ORDER);
     }
 
     @Override
@@ -122,20 +112,17 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAllByOrderStatus(OrderStatus.ORDER);
     }
 
-    @Override /* 스케줄러로 주기적으로 삭제 - 보류*/
-    @Transactional // 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가 후 주문 목록 삭제
-    public void deleteAllOrdersAndRestoreStock() {
+    @Override  //스케줄러로 주기적으로 삭제 - 보류*/
+    @Transactional // 주문 상태 ORDER 인 주문 목록 일괄 삭제
+    public void deleteAllStatusOrders() {
         List<Order> orderList = getAllStatusOrders();
-        for (Order order : orderList) {
-            order.statusOrderAddStock();
-        }
         orderRepository.deleteAll(orderList);
     }
 
     @Override
     @Transactional // 주문 취소
     public void cancelOrder(Long orderNo, Member member) {
-        Order order = findOrder(orderNo);
+        Order order = findById(orderNo);
         validateOrder(orderNo, member);
         order.cancelOrder();
     }
@@ -148,13 +135,6 @@ public class OrderServiceImpl implements OrderService {
         if (!exists) {
             throw new BusinessException(ErrorCode.NOT_AUTHORITY_ORDER);
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true) // 주문 찾기
-    public Order findOrder(Long orderNo) {
-        return orderRepository.findOrderDetailsByNo(orderNo)
-            .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_EXISTS));
     }
 
     @Override

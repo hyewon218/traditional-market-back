@@ -40,6 +40,7 @@ public enum ErrorCode {
     NOT_AUTHORITY_ORDER(HttpStatus.BAD_REQUEST, "O004", "주문 권한이 없습니다."),
     NOT_FOUND_RECENT_ORDER(HttpStatus.BAD_REQUEST, "O005", "해당 회원의 최근 주문을 찾을 수 없습니다."),
     NOT_FOUND_ORDER_ITEM(HttpStatus.BAD_REQUEST, "O006", "주문할 상품이 존재하지 않습니다."),
+    NOT_LESS_THAN_ZERO(HttpStatus.BAD_REQUEST, "O001", "재고는 0개 미만이 될 수 없습니다."),
     // 장바구니
     NOT_FOUND_CART(HttpStatus.NOT_FOUND, "C001", "장바구니가 존재하지 않습니다."),
     // 장바구니 상품
