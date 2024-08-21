@@ -116,7 +116,23 @@ public class OrderServiceImpl implements OrderService {
     @Transactional // 주문 상태 ORDER 인 주문 목록 일괄 삭제
     public void deleteAllStatusOrders() {
         List<Order> orderList = getAllStatusOrders();
-        orderRepository.deleteAll(orderList);
+
+        log.info("Starting to process {} orders", orderList.size());
+        try {
+            // 대규모 데이터 세트에서 성능 문제를 피하기 위해 배치 단위로 삭제
+            final int batchSize = 100;
+            for (int i = 0; i < orderList.size(); i += batchSize) {
+                int end = Math.min(i + batchSize, orderList.size());
+                List<Order> batch = orderList.subList(i, end);
+                orderRepository.deleteAll(batch);
+                log.info("Deleted batch of {} orders", batch.size());
+            }
+            log.info("Successfully processed and deleted all orders");
+        } catch (Exception e) {
+            log.error("An error occurred while processing orders : {}", e.getMessage());
+            // 선택적으로, 실패를 표시하기 위해 예외를 다시 던질 수 있습니다.
+            throw e;
+        }
     }
 
     @Override

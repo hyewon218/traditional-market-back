@@ -53,7 +53,7 @@ public class OrderController {
     public ResponseEntity<OrderHistResponseDto> getOrder(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok()
-            .body(orderService.findLatestOrder(userDetails.getMember()));
+            .body(orderService.getLatestOrder(userDetails.getMember()));
     }
 
     @GetMapping("/orders-page") // 주문 COMPLETE 목록 조회

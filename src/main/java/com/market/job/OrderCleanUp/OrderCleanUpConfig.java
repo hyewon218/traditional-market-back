@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * 주문 상태 ORDER 인 주문 목록 내 주문 상품 재고 증가 후 주문 목록 하루에 한 번씩 삭제
+ * 주문 상태 ORDER 인 주문 목록 하루에 한 번씩 삭제
  */
 @Configuration
 @RequiredArgsConstructor
@@ -47,7 +47,7 @@ public class OrderCleanUpConfig {
     @Bean
     public Tasklet orderCleanupTasklet() {
         return (contribution, chunkContext) -> {
-            orderService.deleteAllOrdersAndRestoreStock();
+            orderService.deleteAllStatusOrders();
             return RepeatStatus.FINISHED;
         };
     }

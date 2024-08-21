@@ -1,11 +1,11 @@
 package com.market.domain.item.repository;
 
 import static com.market.domain.item.entity.QItem.item;
+import static com.market.domain.market.entity.QMarket.market;
+import static com.market.domain.shop.entity.QShop.shop;
 
 import com.market.domain.item.dto.ItemTop5ResponseDto;
 import com.market.domain.item.entity.Item;
-import com.market.domain.market.entity.QMarket;
-import com.market.domain.shop.entity.QShop;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Wildcard;
@@ -67,8 +67,6 @@ public class ItemRepositoryQueryImpl implements ItemRepositoryQuery {
     // 상점 고유번호와 상품 이름을 이용해 상품 조회
     @Override
     public List<ItemTop5ResponseDto> searchItemsByShopNoAndItemName(Long marketNo, String itemName) {
-        QShop shop = QShop.shop;
-        QMarket market = QMarket.market;
 
         var query = jpaQueryFactory.select(
                 item.itemName,

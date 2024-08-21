@@ -98,8 +98,4 @@ public class Order extends BaseEntity {
     public void setOrderComplete() { // 결제 승인 시 주문 상태 변경
         this.orderStatus = OrderStatus.COMPLETE;
     }
-
-    public void statusOrderAddStock() { // 주문 상태 ORDER 인 목록 orderItem 재고 증가
-        this.orderItemList.forEach(OrderItem::cancelOrder);
-    }
 }

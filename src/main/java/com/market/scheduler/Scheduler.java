@@ -10,6 +10,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,7 +21,7 @@ public class Scheduler {
     private final JobLauncher jobLauncher;
 
     //@Scheduled(cron = "0 */1 * * * *") // 5분마다
-    //@Scheduled(cron = "0 0 0 * * *") // 하루에 한번
+    @Scheduled(cron = "0 0 0 * * *") // 하루에 한번
     public void orderCleanupJobRun()
         throws JobInstanceAlreadyCompleteException,
         JobExecutionAlreadyRunningException,
