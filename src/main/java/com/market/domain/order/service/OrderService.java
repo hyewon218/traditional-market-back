@@ -66,25 +66,19 @@ public interface OrderService {
      */
     Order getStatusOrder(Member member);
 
-
-    boolean hasStatusOrder(Member member);
-
-    /**
-     * 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제
-     */
-    void deleteOrderAndRestoreStock(Member member);
-
     /**
      * ORDER 주문 목록 조회(전체)
      *
      * @return : 조회된 주문 목록
      */
+
     List<Order> getAllStatusOrders();
 
     /**
-     * 주문 상태 ORDER 인 주문 목록 재고 증가 후 주문 목록 삭제(전체)
-     */
-    void deleteAllOrdersAndRestoreStock();
+     * 주문 상태 ORDER 인 주문 목록 삭제(전체)
+     **/
+
+    void deleteAllStatusOrders();
 
     /**
      * 주문 취소
@@ -95,13 +89,6 @@ public interface OrderService {
      * 주문 취소 시 검증
      */
     void validateOrder(Long orderNo, Member member);
-
-    /**
-     * 주문 찾기
-     *
-     * @return : 조회된 주문들 정보
-     */
-    Order findOrder(Long orderNo);
 
     /**
      * 특정 주문 조회

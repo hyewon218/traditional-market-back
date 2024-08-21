@@ -57,18 +57,17 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional // 장바구니 상품 주문
     public Long cartOrders(List<OrderItemRequestDto> orderItemDtoList, Member member) {
-        List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
 
         // 이전 주문(결제하지 않은, 주문 상태 ORDER) 이 있는지 확인
-        synchronized (orderService) { // 동시성 문제 해결
-            if (orderService.hasStatusOrder(member)) { // 이전 주문이 있으면
-                orderService.deleteOrderAndRestoreStock(member); // 재고 증가(복원) 후 주문 삭제
-            }
+        Order existOrder = orderService.getStatusOrder(member);
+        if (existOrder != null) { // 이전 주문이 있으면 삭제
+            orderRepository.delete(existOrder);
         }
 
+        List<OrderItem> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
         for (OrderItemRequestDto orderItemDto : orderItemDtoList) {
             // 선택한 상품 주문
-            Item item = itemRepository.findById(orderItemDto.getItemNo()).orElseThrow(
+            Item item = itemRepository.findByIdWithLock(orderItemDto.getItemNo()).orElseThrow(
                 () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
             );
             orderItemList.add(orderItemDto.toEntity(item)); // (상품 담아) 주문 상품 생성
@@ -82,7 +81,6 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public Long orderCartItems(List<CartItemOrderRequestDto> cartOrderDtoList, Member member) {
         List<OrderItemRequestDto> orderItemList = new ArrayList<>(); // 주문 상품 담는 리스트
-
         for (CartItemOrderRequestDto cartOrderDto : cartOrderDtoList) {
             CartItem cartItem = cartItemRepository.findById(cartOrderDto.getCartItemNo())
                 .orElseThrow(
@@ -91,7 +89,6 @@ public class CartServiceImpl implements CartService {
             // 장바구니상품에서 주문상품 정보 가져오기
             OrderItemRequestDto orderDto = OrderItemRequestDto.of(cartItem);
             orderItemList.add(orderDto);
-
         }
         return cartOrders(orderItemList, member);
     }
