@@ -77,8 +77,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true) // 가장 최근 COMPLETE 주문 조회 (결제 완료 후 주문 상세 정보 조회 시 사용)
-    public OrderHistResponseDto findLatestOrder(Member member) {
-        Order order = orderRepositoryQuery.findLatestCompleteOrder(member.getMemberNo(),
+    public OrderHistResponseDto getLatestOrder(Member member) {
+        Order order = orderRepositoryQuery.findLatestOrder(member.getMemberNo(),
                 OrderStatus.COMPLETE)
             .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_EXISTS));
         return OrderHistResponseDto.of(order);

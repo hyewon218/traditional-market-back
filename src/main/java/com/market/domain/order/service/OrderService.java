@@ -44,7 +44,7 @@ public interface OrderService {
      *
      * @return : 조회된 주문들 정보
      */
-    OrderHistResponseDto findLatestOrder(Member member);
+    OrderHistResponseDto getLatestOrder(Member member);
 
     /**
      * COMPLETE 주문 목록 조회
