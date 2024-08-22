@@ -30,9 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final OrderRepositoryQuery orderRepositoryQuery;
     private final ItemRepository itemRepository;
-    private final OrderItemRepository orderItemRepository;
 
     @Override
     @Transactional
@@ -106,35 +106,33 @@ public class OrderServiceImpl implements OrderService {
         return orderRepositoryQuery.findOrder(member.getMemberNo(), OrderStatus.ORDER);
     }
 
-    @Override
-    @Transactional(readOnly = true) // 주문 상태 ORDER 주문 목록 조회(전체)
-    public List<Order> getAllStatusOrders() {
-        return orderRepository.findAllByOrderStatus(OrderStatus.ORDER);
-    }
-
-    @Override  //스케줄러로 주기적으로 삭제 - 보류*/
+    @Override  //스케줄러로 주기적으로 삭제
     @Transactional // 주문 상태 ORDER 인 주문 목록 일괄 삭제
-    public void deleteAllStatusOrders() {
-        List<Order> orderList = getAllStatusOrders();
+    public void deleteOrdersInBatches(OrderStatus status, int batchSize) {
+        int deletedCount = 0;
+        int batchDeleted;
 
-        log.info("Starting to process {} orders", orderList.size());
+        long startTime = System.currentTimeMillis();
+        log.info("Starting deletion of orders with status {} in batches of {}", status, batchSize);
+
         try {
-            // 대규모 데이터 세트에서 성능 문제를 피하기 위해 배치 단위로 삭제
-            final int batchSize = 100;
-            for (int i = 0; i < orderList.size(); i += batchSize) {
-                int end = Math.min(i + batchSize, orderList.size());
-                List<Order> batch = orderList.subList(i, end);
-                orderRepository.deleteAll(batch);
-                log.info("Deleted batch of {} orders", batch.size());
-            }
-            log.info("Successfully processed and deleted all orders");
+            do {
+                batchDeleted = orderRepository.deleteBatchByStatus(status); // 주문 삭제
+                deletedCount += batchDeleted;
+
+                log.info("Deleted batch of {} orders", batchDeleted);
+            } while (batchDeleted >= batchSize);
+
+            // Record the end time
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+
+            log.info("Successfully deleted {} orders with status {}. Time taken: {} ms", deletedCount, status, duration);
         } catch (Exception e) {
-            log.error("An error occurred while processing orders : {}", e.getMessage());
-            // 선택적으로, 실패를 표시하기 위해 예외를 다시 던질 수 있습니다.
+            log.error("An error occurred while deleting orders: {}", e.getMessage());
             throw e;
         }
     }
-
     @Override
     @Transactional // 주문 취소
     public void cancelOrder(Long orderNo, Member member) {
