@@ -20,8 +20,8 @@ public class Scheduler {
     private final Job orderCleanupJob;
     private final JobLauncher jobLauncher;
 
-    //@Scheduled(cron = "0 */1 * * * *") // 5분마다
-    @Scheduled(cron = "0 0 0 * * *") // 하루에 한번
+    @Scheduled(cron = "0 */1 * * * *") // 1분마다
+    //@Scheduled(cron = "0 0 4 * * *") // 하루에 한번
     public void orderCleanupJobRun()
         throws JobInstanceAlreadyCompleteException,
         JobExecutionAlreadyRunningException,

@@ -1,6 +1,7 @@
 package com.market.domain.order.service;
 
 import com.market.domain.member.entity.Member;
+import com.market.domain.order.constant.OrderStatus;
 import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.order.dto.OrderHistResponseDto;
 import com.market.domain.order.entity.Order;
@@ -66,19 +67,12 @@ public interface OrderService {
      */
     Order getStatusOrder(Member member);
 
-    /**
-     * ORDER 주문 목록 조회(전체)
-     *
-     * @return : 조회된 주문 목록
-     */
-
-    List<Order> getAllStatusOrders();
 
     /**
      * 주문 상태 ORDER 인 주문 목록 삭제(전체)
      **/
 
-    void deleteAllStatusOrders();
+    void deleteOrdersInBatches(OrderStatus status, int batchSize);
 
     /**
      * 주문 취소

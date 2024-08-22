@@ -1,5 +1,6 @@
 package com.market.job.OrderCleanUp;
 
+import com.market.domain.order.constant.OrderStatus;
 import com.market.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -47,7 +48,7 @@ public class OrderCleanUpConfig {
     @Bean
     public Tasklet orderCleanupTasklet() {
         return (contribution, chunkContext) -> {
-            orderService.deleteAllStatusOrders();
+            orderService.deleteOrdersInBatches(OrderStatus.ORDER, 100);
             return RepeatStatus.FINISHED;
         };
     }
