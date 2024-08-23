@@ -271,11 +271,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional // 좋아요 생성
     public void createItemLike(Long itemNo, Member member) {
-        Item item = findItem(itemNo);
-
-        itemLikeRepository.findByItemAndMember(item, member).ifPresent(itemLike -> {
+        itemLikeRepository.findByItemNoAndMember(itemNo, member).ifPresent(itemLike -> {
             throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
         });
+
+        Item item = findItem(itemNo);
         itemLikeRepository.save(new ItemLike(item, member));
 
         // create alarm
@@ -296,16 +296,14 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional // 좋아요 여부 확인
     public boolean checkItemLike(Long itemNo, Member member) {
-        Item item = findItem(itemNo);
-        Optional<ItemLike> itemLike = itemLikeRepository.findByItemAndMember(item, member);
+        Optional<ItemLike> itemLike = itemLikeRepository.findByItemNoAndMember(itemNo, member);
         return itemLike.isPresent(); // 좋아요 존재하면 true
     }
 
     @Override
     @Transactional // 좋아요 삭제
     public void deleteItemLike(Long itemNo, Member member) {
-        Item item = findItem(itemNo);
-        Optional<ItemLike> itemLike = itemLikeRepository.findByItemAndMember(item, member);
+        Optional<ItemLike> itemLike = itemLikeRepository.findByItemNoAndMember(itemNo, member);
 
         if (itemLike.isPresent()) {
             itemLikeRepository.delete(itemLike.get());
@@ -316,8 +314,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override // 좋아요 수 조회
     @Transactional(readOnly = true)
-    public Long countItemLikes() {
-        return itemLikeRepository.count();
+    public Long countItemLikes(Long itemNo) {
+        return itemLikeRepository.countByItemNo(itemNo);
     }
 
     @Override // 상품 찾기

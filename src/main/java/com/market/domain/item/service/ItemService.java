@@ -166,7 +166,7 @@ public interface ItemService {
      *
      * @return : 좋아요 수
      */
-    Long countItemLikes();
+    Long countItemLikes(Long itemNo);
 
     /**
      * 상점 찾기

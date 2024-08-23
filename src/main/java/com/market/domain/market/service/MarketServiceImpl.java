@@ -193,11 +193,11 @@ public class MarketServiceImpl implements MarketService {
     @Override
     @Transactional
     public void createMarketLike(Long marketNo, Member member) { // 좋아요 생성
-        Market market = findMarket(marketNo);
-
-        marketLikeRepository.findByMarketAndMember(market, member).ifPresent(itemLike -> {
+        marketLikeRepository.findByMarketNoAndMember(marketNo, member).ifPresent(itemLike -> {
             throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
         });
+
+        Market market = findMarket(marketNo);
         marketLikeRepository.save(new MarketLike(market, member));
 
         // create alarm
@@ -215,8 +215,7 @@ public class MarketServiceImpl implements MarketService {
     @Override
     @Transactional
     public boolean checkMarketLike(Long marketNo, Member member) { // 좋아요 여부 확인
-        Market market = findMarket(marketNo);
-        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market,
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketNoAndMember(marketNo,
             member);
         return marketLike.isPresent(); // 좋아요 존재하면 true
     }
@@ -224,8 +223,7 @@ public class MarketServiceImpl implements MarketService {
     @Override
     @Transactional
     public void deleteMarketLike(Long marketNo, Member member) { // 좋아요 삭제
-        Market market = findMarket(marketNo);
-        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketAndMember(market,
+        Optional<MarketLike> marketLike = marketLikeRepository.findByMarketNoAndMember(marketNo,
             member);
 
         if (marketLike.isPresent()) {
@@ -237,8 +235,8 @@ public class MarketServiceImpl implements MarketService {
 
     @Override // 좋아요 수 조회
     @Transactional(readOnly = true)
-    public Long countMarketLikes() {
-        return marketLikeRepository.count();
+    public Long countMarketLikes(Long marketNo) {
+        return marketLikeRepository.countByMarketNo(marketNo);
     }
 
     @Override // 시장 찾기
