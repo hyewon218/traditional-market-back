@@ -91,8 +91,8 @@ public class ShopController {
         return ResponseEntity.ok(shopService.getShop(shopNo, request));
     }
 
-    @PutMapping("/shops/{shopNo}")
-    public ResponseEntity<ShopResponseDto> updateShopName( // 상점 수정
+    @PutMapping("/shops/{shopNo}") // 상점 수정
+    public ResponseEntity<ShopResponseDto> updateShopName(
         @PathVariable Long shopNo,
         @ModelAttribute ShopRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
@@ -101,39 +101,39 @@ public class ShopController {
         return ResponseEntity.ok().body(result);
     }
 
-    @DeleteMapping("/shops/{shopNo}")
-    public ResponseEntity<ApiResponse> deleteShop( // 상점 삭제
+    @DeleteMapping("/shops/{shopNo}") // 상점 삭제
+    public ResponseEntity<ApiResponse> deleteShop(
         @PathVariable Long shopNo) {
         shopService.deleteShop(shopNo);
         return ResponseEntity.ok().body(new ApiResponse("상점 삭제 완료!", HttpStatus.OK.value()));
     }
 
-    @PostMapping("/shops/{shopNo}/likes")
-    public ResponseEntity<ApiResponse> createPostLike( // 좋아요 생성
+    @PostMapping("/shops/{shopNo}/likes") // 좋아요 생성
+    public ResponseEntity<ApiResponse> createPostLike(
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         shopService.createShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 상점에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
 
-    @GetMapping("/shops/{shopNo}/likes")
-    public ResponseEntity<Boolean> getShopLike( // 좋아요 여부 확인
+    @GetMapping("/shops/{shopNo}/likes") // 좋아요 여부 확인
+    public ResponseEntity<Boolean> getShopLike(
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         boolean hasLiked = shopService.checkShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.ok(hasLiked);
     }
 
-    @DeleteMapping("/shops/{shopNo}/likes")
-    public ResponseEntity<ApiResponse> deletePostLike( // 좋아요 삭제
+    @DeleteMapping("/shops/{shopNo}/likes") // 좋아요 삭제
+    public ResponseEntity<ApiResponse> deletePostLike(
         @PathVariable Long shopNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         shopService.deleteShopLike(shopNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 삼점에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
 
-    @GetMapping("/shops/likes")
-    public ResponseEntity<Long> getShopLike() { // 좋아요 수 조회
-        return ResponseEntity.ok(shopService.countShopLikes());
+    @GetMapping("/shops/{shopNo}/likes-count") // 좋아요 수 조회
+    public ResponseEntity<Long> getShopLike(@PathVariable Long shopNo) {
+        return ResponseEntity.ok(shopService.countShopLikes(shopNo));
     }
 
     @GetMapping("/admin/shops/count")

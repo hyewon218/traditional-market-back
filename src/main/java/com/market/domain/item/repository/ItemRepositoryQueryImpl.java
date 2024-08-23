@@ -66,7 +66,8 @@ public class ItemRepositoryQueryImpl implements ItemRepositoryQuery {
 
     // 상점 고유번호와 상품 이름을 이용해 상품 조회
     @Override
-    public List<ItemTop5ResponseDto> searchItemsByShopNoAndItemName(Long marketNo, String itemName) {
+    public List<ItemTop5ResponseDto> searchItemsByShopNoAndItemName(Long marketNo,
+        String itemName) {
 
         var query = jpaQueryFactory.select(
                 item.itemName,

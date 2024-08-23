@@ -103,7 +103,7 @@ public interface MarketService {
      *
      * @return : 좋아요 수
      */
-    Long countMarketLikes();
+    Long countMarketLikes(Long marketNo);
 
     /**
      * 시장 찾기

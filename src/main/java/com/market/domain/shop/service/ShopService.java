@@ -117,7 +117,7 @@ public interface ShopService {
      *
      * @return : 좋아요 수
      */
-    Long countShopLikes();
+    Long countShopLikes(Long shopNo);
 
     /**
      * 상점 찾기
