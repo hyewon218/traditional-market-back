@@ -24,8 +24,8 @@ import java.util.Optional;
 @Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    public static final String FIRST_REDIRECT_PATH = "/oauth/success";
-//    public static final String REDIRECT_PATH = "/";
+    public static final String FIRST_REDIRECT_PATH = "http://localhost:3000/add-info"; // 추가정보 입력 페이지
+    public static final String REDIRECT_PATH = "http://localhost:3000/market"; // 홈
 
     private final TokenProvider tokenProvider;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
@@ -34,29 +34,31 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException {
+        Authentication authentication) throws IOException {
 
         OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
         ProviderType providerType = ProviderType.valueOf(
-                authToken.getAuthorizedClientRegistrationId().toUpperCase());
+            authToken.getAuthorizedClientRegistrationId().toUpperCase());
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         OAuth2UserInfo userInfo = OAuth2UserInfo.of(providerType, oAuth2User.getAttributes());
-//        Member member = memberRepository.findByMemberEmail((String) userInfo.getAttributes().get("email"));
-        Optional<Member> optionalMember = memberRepository.findByMemberEmail(userInfo.memberEmail());
+        Optional<Member> optionalMember = memberRepository.findByMemberEmail(
+            userInfo.memberEmail());
         if (optionalMember.isEmpty()) {
             throw new IllegalArgumentException("해당 이메일을 가진 회원을 찾을 수 없습니다");
         }
         Member member = optionalMember.get();
 
-        // 닉네임 있는지 없는지 확인 후 Redirect 경로 설정
-//        String redirectPath = (member.getMemberNickname() == null) ? FIRST_REDIRECT_PATH : REDIRECT_PATH;
-        String redirectPath = FIRST_REDIRECT_PATH;
+        // 닉네임 존재 여부 확인 후 Redirect 경로 설정
+        String redirectPath =
+            (member.getMemberNickname() != null && !member.getMemberNickname().isEmpty())
+                ? REDIRECT_PATH : FIRST_REDIRECT_PATH;
 
         // 액세스토큰 생성
-        String accessToken = tokenProvider.generateToken(member, TokenProvider.ACCESS_TOKEN_DURATION);
+        String accessToken = tokenProvider.generateToken(member,
+            TokenProvider.ACCESS_TOKEN_DURATION);
         log.info("access 토큰이 생성되었습니다 : " + accessToken);
-        
+
         // 쿠키 생성
         tokenProvider.addTokenToCookie(request, response, accessToken);
 
@@ -68,20 +70,28 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // refresh 토큰 없는 경우
         if (findRefreshToken == null) {
-            RefreshToken refreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
-            redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
-            tokenProvider.addRefreshTokenToCookie(request, response, refreshToken.getRefreshToken());
+            RefreshToken refreshToken = tokenProvider.generateRefreshToken(member,
+                TokenProvider.REFRESH_TOKEN_DURATION);
+            redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(),
+                TokenProvider.REFRESH_TOKEN_DURATION);
+            tokenProvider.addRefreshTokenToCookie(request, response,
+                refreshToken.getRefreshToken());
             log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + refreshToken.getRefreshToken());
-            log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
+            log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(
+                member.getMemberId()));
 
             // refresh 토큰이 유효하지않은 경우
         } else if (!tokenProvider.validRefreshToken(findRefreshToken)) {
             redisUtils.deleteValues(member.getMemberId());
-            RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member, TokenProvider.REFRESH_TOKEN_DURATION);
-            redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(), TokenProvider.REFRESH_TOKEN_DURATION);
-            tokenProvider.addRefreshTokenToCookie(request, response, newRefreshToken.getRefreshToken());
+            RefreshToken newRefreshToken = tokenProvider.generateRefreshToken(member,
+                TokenProvider.REFRESH_TOKEN_DURATION);
+            redisUtils.setValues(member.getMemberId(), newRefreshToken.getRefreshToken(),
+                TokenProvider.REFRESH_TOKEN_DURATION);
+            tokenProvider.addRefreshTokenToCookie(request, response,
+                newRefreshToken.getRefreshToken());
             log.info("refresh 토큰이 생성되었습니다(생성된 토큰) : " + newRefreshToken.getRefreshToken());
-            log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(member.getMemberId()));
+            log.info("refresh 토큰이 생성되었습니다(redis에서 가져온 토큰) : " + redisUtils.getValues(
+                member.getMemberId()));
         }
         clearAuthenticationAttributes(request, response);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -89,7 +99,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     // 인증 관련 설정값, 쿠키 제거
     private void clearAuthenticationAttributes(HttpServletRequest request,
-                                               HttpServletResponse response) {
+        HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
@@ -98,7 +108,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private String getTargetUrl(String redirectPath, String accessToken) {
         return UriComponentsBuilder.fromUriString(redirectPath)
 //                .queryParam("accessToken", accessToken) // JWT 액세스토큰값을 url에 추가, 주석처리 해야함, 테스트로 켜놓음
-                .build()
-                .toUriString();
+            .build()
+            .toUriString();
     }
 }

@@ -2,6 +2,9 @@ package com.market.global.security.oauth2;
 
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.member.withdrawMember.service.WithdrawMemberService;
+import com.market.global.exception.BusinessException;
+import com.market.global.exception.ErrorCode;
 import com.market.global.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +21,12 @@ import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-@Service                                      // DefaultOAuth2UserService : 리소스 서버에서 사용자 정보 받아오는 클래스
+@Service                                  // DefaultOAuth2UserService : 리소스 서버에서 사용자 정보 받아오는 클래스
 public class OAuth2UserCustomService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WithdrawMemberService withdrawMemberService;
 
     private ProviderType providerType;
 
@@ -59,16 +63,20 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
 
     private Member SaveOrUpdate(OAuth2UserInfo OAuth2UserInfo) {
         Optional<Member> optionalMember = memberRepository.findByMemberEmail(OAuth2UserInfo.memberEmail());
+        // 로그인하려는 회원의 이메일이 탈퇴회원 DB에 있다면 예외 발생 (탈퇴 or 탈퇴 처리된 OAuth 회원 로그인 차단 위함)
+        if (withdrawMemberService.existsMemberEmail(OAuth2UserInfo.memberEmail())) {
+            throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_EMAIL);
+        }
 
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
 
             if (providerType != member.getProviderType()) {
-                throw new IllegalArgumentException("이미 동일한 이메일이 등록돼있습니다");
+                throw new BusinessException(ErrorCode.EXISTS_EMAIL);
             }
-            member.updateNickname(member.getMemberNickname());
-            return memberRepository.save(member);
+            return member;
         }
         return memberRepository.save(OAuth2UserInfo.toEntity(passwordEncoder));
     }
+
 }

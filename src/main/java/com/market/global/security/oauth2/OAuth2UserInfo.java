@@ -6,6 +6,7 @@ import lombok.Builder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 @Builder
@@ -62,9 +63,8 @@ public record OAuth2UserInfo(
 
     public Member toEntity(PasswordEncoder passwordEncoder) {
         // 랜덤 memberId 생성
-        String memberId = UUID.randomUUID().toString();
+        String memberId = generateRandomId();
         String encodedPassword = passwordEncoder.encode(UUID.randomUUID().toString());
-
         String randomTag = generateRandomTag();
 
         return Member.builder()
@@ -74,9 +74,41 @@ public record OAuth2UserInfo(
                 .randomTag(randomTag)
                 .nicknameWithRandomTag(memberNickname + randomTag)
                 .memberPw(encodedPassword)
-                .providerType(providerType)
                 .role(Role.MEMBER)
+                .providerType(providerType)
                 .build();
+    }
+
+    // providerType에 따라 랜덤 아이디 생성
+    private String generateRandomId() {
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        // providerType에 따른 시작 문자 설정
+        switch (providerType) {
+            case NAVER -> sb.append("N");
+            case KAKAO -> sb.append("K");
+            case GOOGLE -> sb.append("G");
+            default -> throw new IllegalArgumentException("유효하지 않은 provider type입니다");
+        }
+
+        // 0~9 숫자와 영문 대소문자 중 랜덤하게 3개 추가
+        String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (int i = 0; i < 2; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        // # 추가
+        sb.append("#");
+
+        // 0~9 숫자와 영문 대소문자 중 랜덤하게 7개 추가
+        for (int i = 0; i < 7; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        return sb.toString();
     }
 
     // 닉네임 뒤 #으로 시작하는 랜덤태그 생성
@@ -85,13 +117,12 @@ public record OAuth2UserInfo(
         sb.append("#"); // "#"으로 시작하도록 추가
 
         // 나머지 자리에는 0부터 9까지의 숫자를 랜덤하게 생성
-        for (int i = 1; i < 7; i++) {
+        for (int i = 0; i < 7; i++) {
             int digit = (int) (Math.random() * 10);
             sb.append(digit);
         }
         return sb.toString();
     }
-
 
     // 휴대전화번호 DB에 저장될때 해당 형식으로 저장되도록 하는 메서드
     private static String transformPhoneNumber(String memberPhone) {
