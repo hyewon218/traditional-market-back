@@ -2,6 +2,7 @@ package com.market.domain.member.dto;
 
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.global.security.oauth2.ProviderType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +23,8 @@ public class MyInfoResponseDto {
     private String memberNickname;
     private String nicknameWithRandomTag;
     private Role role;
+    private LocalDateTime WarningStartDate; // 제재 시작일
+    private ProviderType providerType;
     private LocalDateTime createTime; // 가입일
 
     public static MyInfoResponseDto of(Member member) {
@@ -32,6 +35,8 @@ public class MyInfoResponseDto {
                 .memberNickname(member.getMemberNickname())
                 .nicknameWithRandomTag(member.getMemberNickname() + member.getRandomTag())
                 .role(member.getRole())
+                .WarningStartDate(member.getWarningStartDate())
+                .providerType(member.getProviderType())
                 .createTime(member.getCreateTime())
                 .build();
     }

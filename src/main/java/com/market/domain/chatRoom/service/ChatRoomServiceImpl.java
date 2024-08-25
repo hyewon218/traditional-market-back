@@ -27,6 +27,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public ChatRoomResponseDto createChatRoom(ChatRoomRequestDto requestDto, Member member) {
         Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)); // 채팅방 생성 -> 관리자가 받음
+
+        // 만약 회원 제재 여부가 true라면 채팅방 생성 불가
+        if (member.isWarning()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
+
         ChatRoom chatRoom = requestDto.toEntity(member, receiver);
         chatRoomRepository.save(chatRoom);
         return ChatRoomResponseDto.of(chatRoom);

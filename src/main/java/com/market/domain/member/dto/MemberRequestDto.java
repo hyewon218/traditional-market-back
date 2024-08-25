@@ -4,6 +4,8 @@ import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.global.security.oauth2.ProviderType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -15,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class MemberRequestDto {
 
     @NotBlank(message = "아이디는 반드시 입력해주세요")
+    @Size(max = 15, message = "아이디는 최대 15자까지 입력할 수 있습니다.")
+    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "아이디는 영문과 숫자만 포함할 수 있습니다.")
     private String memberId;
 
     @NotBlank(message = "이메일은 반드시 입력해주세요")
@@ -28,9 +32,10 @@ public class MemberRequestDto {
     private String nicknameWithRandomTag; // 닉네임 + 랜덤태그, ex) 닉네임#1234567
 
     @NotBlank(message = "비밀번호는 반드시 입력해주세요")
+    @Size(min = 8, max = 16, message = "비밀번호는 최소 8자, 최대 16자까지 입력할 수 있습니다.")
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@!#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).+$", message = "비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.")
     private String memberPw;
 
-    @NotBlank(message = "비밀번호 확인을 반드시 입력해주세요")
     private String confirmPw;
 
     private Role role;
@@ -60,6 +65,9 @@ public class MemberRequestDto {
                 .memberPw(passwordEncoder.encode(this.memberPw))
                 .role(Role.MEMBER)
                 .providerType(ProviderType.LOCAL)
+                .isWarning(false)
+                .countWarning(0L)
+                .countReport(0L)
                 .build();
     }
 
