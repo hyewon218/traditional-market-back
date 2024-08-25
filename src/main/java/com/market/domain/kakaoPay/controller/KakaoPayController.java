@@ -4,6 +4,7 @@ import com.market.domain.kakaoPay.dto.cancel.CancelResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ApproveResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ReadyResponseDto;
 import com.market.domain.kakaoPay.service.KakaoPayService;
+import com.market.domain.order.constant.OrderStatus;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletResponse;
@@ -60,7 +61,8 @@ public class KakaoPayController {
     }
 
     @PostMapping("/cancel/{orderNo}") // 결제 취소
-    public ResponseEntity<CancelResponseDto> cancelOrder(@PathVariable Long orderNo) {
-        return ResponseEntity.ok().body(kakaoPayService.kakaoPayCancel(orderNo));
+    public ResponseEntity<CancelResponseDto> cancelOrder(@PathVariable Long orderNo,
+        OrderStatus orderStatus, String returnMessage) {
+        return ResponseEntity.ok().body(kakaoPayService.kakaoPayCancel(orderNo, orderStatus, returnMessage));
     }
 }
