@@ -4,5 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class SaveDeliveryRequestDto {
+    private String receiver;
+    private String phone;
     private String deliveryAddr;
+    private String deliveryMessage;
 }
