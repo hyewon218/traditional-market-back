@@ -6,6 +6,5 @@ import lombok.Getter;
 public class FindIdRequestDto {
 
     private String memberEmail;
-    private String memberNickname;
     private String code;
 }

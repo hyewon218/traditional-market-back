@@ -22,6 +22,7 @@ public class OrderItemHistResponseDto {
 
     private List<ImageResponseDto> imageList; // 상품 이미지
 
+    private Long itemNo; // 상품, 주문 내역 페이지에서 상품 이미지 누르면 해당 상품의 상세 정보로 이동하기 위해 필드 추가
 
     public static OrderItemHistResponseDto of(OrderItem orderItem) {
         return OrderItemHistResponseDto.builder()
@@ -31,6 +32,7 @@ public class OrderItemHistResponseDto {
             .orderPrice(orderItem.getOrderPrice())
             .imageList(
                 orderItem.getItem().getImageList().stream().map(ImageResponseDto::of).toList())
+            .itemNo(orderItem.getItem().getNo())
             .build();
     }
 }
