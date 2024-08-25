@@ -4,6 +4,7 @@ import com.market.domain.inquiry.dto.InquiryRequestDto;
 import com.market.domain.inquiry.dto.InquiryResponseDto;
 import com.market.domain.inquiry.dto.InquiryUpdateRequestDto;
 import com.market.domain.inquiry.entity.Inquiry;
+import com.market.domain.inquiry.repository.InquirySearchCond;
 import com.market.domain.member.entity.Member;
 import java.io.IOException;
 import java.util.List;
@@ -48,6 +49,14 @@ public interface InquiryService {
     Page<InquiryResponseDto> getAllInquiries(Pageable pageable);
 
     /**
+     * 키워드 검색 문의사항 목록 조회
+     *
+     * @param cond 조건
+     * @return 검색한 키워드가 있는 문의사항 목록 조회
+     */
+    Page<InquiryResponseDto> searchInquiries(InquirySearchCond cond, Pageable pageable);
+
+    /**
      * 문의사항 찾기
      *
      * @param inquiryNo : 찾을 문의사항 no
@@ -83,6 +92,14 @@ public interface InquiryService {
      * 문의사항 전체 삭제(모두, admin 만 가능)
      */
     void deleteAll(Member member);
+
+    /**
+     * 문의하기 제목 또는 내용에 비속어 포함되어있는지 검증
+     *
+     * @param title : 검증할 제목
+     * @param content : 검증할 내용
+     */
+    void validationProfanity(String title, String content);
 
     /**
      * 문의사항 내 기본이미지 제외 S3 에서도 이미지 삭제

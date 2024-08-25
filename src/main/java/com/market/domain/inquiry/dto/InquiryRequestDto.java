@@ -24,7 +24,7 @@ public class InquiryRequestDto {
     public Inquiry toEntity(Member member) {
         return Inquiry.builder()
                 .memberNo(member.getMemberNo())
-                .inquiryWriter(member.getNicknameWithRandomTag())
+                .inquiryWriter(member.getMemberId())
                 .inquiryTitle(this.inquiryTitle)
                 .inquiryContent(this.inquiryContent)
                 .inquiryState(InquiryState.ANSWER_PENDING)
