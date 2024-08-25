@@ -4,6 +4,7 @@ import com.market.domain.image.config.AwsS3upload;
 import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
+import com.market.domain.market.dto.MarketLikeResponseDto;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.entity.CategoryEnum;
@@ -237,6 +238,12 @@ public class MarketServiceImpl implements MarketService {
     @Transactional(readOnly = true)
     public Long countMarketLikes(Long marketNo) {
         return marketLikeRepository.countByMarketNo(marketNo);
+    }
+
+    @Override // 시장 좋아요 많은 순 조회
+    @Transactional(readOnly = true)
+    public Page<MarketLikeResponseDto> getMarketsSortedByLikes(Pageable pageable) {
+        return marketRepositoryQuery.findMarketsSortedByLikes(pageable);
     }
 
     @Override // 시장 찾기

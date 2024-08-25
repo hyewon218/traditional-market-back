@@ -1,5 +1,6 @@
 package com.market.domain.market.controller;
 
+import com.market.domain.market.dto.MarketLikeResponseDto;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.entity.CategoryEnum;
@@ -35,8 +36,8 @@ public class MarketController {
 
     private final MarketService marketService;
 
-    @PostMapping("/markets")
-    public ResponseEntity<MarketResponseDto> createMarket( // 시장 생성
+    @PostMapping("/markets") // 시장 생성
+    public ResponseEntity<MarketResponseDto> createMarket(
         @ModelAttribute MarketRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
@@ -71,8 +72,8 @@ public class MarketController {
         return ResponseEntity.ok(marketService.getMarket(marketNo, request));
     }
 
-    @PutMapping("/markets/{marketNo}")
-    public ResponseEntity<MarketResponseDto> updateMarket( // 시장 수정
+    @PutMapping("/markets/{marketNo}") // 시장 수정
+    public ResponseEntity<MarketResponseDto> updateMarket(
         @PathVariable("marketNo") Long marketNo,
         @ModelAttribute MarketRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
@@ -81,39 +82,44 @@ public class MarketController {
         return ResponseEntity.ok().body(result);
     }
 
-    @DeleteMapping("/markets/{marketNo}")
-    public ResponseEntity<ApiResponse> deleteMarket( // 시장 삭제
+    @DeleteMapping("/markets/{marketNo}") // 시장 삭제
+    public ResponseEntity<ApiResponse> deleteMarket(
         @PathVariable("marketNo") Long marketNo) {
         marketService.deleteMarket(marketNo);
         return ResponseEntity.ok().body(new ApiResponse("시장 삭제 완료!", HttpStatus.OK.value()));
     }
 
-    @PostMapping("/markets/{marketNo}/likes")
-    public ResponseEntity<ApiResponse> createMarketLike( // 좋아요 생성
+    @PostMapping("/markets/{marketNo}/likes") // 좋아요 생성
+    public ResponseEntity<ApiResponse> createMarketLike(
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         marketService.createMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new ApiResponse("해당 시장에 좋아요를 눌렀습니다", HttpStatus.CREATED.value()));
     }
 
-    @GetMapping("/markets/{marketNo}/likes")
-    public ResponseEntity<Boolean> getMarketLike( // 좋아요 여부 확인
+    @GetMapping("/markets/{marketNo}/likes") // 좋아요 여부 확인
+    public ResponseEntity<Boolean> getMarketLike(
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         boolean hasLiked = marketService.checkMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.ok(hasLiked);
     }
 
-    @DeleteMapping("/markets/{marketNo}/likes")
-    public ResponseEntity<ApiResponse> deleteMarketLike( // 좋아요 삭제
+    @DeleteMapping("/markets/{marketNo}/likes") // 좋아요 삭제
+    public ResponseEntity<ApiResponse> deleteMarketLike(
         @PathVariable Long marketNo, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         marketService.deleteMarketLike(marketNo, userDetails.getMember());
         return ResponseEntity.ok()
             .body(new ApiResponse("해당 시장에 좋아요를 취소하였습니다", HttpStatus.OK.value()));
     }
 
-    @GetMapping("/markets/{marketNo}/likes-count")
-    public ResponseEntity<Long> getMarketLike(@PathVariable Long marketNo) { // 좋아요 수 조회
+    @GetMapping("/markets/{marketNo}/likes-count") // 좋아요 수 조회
+    public ResponseEntity<Long> getMarketLikesCount(@PathVariable Long marketNo) {
         return ResponseEntity.ok(marketService.countMarketLikes(marketNo));
+    }
+
+    @GetMapping("/markets/sorted-by-likes") // 시장 좋아요 많은 순 조회
+    public ResponseEntity<Page<MarketLikeResponseDto>> getMarketsSortedByLikes(Pageable pageable) {
+        return ResponseEntity.ok(marketService.getMarketsSortedByLikes(pageable));
     }
 
     @GetMapping("/admin/markets/count") // 총 시장 수, 관리자만 가능

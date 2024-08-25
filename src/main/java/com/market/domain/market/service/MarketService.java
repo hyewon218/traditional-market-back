@@ -1,5 +1,6 @@
 package com.market.domain.market.service;
 
+import com.market.domain.market.dto.MarketLikeResponseDto;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
 import com.market.domain.market.entity.CategoryEnum;
@@ -99,11 +100,18 @@ public interface MarketService {
     void deleteMarketLike(Long marketNo, Member member);
 
     /**
-     * 좋아요 수
+     * 좋아요 수 조회
      *
-     * @return : 좋아요 수
+     * @return : 좋아요 수 조회
      */
     Long countMarketLikes(Long marketNo);
+
+    /**
+     * 시장 좋아요 많은 순 조회
+     *
+     * @return 시장 목록
+     */
+    Page<MarketLikeResponseDto> getMarketsSortedByLikes(Pageable pageable);
 
     /**
      * 시장 찾기
