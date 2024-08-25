@@ -8,12 +8,15 @@ import com.market.domain.inquiry.dto.InquiryResponseDto;
 import com.market.domain.inquiry.dto.InquiryUpdateRequestDto;
 import com.market.domain.inquiry.entity.Inquiry;
 import com.market.domain.inquiry.repository.InquiryRepository;
+import com.market.domain.inquiry.repository.InquiryRepositoryQuery;
+import com.market.domain.inquiry.repository.InquirySearchCond;
 import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.inquiryAnswer.repository.InquiryAnswerRepository;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import com.market.global.profanityFilter.ProfanityFilter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -36,6 +39,7 @@ public class InquiryServiceImpl implements InquiryService {
     private final AwsS3upload awsS3upload;
     private final ImageRepository imageRepository;
     private final InquiryAnswerRepository inquiryAnswerRepository;
+    private final InquiryRepositoryQuery inquiryRepositoryQuery;
 
     // 문의사항 생성
     @Override
@@ -52,6 +56,11 @@ public class InquiryServiceImpl implements InquiryService {
         if (inquiriesCountToday >= maxInquiriesPerDay) {
             throw new BusinessException(ErrorCode.INQUIRY_LIMIT_EXCEEDED);
         }
+        
+        // 문의하기 제목 또는 내용에 비속어 포함되어있는지 검증
+        validationProfanity(inquiryRequestDto.getInquiryTitle(),
+            inquiryRequestDto.getInquiryContent());
+
         Inquiry inquiry = inquiryRequestDto.toEntity(member);
         inquiryRepository.save(inquiry);
         // 파일이 존재하는지 체크
@@ -93,7 +102,13 @@ public class InquiryServiceImpl implements InquiryService {
         Page<Inquiry> inquiries = inquiryRepository.findAll(pageable);
         return inquiries.map(InquiryResponseDto::of);
     }
-
+    
+    @Override
+    @Transactional(readOnly = true) // 키워드 검색 문의사항 목록 조회
+    public Page<InquiryResponseDto> searchInquiries(InquirySearchCond cond, Pageable pageable) {
+        return inquiryRepositoryQuery.searchInquiries(cond, pageable).map(InquiryResponseDto::of);
+    }
+    
     @Override
     @Transactional // 문의사항 수정
     public InquiryResponseDto updateInquiry(Long memberNo, InquiryUpdateRequestDto updateRequestDto,
@@ -145,6 +160,7 @@ public class InquiryServiceImpl implements InquiryService {
         inquiryRepository.deleteAll();
     }
 
+
     @Override
     @Transactional
     public void deleteImages(boolean deleteAll, Long memberNo) {
@@ -177,11 +193,19 @@ public class InquiryServiceImpl implements InquiryService {
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_INQUIRY));
     }
 
-    // 전체 문의사항 개수 조회
-    @Override
+    @Override // 전체 문의사항 개수 조회
     @Transactional(readOnly = true)
     public Long countInquiry() {
         return inquiryRepository.count();
+    }
+
+    @Override // 문의하기 제목 또는 내용에 비속어 포함되어있는지 검증
+    @Transactional
+    public void validationProfanity(String title, String content) {
+        if (ProfanityFilter.containsProfanity(title) || ProfanityFilter.containsProfanity(content)) {
+//            throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_INQUIRY);
+            throw new IllegalArgumentException("비속어가 포함된 제목 또는 내용은 작성할 수 없습니다.");
+        }
     }
 
     @Override

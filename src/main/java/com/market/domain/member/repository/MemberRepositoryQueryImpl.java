@@ -14,6 +14,37 @@ import java.util.Objects;
 
 import static com.market.domain.member.entity.QMember.member;
 
+//@Repository
+//@RequiredArgsConstructor
+//public class MemberRepositoryQueryImpl implements MemberRepositoryQuery {
+//
+//    private final JPAQueryFactory jpaQueryFactory;
+//
+//    @Override
+//    public Page<Member> searchMembers(MemberSearchCond cond, Pageable pageable) {
+//        var query = jpaQueryFactory.select(member)
+//            .from(member)
+//            .where(
+//                contentContains(cond.getKeyword())
+//            )
+//            .offset(pageable.getOffset())
+//            .limit(pageable.getPageSize());
+//
+//        var posts = query.fetch();
+//
+//        long totalSize = jpaQueryFactory.select(Wildcard.count) //select count(*)
+//            .from(member)
+//            .where(contentContains(cond.getKeyword()))
+//            .fetch().get(0);
+//        return PageableExecutionUtils.getPage(posts, pageable, () -> totalSize);
+//
+//    }
+//
+//    private static BooleanExpression contentContains(String keyword) {
+//        return Objects.nonNull(keyword) ? member.memberId.contains(keyword) : null;
+//    }
+//}
+
 @Repository
 @RequiredArgsConstructor
 public class MemberRepositoryQueryImpl implements MemberRepositoryQuery {
@@ -25,7 +56,7 @@ public class MemberRepositoryQueryImpl implements MemberRepositoryQuery {
         var query = jpaQueryFactory.select(member)
             .from(member)
             .where(
-                contentContains(cond.getKeyword())
+                contentContains(cond.getKeyword(), cond.getType())
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
@@ -34,13 +65,22 @@ public class MemberRepositoryQueryImpl implements MemberRepositoryQuery {
 
         long totalSize = jpaQueryFactory.select(Wildcard.count) //select count(*)
             .from(member)
-            .where(contentContains(cond.getKeyword()))
+            .where(
+                contentContains(cond.getKeyword(), cond.getType())
+            )
             .fetch().get(0);
         return PageableExecutionUtils.getPage(posts, pageable, () -> totalSize);
-
     }
 
-    private static BooleanExpression contentContains(String keyword) {
-        return Objects.nonNull(keyword) ? member.memberId.contains(keyword) : null;
+    private static BooleanExpression contentContains(String keyword, String type) {
+        if (Objects.isNull(keyword) || keyword.isEmpty()) {
+            return null;
+        }
+        return switch (type) {
+            case "nickname" -> member.memberNickname.contains(keyword);
+            case "email" -> member.memberEmail.contains(keyword);
+            default -> member.memberId.contains(keyword);
+        };
     }
 }
+
