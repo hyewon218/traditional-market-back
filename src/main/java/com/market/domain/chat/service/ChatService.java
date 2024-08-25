@@ -15,10 +15,17 @@ public interface ChatService {
     List<ChatResponseDto> getAllChatByRoomId(Long roomId);
 
     /**
-     * 채팅 메세지 저장
+     * 채팅 메시지 저장
      *
      * @param roomId     저장할 채팅 방 ID
      * @param requestDto 메세지 저장 요청정보
      */
     void saveMessage(Long roomId, ChatMessageDto requestDto);
+
+    /**
+     * 전송하려는 채팅 메세지에 비속어 포함되어있는지 검증
+     *
+     * @param message     검증할 채팅 메세지
+     */
+    void validationProfanity(String message);
 }

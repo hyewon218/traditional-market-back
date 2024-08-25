@@ -19,4 +19,6 @@ public interface MarketCommentService {
     void deleteMarketComment(Long commentNo, Member member);
 
     MarketComment findMarketComment(Long no);
+
+    void validationProfanity(String comment); // 댓글에 비속어 포함되어있는지 검증
 }

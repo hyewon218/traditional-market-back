@@ -9,6 +9,8 @@ import com.market.domain.chatRoom.repository.ChatRoomRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.util.List;
+
+import com.market.global.profanityFilter.ProfanityFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +35,16 @@ public class ChatServiceImpl implements ChatService {
     public void saveMessage(Long roomId, ChatMessageDto requestDto) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_CHATROOM));
+        validationProfanity(requestDto.getMessage()); // 채팅 메세지에 비속어 포함되어있는지 검증
         Chat chat = requestDto.toEntity(chatRoom);
         chatRepository.save(chat);
+    }
+
+    // 전송하려는 채팅 메세지에 비속어 포함되어있는지 검증
+    @Override
+    public void validationProfanity(String message) {
+        if (ProfanityFilter.containsProfanity(message)) {
+            throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_CHAT);
+        }
     }
 }
