@@ -140,4 +140,21 @@ public interface ShopService {
      * @return : 시장별 상점 수
      */
     Long countShopsByMarket(Long marketNo);
+
+    /**
+     * 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
+     *
+     * @param seller : 판매자
+     * @return : 판매자가 소유한 상점 목록 조회
+     */
+    Page<ShopResponseDto> getShopsBySellerNo(Member seller, Pageable pageable);
+
+    /**
+     * 판매자가 소유한 상점 목록 조회 (관리자가 특정 판매자의 상점 목록 조회)
+     *
+     * @param member : 관리자
+     * @param sellerNo : 판매자 고유번호
+     * @return : 판매자가 소유한 상점 목록 조회
+     */
+    Page<ShopResponseDto> getShopsBySellerNoAdmin(Member member, Long sellerNo, Pageable pageable);
 }

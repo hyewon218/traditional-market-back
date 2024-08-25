@@ -19,4 +19,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Page<Shop> findByMarketNoAndCategory(Long marketNo, CategoryEnum category, Pageable pageable);
 
     Long countByMarket_No(Long marketNo);
+    
+    Page<Shop> findBySeller_MemberNo(Long memberNo, Pageable pageable); // 판매자가 소유한 상점 목록 조회
 }

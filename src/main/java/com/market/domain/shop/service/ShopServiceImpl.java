@@ -99,7 +99,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 상점 목록 조회
+    @Transactional(readOnly = true) // 상점 카테고리 목록 조회
     public Page<ShopResponseDto> getCategoryShop(CategoryEnum category, Pageable pageable) {
         Page<Shop> shopList = shopRepository.findByCategoryOrderByCategoryDesc(category, pageable);
         return shopList.map(ShopResponseDto::of);
@@ -291,5 +291,25 @@ public class ShopServiceImpl implements ShopService {
     @Transactional(readOnly = true)
     public Long countShopsByMarket(Long marketNo) {
         return shopRepository.countByMarket_No(marketNo);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
+    public Page<ShopResponseDto> getShopsBySellerNo(Member seller, Pageable pageable) {
+        if (!seller.getRole().equals(Role.SELLER)) { // 로그인한 유저가 SELLER가 아니면 접근 차단
+            throw new BusinessException(ErrorCode.NOT_EXISTS_SELLER);
+        }
+        Page<Shop> shops = shopRepository.findBySeller_MemberNo(seller.getMemberNo(), pageable);
+        return shops.map(ShopResponseDto::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 판매자가 소유한 상점 목록 조회 (관리자가 특정 판매자의 상점 목록 조회)
+    public Page<ShopResponseDto> getShopsBySellerNoAdmin(Member member, Long sellerNo, Pageable pageable) {
+        if (!member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+        }
+        Page<Shop> shops = shopRepository.findBySeller_MemberNo(sellerNo, pageable);
+        return shops.map(ShopResponseDto::of);
     }
 }
