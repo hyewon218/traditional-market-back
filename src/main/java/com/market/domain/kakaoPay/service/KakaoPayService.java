@@ -6,17 +6,21 @@ import com.market.domain.kakaoPay.dto.cancel.CancelResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ApproveResponseDto;
 import com.market.domain.kakaoPay.dto.payment.ReadyResponseDto;
 import com.market.domain.member.entity.Member;
+import com.market.domain.order.constant.OrderStatus;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.service.OrderServiceImpl;
 import com.market.domain.orderItem.entity.OrderItem;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -172,9 +176,12 @@ public class KakaoPayService {
 
     // 결제 환불
     @Transactional
-    public CancelResponseDto kakaoPayCancel(Long orderNo) {
+    public CancelResponseDto kakaoPayCancel(Long orderNo, OrderStatus orderStatus, String returnMessage) {
         // 주분번호로 주문 조회
         Order order = orderService.findById(orderNo);
+
+        // 상품 재고 증가
+        order.cancelOrder(orderStatus, LocalDateTime.now(), returnMessage);
 
         int total_amount = 0;
 
@@ -182,6 +189,11 @@ public class KakaoPayService {
         if (orderItems != null) {
             for (OrderItem orderItem : orderItems) {
                 total_amount += orderItem.getTotalPrice();
+                orderItem.getItem().removeCountSales(orderItem.getCount()); // 각 상품 판매량 및 총판매액 감소
+                orderItem.getItem().getShop()
+                    .minusTotalSalesPrice(orderItem.getTotalPrice()); // 해당 상점의 총 매출액 감소
+                orderItem.getItem().getShop().getMarket()
+                    .minusTotalSalesPrice(orderItem.getTotalPrice()); // 해당 시장의 총 매출액 감소
             }
         }
 

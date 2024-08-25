@@ -12,11 +12,20 @@ public interface OrderRepositoryQuery {
 
     Optional<Order> findLatestOrder(Long MemberNo, OrderStatus orderStatus);
 
-    Page<Order> findCompleteOrders(Long memberNo, OrderStatus orderStatus, Pageable pageable);
+    Page<Order> findOrders(Long memberNo, Pageable pageable);
 
-    Page<Order> findOrdersBySellerExcludingCanceled(Long memberNo, OrderStatus orderStatus,
-        Pageable pageable);
+    Page<Order> findCancelOrders(Long memberNo, Pageable pageable);
+
+    Page<Order> findOrdersByAdminExcludingCanceled(Pageable pageable);
+
+    Page<Order> findOrdersByAdminAndOrderStatus(OrderStatus orderStatus, Pageable pageable);
+
+    Page<Order> findOrdersBySellerExcludingCanceled(Long memberNo, Pageable pageable);
 
     Page<Order> findOrdersBySellerAndOrderStatus(Long memberNo, OrderStatus orderStatus,
         Pageable pageable);
+
+    Page<Order> searchOrders(OrderSearchCond cond, Pageable pageable);
+
+    Page<Order> searchOrdersSeller(Long sellerNo, OrderSearchCond cond, Pageable pageable);
 }
