@@ -18,9 +18,9 @@ public class EmailController {
     private final EmailService emailService;
     private final MemberServiceImpl memberService;
 
-    // 회원가입 시 '인증번호 발급' 버튼
+    // 회원가입 시 '인증번호 전송' 버튼
     @PostMapping("/email")
-    public ResponseEntity sendMail(@RequestBody EmailPostDto emailPostDto) {
+    public ResponseEntity<EmailResponseDto> sendMail(@RequestBody EmailPostDto emailPostDto) {
         EmailMessageEntity emailMessageEntity = EmailMessageEntity.builder()
                 .to(emailPostDto.getMemberEmail())
                 .subject("<<<SWC_전통시장테스트>>> 이메일 인증을 위한 인증코드 전송")
@@ -32,16 +32,15 @@ public class EmailController {
         return ResponseEntity.ok().body(emailResponseDto);
     }
 
-    // 아이디 찾기 시 '인증번호 발급' 버튼
+    // 아이디 찾기 시 '인증번호 전송' 버튼
     @PostMapping("/email/findid")
-    public ResponseEntity sendMailForFindId(@RequestBody FindIdRequestDto findIdRequestDto) {
-        boolean isMemberExist = memberService.findMemberByNicknameAndEmail(
-                findIdRequestDto.getMemberNickname(), findIdRequestDto.getMemberEmail());
+    public ResponseEntity<?> sendMailForFindId(@RequestBody FindIdRequestDto findIdRequestDto) {
+        boolean isMemberExist = memberService.findMemberByEmail(findIdRequestDto.getMemberEmail());
 
         if (isMemberExist) {
             EmailMessageEntity emailMessageEntity = EmailMessageEntity.builder()
                     .to(findIdRequestDto.getMemberEmail())
-                    .subject("<<<SWC_전통시장테스트>>> 이메일 인증을 위한 인증코드 전송")
+                    .subject("<<<우리동네 전통시장>>> 아이디 찾기를 위한 인증코드 발급")
                     .build();
 
             String code = emailService.sendMail(emailMessageEntity, "email");
@@ -49,23 +48,22 @@ public class EmailController {
             emailResponseDto.setCode(code);
             return ResponseEntity.ok().body(emailResponseDto);
         } else {
-            return ResponseEntity.badRequest().body("닉네임과 이메일에 해당하는 회원이 존재하지않습니다");
+            return ResponseEntity.badRequest().body("이메일에 해당하는 회원이 존재하지않습니다");
         }
     }
 
     // 비밀번호 찾기 시 '임시비밀번호 발급' 버튼
     @PostMapping("/email/temppw")
-    public ResponseEntity sendMailForFindPw(@RequestBody FindPwRequestDto findPwRequestDto) {
+    public ResponseEntity<String> sendMailForFindPw(@RequestBody FindPwRequestDto findPwRequestDto) {
         boolean isMemberExist = memberService.findMemberByIdAndEmail(
                 findPwRequestDto.getMemberId(), findPwRequestDto.getMemberEmail());
 
         if (isMemberExist) {
             EmailMessageEntity emailMessageEntity = EmailMessageEntity.builder()
                     .to(findPwRequestDto.getMemberEmail())
-                    .subject("<<<SWC_전통시장테스트>>> 임시비밀번호 전송")
+                    .subject("<<<우리동네 전통시장>>> 임시비밀번호 발급")
                     .build();
 
-            // 변수 지우고 emailService.sendMail(emailMessageEntity, "password");만 남기기
             String tempPassword = emailService.sendMail(emailMessageEntity, "password");
             return ResponseEntity.ok().body(tempPassword);
         } else {

@@ -1,6 +1,7 @@
 package com.market.global.security;
 
 import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.member.withdrawMember.service.WithdrawMemberService;
 import com.market.global.jwt.config.TokenAuthenticationFilter;
 import com.market.global.jwt.config.TokenProvider;
 import com.market.global.redis.RedisUtils;
@@ -48,6 +49,7 @@ public class WebSecurityConfig {
         private final RedisUtils redisUtils;
         private final MemberRepository memberRepository;
         private final VisitorService visitorService;
+        private final WithdrawMemberService withdrawMemberService;
 
         @Bean
         public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -78,13 +80,13 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/shops/{shopNo}/likes").authenticated() // 상점 좋아요 조회
                         .requestMatchers(HttpMethod.DELETE, "/api/shops/{shopNo}/likes").authenticated() // 상점 좋아요 삭제
                         .requestMatchers(HttpMethod.POST, "/api/shops").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/shops/**").hasAnyRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/api/shops/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/shops/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 생성
                         .requestMatchers(HttpMethod.GET, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 조회
                         .requestMatchers(HttpMethod.DELETE, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 삭제
-                        .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/chatrooms/{chatRoomNo}/read").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**").hasAnyRole("ADMIN")
@@ -168,7 +170,7 @@ public class WebSecurityConfig {
 
         @Bean
         public OAuth2UserCustomService oAuth2UserCustomService() {
-            return new OAuth2UserCustomService(memberRepository, passwordEncoder());
+            return new OAuth2UserCustomService(memberRepository, passwordEncoder(), withdrawMemberService);
         }
 
         @Bean
