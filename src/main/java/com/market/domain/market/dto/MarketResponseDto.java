@@ -26,6 +26,8 @@ public class MarketResponseDto {
 
     private Integer likes;
 
+    private Long totalSalesPrice; // 해당 시장에 속한 상점들의 총 매출액 합계
+
     private Long viewCount;
 
     private String parkingInfo1;
@@ -60,6 +62,7 @@ public class MarketResponseDto {
             .category(market.getCategory())
             .marketDetail(market.getMarketDetail())
             .likes(market.getMarketLikeList().size())
+            .totalSalesPrice(market.getTotalSalesPrice())
             .viewCount(market.getViewCount())
             .parkingInfo1(market.getParkingInfo1())
             .parkingInfo2(market.getParkingInfo2())

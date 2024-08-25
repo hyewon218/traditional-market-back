@@ -52,6 +52,8 @@ public class Market extends BaseEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private CategoryEnum category;
+    
+    private Long totalSalesPrice; // 해당 시장에 속한 상점들의 총 매출액 합계
 
     private Long viewCount; // 조회수
 
@@ -97,5 +99,13 @@ public class Market extends BaseEntity {
 
     public void setViewCount(Long viewCount) {
         this.viewCount = viewCount;
+    }
+
+    public void setTotalSalesPrice(int itemSalesPrice) { // 모든 상품의 총 매출액 합계 설정
+        this.totalSalesPrice += itemSalesPrice;
+    }
+
+    public void minusTotalSalesPrice(int itemSalesPrice) { // 모든 상품의 총 매출액 합계 설정
+        this.totalSalesPrice -= itemSalesPrice;
     }
 }

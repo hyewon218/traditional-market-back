@@ -16,6 +16,8 @@ import lombok.Getter;
 public class ShopResponseDto {
     private Long shopNo;
 
+    private Long sellerNo;
+
     private String shopName;
 
     private String tel;
@@ -31,6 +33,8 @@ public class ShopResponseDto {
     private CategoryEnum category;
 
     private Integer likes;
+    
+    private Long totalSalesPrice; // 해당 상점의 모든 상품의 매출액 합계
 
     private Long viewCount; // 조회수
 
@@ -45,6 +49,7 @@ public class ShopResponseDto {
     public static ShopResponseDto of(Shop shop) { // TODO : member 정보 추가
         return ShopResponseDto.builder()
             .shopNo(shop.getNo())
+            .sellerNo(shop.getSeller() != null ? shop.getSeller().getMemberNo() : null)
             .shopName(shop.getShopName())
             .tel(shop.getTel())
             .sellerName(shop.getSellerName())
@@ -53,6 +58,7 @@ public class ShopResponseDto {
             .shopLng(shop.getShopLng())
             .category(shop.getCategory())
             .likes(shop.getShopLikeList().size())
+            .totalSalesPrice(shop.getTotalSalesPrice())
             .viewCount(shop.getViewCount())
             .marketNo(shop.getMarket().getNo())
             .imageList(shop.getImageList().stream().map(ImageResponseDto::of).toList())

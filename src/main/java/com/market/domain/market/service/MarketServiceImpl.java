@@ -246,17 +246,35 @@ public class MarketServiceImpl implements MarketService {
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
     }
 
-    @Override // 총 시장 수
-    @Transactional(readOnly = true)
-    public Long countMarkets() {
-        return marketRepository.count();
-    }
-
     @Override
     @Transactional // 관리자인지 확인
     public void validateIsAdmin(Member member) {
         if (!member.getRole().equals(Role.ADMIN)) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 총 시장 수
+    public Long getCountMarket() {
+        return marketRepository.count();
+    }
+    
+    @Override
+    @Transactional(readOnly = true) // 시장별 총매출액
+    public Long getTotalSalesPrice(Long marketNo) {
+        Market market = findMarket(marketNo);
+        return market.getTotalSalesPrice();
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 모든 시장의 총매출액 합계
+    public Long getMarketSalesSum() {
+        Long marketSalesSum = 0L;
+        List<Market> marketList = marketRepository.findAll();
+        for (Market market : marketList) {
+            marketSalesSum += market.getTotalSalesPrice();
+        }
+        return marketSalesSum;
     }
 }

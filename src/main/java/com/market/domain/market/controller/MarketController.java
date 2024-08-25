@@ -116,8 +116,18 @@ public class MarketController {
         return ResponseEntity.ok(marketService.countMarketLikes(marketNo));
     }
 
-    @GetMapping("/admin/markets/count")
-    public ResponseEntity<?> countMarkets() { // 총 시장 수
-        return ResponseEntity.ok().body(marketService.countMarkets());
+    @GetMapping("/admin/markets/count") // 총 시장 수, 관리자만 가능
+    public ResponseEntity<Long> getCountMarket() {
+        return ResponseEntity.ok().body(marketService.getCountMarket());
+    }
+
+    @GetMapping("/admin/markets/{marketNo}/sales") // 시장별 총매출액, 관리자만 가능
+    public ResponseEntity<Long> getTotalSalesPrice(@PathVariable Long marketNo) {
+        return ResponseEntity.ok().body(marketService.getTotalSalesPrice(marketNo));
+    }
+
+    @GetMapping("/admin/markets/sum") // 모든 시장의 총매출액 합계, 관리자만 가능
+    public ResponseEntity<Long> getMarketSalesSum() {
+        return ResponseEntity.ok().body(marketService.getMarketSalesSum());
     }
 }
