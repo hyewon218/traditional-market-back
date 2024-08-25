@@ -63,6 +63,7 @@ public class MarketRequestDto {
             .subwayInfo(this.subwayInfo)
             .subwayLat(this.subwayLat)
             .subwayLng(this.subwayLng)
+            .totalSalesPrice(0L)
             .viewCount(0L)
             .build();
     }

@@ -61,6 +61,10 @@ public class Item extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus; // 상품 판매 상태
 
+    private Long countSales; // 판매량 (판매 횟수, 주문 complete 시 +1 증가, 주문 취소 시 -1 감소)
+
+    private Long totalSalesPrice; // 총 매출액 (판매 횟수 X 가격)
+
     private Long viewCount = 0L; // 조회수
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -107,6 +111,16 @@ public class Item extends BaseEntity {
         if (this.stockNumber > 0) {
             this.itemSellStatus = ItemSellStatus.SELL; // 재고가 생기면 상태를 'SELL' 로 변경
         }
+    }
+
+    public void addCountSales(int countSales) { // 상품 판매량 증가 및 총 매출액 증가
+        this.countSales += countSales;
+        this.totalSalesPrice = this.countSales * this.price;
+    }
+
+    public void removeCountSales(int countSales) { // 상품 판매량 감소 및 총 매출액 감소
+        this.countSales -= countSales;
+        this.totalSalesPrice = this.countSales * this.price;
     }
 
     public void setViewCount(Long viewCount) {

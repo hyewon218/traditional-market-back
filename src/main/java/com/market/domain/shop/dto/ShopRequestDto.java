@@ -57,6 +57,7 @@ public class ShopRequestDto {
             .shopLat(this.shopLat)
             .shopLng(this.shopLng)
             .category(this.category)
+            .totalSalesPrice(0L)
             .viewCount(0L)
             .build();
     }
@@ -71,6 +72,7 @@ public class ShopRequestDto {
             .shopLat(this.shopLat)
             .shopLng(this.shopLng)
             .category(this.category)
+            .totalSalesPrice(0L)
             .viewCount(0L)
             .build();
     }

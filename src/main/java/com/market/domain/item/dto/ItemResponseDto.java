@@ -31,6 +31,10 @@ public class ItemResponseDto {
 
     private Integer likes;
 
+    private Long countSales; // 판매량
+
+    private Long totalSalesPrice; // 총 매출액, 판매량 * 가격
+
     private Long viewCount;
 
     private ItemCategoryEnum itemCategory;
@@ -56,6 +60,8 @@ public class ItemResponseDto {
             .itemCategory(item.getItemCategory())
             .itemSellStatus(item.getItemSellStatus())
             .likes(item.getItemLikeList().size())
+            .countSales(item.getCountSales())
+            .totalSalesPrice(item.getTotalSalesPrice())
             .viewCount(item.getViewCount())
             .imageList(item.getImageList().stream().map(ImageResponseDto::of).toList())
             .itemCommentList(

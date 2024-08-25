@@ -43,6 +43,8 @@ public class Shop extends BaseEntity {
     private String shopLat; // 상점의 위도값(해당값 이용해서 지도에 핀 설정)
 
     private String shopLng; // 상점의 경도값(해당값 이용해서 지도에 핀 설정)
+
+    private Long totalSalesPrice; // 해당 상점의 모든 상품의 매출액 합계
     
     private Long viewCount; // 조회수
 
@@ -54,7 +56,7 @@ public class Shop extends BaseEntity {
     @JoinColumn(name = "market_no")
     private Market market;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_no")
     private Member seller;
 
@@ -96,5 +98,13 @@ public class Shop extends BaseEntity {
 
     public void setViewCount(Long viewCount) {
         this.viewCount = viewCount;
+    }
+
+    public void setTotalSalesPrice(int itemSalesPrice) { // 모든 상품의 총 매출액 합계 설정
+        this.totalSalesPrice += itemSalesPrice;
+    }
+
+    public void minusTotalSalesPrice(int itemSalesPrice) { // 모든 상품의 총 매출액 합계 설정
+        this.totalSalesPrice -= itemSalesPrice;
     }
 }

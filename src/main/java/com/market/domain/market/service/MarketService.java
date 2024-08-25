@@ -113,13 +113,27 @@ public interface MarketService {
      */
     Market findMarket(Long marketNo);
 
-
     /**
      * 총 시장 수
      *
-     * @return : 총 시장 수
+     * @return : 시장 수
      */
-    Long countMarkets();
+    Long getCountMarket();
+
+    /**
+     * 시장별 총매출액
+     *
+     * @param marketNo : 찾을 시장 no
+     * @return : 시장 총매출액
+     */
+    Long getTotalSalesPrice(Long marketNo);
+
+    /**
+     * 모든 시장의 총매출액 합계
+     *
+     * @return : 시장 총매출액
+     */
+    Long getMarketSalesSum();
 
     /**
      * 관리자인지 확인
