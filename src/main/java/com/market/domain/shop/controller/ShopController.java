@@ -7,6 +7,7 @@ import com.market.domain.shop.repository.ShopSearchCond;
 import com.market.domain.shop.service.ShopService;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -137,12 +138,27 @@ public class ShopController {
     }
 
     @GetMapping("/admin/shops/count")
-    public ResponseEntity<Long> countShops() {
+    public ResponseEntity<Long> countShops() { // 총 상점 수
         return ResponseEntity.ok().body(shopService.countShops());
     }
 
-    @GetMapping("/admin/{marketNo}/shops/count")
+    @GetMapping("/admin/{marketNo}/shops/count") // 시장별 상점 수
     public ResponseEntity<Long> countShopsByMarket(@PathVariable Long marketNo) {
         return ResponseEntity.ok().body(shopService.countShopsByMarket(marketNo));
+    }
+
+    @GetMapping("/shops/seller") // 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
+    public ResponseEntity<Page<ShopResponseDto>> getShopsBySeller(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        Pageable pageable) {
+        return ResponseEntity.ok()
+            .body(shopService.getShopsBySellerNo(userDetails.getMember(), pageable));
+    }
+
+    @GetMapping("/shops/admin/{sellerNo}") // 판매자가 소유한 상점 목록 조회 (관리자가 특정 판매자의 상점 목록 조회)
+    public ResponseEntity<Page<ShopResponseDto>> getShopsBySellerAdmin(
+        @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long sellerNo,
+        Pageable pageable) {
+        return ResponseEntity.ok()
+            .body(shopService.getShopsBySellerNoAdmin(userDetails.getMember(), sellerNo, pageable));
     }
 }
