@@ -32,4 +32,22 @@ public class ShopCommentResponseDto {
             .updateTime(shopComment.getUpdateTime())
             .build();
     }
+
+    // 마스킹 아이디 사용 시 해제하기
+//    public static ShopCommentResponseDto of(ShopComment shopComment){
+//        String maskingUsername = idMasking(shopComment.getMember().getMemberId());
+//        return ShopCommentResponseDto.builder()
+//            .id(shopComment.getNo())
+//            .comment(shopComment.getComment())
+//            .shopName(shopComment.getShop().getShopName())
+//            .username(maskingUsername)
+//            .createTime(shopComment.getCreateTime())
+//            .updateTime(shopComment.getUpdateTime())
+//            .build();
+//    }
+
+    // 4 범위 뒤로는 모두 마스킹 처리
+    public static String idMasking(String username) {
+        return username.replaceAll("(?<=.{4}).", "*");
+    }
 }
