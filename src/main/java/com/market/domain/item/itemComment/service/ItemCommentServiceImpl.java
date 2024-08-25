@@ -14,6 +14,7 @@ import com.market.domain.notification.entity.NotificationArgs;
 import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import com.market.global.profanityFilter.ProfanityFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,14 @@ public class ItemCommentServiceImpl implements ItemCommentService {
         Item item = itemRepository.findById(itemCommentRequestDto.getItemNo()).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
         );
+
+        // 댓글에 비속어 포함되어있는지 검증
+        validationProfanity(itemCommentRequestDto.getComment());
+
+        // 만약 회원 제재 여부가 true면 댓글 작성 불가
+        if (member.isWarning()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
 
         itemCommentRepository.save(itemCommentRequestDto.toEntity(item, member));
 
@@ -71,6 +80,14 @@ public class ItemCommentServiceImpl implements ItemCommentService {
         Member member) {
         ItemComment itemComment = findItemComment(commentId);
 
+        // 댓글에 비속어 포함되어있는지 검증
+        validationProfanity(itemCommentRequestDto.getComment());
+
+        // 만약 회원 제재 여부가 true면 댓글 작성 불가
+        if (member.isWarning()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
+
         if (!member.getMemberNo().equals(itemComment.getMember().getMemberNo())) {
             throw new BusinessException(ErrorCode.NOT_USER_ITEM_UPDATE);
         }
@@ -92,5 +109,12 @@ public class ItemCommentServiceImpl implements ItemCommentService {
     public ItemComment findItemComment(Long no) {
         return itemCommentRepository.findById(no)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ITEM_COMMENT));
+    }
+
+    @Override
+    public void validationProfanity(String comment) { // 댓글에 비속어 포함되어있는지 검증
+        if (ProfanityFilter.containsProfanity(comment)) {
+            throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_ITEM);
+        }
     }
 }

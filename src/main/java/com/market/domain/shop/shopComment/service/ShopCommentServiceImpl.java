@@ -14,6 +14,7 @@ import com.market.domain.shop.shopComment.entity.ShopComment;
 import com.market.domain.shop.shopComment.repository.ShopCommentRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import com.market.global.profanityFilter.ProfanityFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,14 @@ public class ShopCommentServiceImpl implements ShopCommentService {
         Shop shop = shopRepository.findById(shopCommentRequestsDto.getShopNo()).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_SHOP)
         );
+
+        // 댓글에 비속어 포함되어있는지 검증
+        validationProfanity(shopCommentRequestsDto.getComment());
+
+        // 만약 회원 제재 여부가 true면 댓글 작성 불가
+        if (member.isWarning()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
 
         shopCommentRepository.save(shopCommentRequestsDto.toEntity(shop, member));
 
@@ -71,6 +80,14 @@ public class ShopCommentServiceImpl implements ShopCommentService {
         Member member) {
         ShopComment shopComment = findShopComment(commentId);
 
+        // 댓글에 비속어 포함되어있는지 검증
+        validationProfanity(shopCommentRequestsDto.getComment());
+
+        // 만약 회원 제재 여부가 true면 댓글 작성 불가
+        if (member.isWarning()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
+
         if (!member.getMemberNo().equals(shopComment.getMember().getMemberNo())) {
             throw new BusinessException(ErrorCode.NOT_USER_SHOP_UPDATE);
         }
@@ -92,5 +109,12 @@ public class ShopCommentServiceImpl implements ShopCommentService {
     public ShopComment findShopComment(Long no) {
         return shopCommentRepository.findById(no)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_SHOP_COMMENT));
+    }
+
+    @Override
+    public void validationProfanity(String comment) { // 댓글에 비속어 포함되어있는지 검증
+        if (ProfanityFilter.containsProfanity(comment)) {
+            throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_SHOP);
+        }
     }
 }

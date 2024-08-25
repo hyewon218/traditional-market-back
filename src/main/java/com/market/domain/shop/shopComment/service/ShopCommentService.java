@@ -19,4 +19,6 @@ public interface ShopCommentService {
     void deleteShopComment(Long commentNo, Member member);
 
     ShopComment findShopComment(Long no);
+
+    void validationProfanity(String comment); // 댓글에 비속어 포함되어있는지 검증
 }
