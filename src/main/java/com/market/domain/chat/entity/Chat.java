@@ -26,6 +26,7 @@ public class Chat extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "chat_no")
     private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)

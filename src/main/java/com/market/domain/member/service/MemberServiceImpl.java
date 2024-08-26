@@ -7,14 +7,15 @@ import com.market.domain.delivery.repository.DeliveryRepository;
 import com.market.domain.deliveryMessage.repository.DeliveryMessageRepository;
 import com.market.domain.inquiry.repository.InquiryRepository;
 import com.market.domain.member.constant.Role;
-import com.market.domain.member.dto.*;
+import com.market.domain.member.dto.FindIdRequestDto;
+import com.market.domain.member.dto.MemberRequestDto;
+import com.market.domain.member.dto.MemberResponseDto;
+import com.market.domain.member.dto.MyInfoResponseDto;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.repository.MemberRepositoryQuery;
 import com.market.domain.member.repository.MemberSearchCond;
-import com.market.domain.member.withdrawMember.entity.WithdrawMember;
 import com.market.domain.member.withdrawMember.service.WithdrawMemberService;
-import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.ip.IpService;
@@ -28,10 +29,15 @@ import com.market.global.security.oauth2.ProviderType;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -45,11 +51,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.logging.Logger;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,6 @@ public class MemberServiceImpl implements MemberService {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final TokenProvider tokenProvider;
     private final RedisUtils redisUtils;
-    private final ObjectMapper objectMapper;
     private final DeliveryRepository deliveryRepository;
     private final InquiryRepository inquiryRepository;
     private final DeliveryMessageRepository deliveryMessageRepository;
@@ -711,10 +711,9 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member findChatRoomRecipient(Long roomId, Member sender) {
+    public List<Member> findChatRoomRecipients(Long roomId, Member sender) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new BusinessException(ErrorCode.CHAT_ROOM_NOT_FOUND));
-        // getRecipient 메서드를 사용하여 수신자 찾기
-        return chatRoom.getRecipient(sender);
+        return chatRoom.getRecipients(sender);  // 수신자 목록을 반환
     }
 }

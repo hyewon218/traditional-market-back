@@ -354,7 +354,7 @@ public interface MemberService {
      * @param sender 메세지 보낸 사람
      * @return 채팅 메세지의 수신자
      */
-    Member findChatRoomRecipient(Long roomId, Member sender);
+    List<Member> findChatRoomRecipients(Long roomId, Member sender);
 
 
     Member findByMemberId(String memberId);

@@ -23,9 +23,9 @@ public interface ChatService {
     void saveMessage(Long roomId, ChatMessageDto requestDto);
 
     /**
-     * 전송하려는 채팅 메세지에 비속어 포함되어있는지 검증
+     * 전송하려는 채팅 메세지에 비속어 포함되어 있는지 검증
      *
      * @param message     검증할 채팅 메세지
      */
-    void validationProfanity(String message);
+    void validateProfanity(String message);
 }

@@ -9,6 +9,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +26,21 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional // 채팅방 생성
     public ChatRoomResponseDto createChatRoom(ChatRoomRequestDto requestDto, Member member) {
-        Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
-            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)); // 채팅방 생성 -> 관리자가 받음
+        List<Member> receivers = memberRepository.findAllByRole(Role.ADMIN);
 
-        // 만약 회원 제재 여부가 true라면 채팅방 생성 불가
+        if (receivers.isEmpty()) {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+        }
+
+        // 만약 회원 제재 여부가 true 라면 채팅방 생성 불가
         if (member.isWarning()) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
         }
 
-        ChatRoom chatRoom = requestDto.toEntity(member, receiver);
+        // ChatRoom 생성 시 다수의 receivers 를 사용
+        requestDto.setReceivers(receivers);
+        ChatRoom chatRoom = requestDto.toEntity(member);
+
         chatRoomRepository.save(chatRoom);
         return ChatRoomResponseDto.of(chatRoom);
     }
@@ -63,8 +70,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional // 채팅방 삭제
     public void deleteChatRoom(Long chatRoomNo, Member member) {
-        ChatRoom chatRoom = findChatRoom(chatRoomNo);
         validateIsMasterAndAdmin(chatRoomNo, member);
+        ChatRoom chatRoom = findChatRoom(chatRoomNo);
         chatRoomRepository.delete(chatRoom);
     }
 
@@ -76,10 +83,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    @Transactional // 채팅방 읽은 상태로 변경
+    @Transactional // 관리자 채팅방 읽은 상태로 변경
     public void markChatRoomAsRead(Long chatRoomNo, Member member) {
+        validateIsAdmin(member);
         ChatRoom chatRoom = findChatRoom(chatRoomNo);
-        validateIsAdmin(chatRoomNo, member);
         chatRoom.markAsRead();
     }
 
@@ -93,8 +100,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional // 채팅방 읽지 않은 상태로 변경
     public void markChatRoomAsUnRead(Long chatRoomNo, Member member) {
+        validateIsAdmin(member);
         ChatRoom chatRoom = findChatRoom(chatRoomNo);
-        validateIsAdmin(chatRoomNo, member);
         chatRoom.markAsUnread();
     }
 
@@ -110,7 +117,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     @Transactional // 관리자인지 확인
-    public void validateIsAdmin(Long chatRoomNo, Member member) {
+    public void validateIsAdmin(Member member) {
         if (!member.getRole().equals(Role.ADMIN)) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
         }
