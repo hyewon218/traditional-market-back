@@ -10,6 +10,7 @@ import com.market.domain.notification.entity.NotificationArgs;
 import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -37,16 +38,18 @@ public class WebSocketController {
         chatService.saveMessage(roomId, messageDto);
         // receiver 에게 알람 보내기
         Member sender = memberService.findByMemberId(messageDto.getSender()); // 로그인한 사용자
-        Member receiver = memberService.findChatRoomRecipient(roomId, sender);
+        List<Member> receivers = memberService.findChatRoomRecipients(roomId, sender);
 
-        if (receiver != null) {
+        if (receivers != null && !receivers.isEmpty()) {
             NotificationArgs notificationArgs = NotificationArgs.builder()
                 .fromMemberNo(sender.getMemberNo())
                 .targetId(roomId)
                 .build();
-            NotificationType notificationType = getNotificationType(receiver);
-
-            notificationService.send(notificationType, notificationArgs, receiver);
+            // 모든 수신자에게 알림 전송
+            for (Member receiver : receivers) {
+                NotificationType notificationType = getNotificationType(receiver);
+                notificationService.send(notificationType, notificationArgs, receiver);
+            }
         }
 
         return ChatMessageDto.builder()

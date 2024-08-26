@@ -19,13 +19,22 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByMemberId(String memberId);
+
     Optional<Member> findByMemberEmail(String memberEmail);
+
     Boolean existsByMemberNickname(String memberNickname);
+
     Boolean existsByMemberId(String memberId);
+
     Boolean existsByMemberEmail(String memberEmail);
+
     Member findByMemberIdAndMemberPw(String memberId, String memberPw);
+
     Optional<Member> findByRole(Role role);
+
     Page<Member> findAllByRole(Role role, Pageable pageable);
+
+    List<Member> findAllByRole(Role role);
 
     // 아이디 찾기(닉네임과 이메일 이용)
     Member findByMemberNicknameAndMemberEmail(String memberNickname, String memberEmail);
@@ -36,7 +45,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Long countByProviderType(ProviderType type);
 
     // 30일 이전, isWarning(제재 여부)이 true인 회원 찾기
-    List<Member> findByIsWarningAndWarningStartDateBefore(boolean isWarning, LocalDateTime thirtyDaysAgo);
+    List<Member> findByIsWarningAndWarningStartDateBefore(boolean isWarning,
+        LocalDateTime thirtyDaysAgo);
 
     // 모든 회원의 reportMember 리스트를 빈 리스트로 초기화
     @Modifying

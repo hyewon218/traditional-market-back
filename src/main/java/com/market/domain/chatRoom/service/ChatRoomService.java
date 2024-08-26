@@ -90,8 +90,7 @@ public interface ChatRoomService {
     /**
      *  관리자인지 확인
      *
-     * @param chatRoomNo 찾을 채팅방 no
      * @param member     로그인한 사용자
      */
-    void validateIsAdmin(Long chatRoomNo, Member member);
+    void validateIsAdmin(Member member);
 }

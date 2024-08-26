@@ -26,8 +26,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional(readOnly = true) // 채팅방 채팅 목록 조회
     public List<ChatResponseDto> getAllChatByRoomId(Long roomId) {
-        List<Chat> ChatList = chatRepository.findAllByChatRoomNoOrderByCreateTimeAsc(roomId);
-        return ChatList.stream().map(ChatResponseDto::of).toList();
+        List<Chat> chatList = chatRepository.findAllByChatRoomNoOrderByCreateTimeAsc(roomId);
+        return chatList.stream().map(ChatResponseDto::of).toList();
     }
 
     @Override
@@ -35,14 +35,13 @@ public class ChatServiceImpl implements ChatService {
     public void saveMessage(Long roomId, ChatMessageDto requestDto) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_CHATROOM));
-        validationProfanity(requestDto.getMessage()); // 채팅 메세지에 비속어 포함되어있는지 검증
+        validateProfanity(requestDto.getMessage());
         Chat chat = requestDto.toEntity(chatRoom);
         chatRepository.save(chat);
     }
 
-    // 전송하려는 채팅 메세지에 비속어 포함되어있는지 검증
-    @Override
-    public void validationProfanity(String message) {
+    @Override // 전송하려는 채팅 메세지에 비속어 포함되어 있는지 검증
+    public void validateProfanity(String message) {
         if (ProfanityFilter.containsProfanity(message)) {
             throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_CHAT);
         }
