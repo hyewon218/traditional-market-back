@@ -568,7 +568,7 @@ public class MemberServiceImpl implements MemberService {
         return false;
     }
 
-    // 권한(ROLE) 조회
+    // 권한(ROLE) 별 조회
     @Override
     @Transactional(readOnly = true)
     public Page<MyInfoResponseDto> getRole(Role role, Pageable pageable) {
@@ -673,7 +673,7 @@ public class MemberServiceImpl implements MemberService {
     public String getReportMemberList(Long memberNo) {
         Member member = findById(memberNo);
         List<String> todayReportMember = member.getReportMember();
-        return todayReportMember.toString();
+        return String.join(", ", todayReportMember);
     }
 
     // 나를 신고한 사람 목록 확인
@@ -682,7 +682,7 @@ public class MemberServiceImpl implements MemberService {
     public String getReporterList(Long memberNo) {
         Member member = findById(memberNo);
         List<String> reporters = member.getReporters();
-        return reporters.toString();
+        return String.join(", ", reporters);
     }
 
     // 회원 아이디 마스킹 처리

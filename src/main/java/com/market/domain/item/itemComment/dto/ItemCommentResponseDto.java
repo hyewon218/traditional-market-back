@@ -18,6 +18,8 @@ public class ItemCommentResponseDto {
 
     private String username;
 
+    private String adminId; // 관리자일 경우 실제 본인의 memberId와 비교 위해 설정
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
@@ -31,6 +33,7 @@ public class ItemCommentResponseDto {
                 .comment(itemComment.getComment())
                 .itemName(itemComment.getItem().getItemName())
                 .username(username)
+                .adminId(itemComment.getMember().getMemberId())
                 .createTime(itemComment.getCreateTime())
                 .updateTime(itemComment.getUpdateTime())
                 .build();
@@ -44,6 +47,7 @@ public class ItemCommentResponseDto {
 //            .id(itemComment.getNo())
 //            .comment(itemComment.getComment())
 //            .itemName(itemComment.getItem().getItemName())
+//            .adminId(itemComment.getMember().getMemberId())
 //            .username(maskingUsername)
 //            .build();
 //    }

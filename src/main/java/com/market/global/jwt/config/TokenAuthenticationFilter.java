@@ -31,7 +31,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         if (uri.equals("/api/members/signup") || uri.equals("/members/signup") || uri.equals("/auth/success") ||
             uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") || uri.equals(
-            "/api/send-mail/email") || uri.equals("/api/members/login")) {
+            "/api/send-mail/email") || uri.equals("/api/members/login") || uri.equals("/api/members/checkid")
+            || uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode")) {
             filterChain.doFilter(request, response);
             return;
         }
