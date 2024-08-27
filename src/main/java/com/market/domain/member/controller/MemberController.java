@@ -245,48 +245,50 @@ public class MemberController {
         return ResponseEntity.badRequest().body("비밀번호 변경 실패");
     }
 
-    // 회원가입 시 아이디 중복 확인 및 탈퇴 회원에서 아이디 검증
+//    // 회원가입 시 아이디 중복 확인 및 탈퇴 회원에서 아이디 검증
 //    @GetMapping("/checkid")
 //    public ResponseEntity<ApiResponse> existsMemberId(String memberId) {
-//        memberService.validationId(memberId);
-//        return ResponseEntity.ok().body(new ApiResponse("사용가능한 아이디입니다", HttpStatus.OK.value()));
+//        try {
+//            memberService.validationId(memberId);
+//            return ResponseEntity.ok()
+//                .body(new ApiResponse("사용 가능한 아이디입니다.", HttpStatus.OK.value()));
+//        } catch (BusinessException e) {
+//            // 예외에 따라 다른 메시지를 반환
+//            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+//                .body(new ApiResponse(e.getErrorCode().getMessage(),
+//                    e.getErrorCode().getHttpStatus().value()));
+//        }
 //    }
 
     // 회원가입 시 아이디 중복 확인 및 탈퇴 회원에서 아이디 검증
     @GetMapping("/checkid")
     public ResponseEntity<ApiResponse> existsMemberId(String memberId) {
-        try {
-            memberService.validationId(memberId);
-            return ResponseEntity.ok()
-                .body(new ApiResponse("사용 가능한 아이디입니다.", HttpStatus.OK.value()));
-        } catch (BusinessException e) {
-            // 예외에 따라 다른 메시지를 반환
-            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                .body(new ApiResponse(e.getErrorCode().getMessage(),
-                    e.getErrorCode().getHttpStatus().value()));
-        }
+        memberService.validationId(memberId);
+        return ResponseEntity.ok()
+            .body(new ApiResponse("사용 가능한 아이디입니다.", HttpStatus.OK.value()));
     }
 
     // 회원가입 시 이메일 중복 확인 및 탈퇴 회원에서 이메일 검증
 //    @GetMapping("/checkemail")
 //    public ResponseEntity<ApiResponse> existsMemberEmail(String memberEmail) {
-//        memberService.validationEmail(memberEmail);
-//        return ResponseEntity.ok().body(new ApiResponse("사용가능한 이메일입니다", HttpStatus.OK.value()));
+//        try {
+//            memberService.validationEmail(memberEmail);
+//            return ResponseEntity.ok()
+//                .body(new ApiResponse("사용 가능한 이메일입니다.", HttpStatus.OK.value()));
+//        } catch (BusinessException e) {
+//            // 예외에 따라 다른 메시지를 반환
+//            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+//                .body(new ApiResponse(e.getErrorCode().getMessage(),
+//                    e.getErrorCode().getHttpStatus().value()));
+//        }
 //    }
 
     // 회원가입 시 이메일 중복 확인 및 탈퇴 회원에서 이메일 검증
     @GetMapping("/checkemail")
     public ResponseEntity<ApiResponse> existsMemberEmail(String memberEmail) {
-        try {
-            memberService.validationEmail(memberEmail);
-            return ResponseEntity.ok()
-                .body(new ApiResponse("사용 가능한 이메일입니다.", HttpStatus.OK.value()));
-        } catch (BusinessException e) {
-            // 예외에 따라 다른 메시지를 반환
-            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                .body(new ApiResponse(e.getErrorCode().getMessage(),
-                    e.getErrorCode().getHttpStatus().value()));
-        }
+        memberService.validationEmail(memberEmail);
+        return ResponseEntity.ok()
+            .body(new ApiResponse("사용 가능한 이메일입니다.", HttpStatus.OK.value()));
     }
 
     // 내정보 열람 시 본인 비밀번호 확인

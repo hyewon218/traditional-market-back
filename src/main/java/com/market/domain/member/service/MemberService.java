@@ -281,7 +281,7 @@ public interface MemberService {
     boolean isPasswordVerified(HttpServletRequest request, String randomTag);
 
     /**
-     * 권한 조회
+     * 권한 별 조회
      *
      * @param role : 특정 role
      * @return : role에 일치하는 회원 목록 반환
