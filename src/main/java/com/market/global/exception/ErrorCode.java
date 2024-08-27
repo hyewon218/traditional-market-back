@@ -58,6 +58,8 @@ public enum ErrorCode {
     // 알람
     NOTIFICATION_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "N001", "notification 연결 에러입니다."),
     INVALID_ROLE(HttpStatus.BAD_REQUEST, "N002", "수신자 역할이 올바르지 않습니다."),
+    NOT_FOUND_NOTIFICATION(HttpStatus.BAD_REQUEST, "N003", "존재하지 않는 알람입나다."),
+    NOT_RECEIVER_FOR_NOTIFICATION(HttpStatus.BAD_REQUEST, "N004", "알람에 대한 수신자가 아닙니다.."),
     // 관리자
     NOT_EXISTS_ADMIN(HttpStatus.BAD_REQUEST, "A001", "관리자가 존재하지 않습니다."),
     //채팅

@@ -11,5 +11,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     Page<Notification> findAllByMember_MemberNo(Long memberNo, Pageable pageable);
 
-    Long countByMember_MemberNo(Long userNo);
+    Long countByMember_MemberNoAndIsRead(Long userNo, boolean read);
 }
