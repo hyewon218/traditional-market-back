@@ -50,6 +50,20 @@ public class Notification extends BaseEntity {
     @Column(name = "removed_at")
     private Timestamp removedAt;
 
+    @Builder.Default
+    @Column(name = "is_read")
+    private boolean isRead = false; // 알람 읽음 여부
+
+    // 알람을 읽은 상태로 변경
+    public void markAsRead() {
+        this.isRead = true;
+    }
+
+    // 알람을 읽지 않은 상태로 변경
+    public void markAsUnread() {
+        this.isRead = false;
+    }
+
     public static Notification toEntity(NotificationType notificationType, NotificationArgs args,
         Member member) {
         return Notification.builder()
