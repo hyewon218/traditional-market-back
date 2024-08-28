@@ -192,8 +192,8 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override
-    @Transactional
-    public void createMarketLike(Long marketNo, Member member) { // 좋아요 생성
+    @Transactional // 좋아요 생성
+    public void createMarketLike(Long marketNo, Member member) {
         marketLikeRepository.findByMarketNoAndMember(marketNo, member).ifPresent(itemLike -> {
             throw new BusinessException(ErrorCode.EXISTS_ITEM_LIKE);
         });
@@ -201,29 +201,31 @@ public class MarketServiceImpl implements MarketService {
         Market market = findMarket(marketNo);
         marketLikeRepository.save(new MarketLike(market, member));
 
-        // create alarm
-        Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
-            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
-
-        NotificationArgs notificationArgs = NotificationArgs.builder()
-            .fromMemberNo(member.getMemberNo())
-            .targetId(market.getNo())
-            .build();
-        notificationService.send(
-            NotificationType.NEW_LIKE_ON_MARKET, notificationArgs, receiver);
+        /*관리자에게 알람*/
+        List<Member> adminList = memberRepository.findAllByRole(Role.ADMIN);
+        // 관리자 리스트가 비어있지 않은지 확인
+        if (adminList.isEmpty()) {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+        }
+        NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), marketNo);
+        // 모든 관리자에게 알림 전송
+        for (Member admin : adminList) {
+            notificationService.send(
+                NotificationType.NEW_LIKE_ON_MARKET, notificationArgs, admin);
+        }
     }
 
     @Override
-    @Transactional
-    public boolean checkMarketLike(Long marketNo, Member member) { // 좋아요 여부 확인
+    @Transactional // 좋아요 여부 확인
+    public boolean checkMarketLike(Long marketNo, Member member) {
         Optional<MarketLike> marketLike = marketLikeRepository.findByMarketNoAndMember(marketNo,
             member);
         return marketLike.isPresent(); // 좋아요 존재하면 true
     }
 
     @Override
-    @Transactional
-    public void deleteMarketLike(Long marketNo, Member member) { // 좋아요 삭제
+    @Transactional // 좋아요 삭제
+    public void deleteMarketLike(Long marketNo, Member member) {
         Optional<MarketLike> marketLike = marketLikeRepository.findByMarketNoAndMember(marketNo,
             member);
 
@@ -234,27 +236,26 @@ public class MarketServiceImpl implements MarketService {
         }
     }
 
-    @Override // 좋아요 수 조회
-    @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true) // 좋아요 수 조회
     public Long countMarketLikes(Long marketNo) {
         return marketLikeRepository.countByMarketNo(marketNo);
     }
 
-    @Override // 시장 좋아요 많은 순 조회
-    @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true) // 시장 좋아요 많은 순 조회
     public Page<MarketLikeResponseDto> getMarketsSortedByLikes(Pageable pageable) {
         return marketRepositoryQuery.findMarketsSortedByLikes(pageable);
     }
 
-    @Override // 시장 찾기
-    @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true) // 시장 찾기
     public Market findMarket(Long marketNo) {
         return marketRepository.findById(marketNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MARKET));
     }
 
-    @Override
-    @Transactional // 관리자인지 확인
+    @Override // 관리자인지 확인
     public void validateIsAdmin(Member member) {
         if (!member.getRole().equals(Role.ADMIN)) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);
@@ -262,20 +263,20 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 총 시장 수
+    @Transactional(readOnly = true) // 총 시장 수 조회
     public Long getCountMarket() {
         return marketRepository.count();
     }
     
     @Override
-    @Transactional(readOnly = true) // 시장별 총매출액
+    @Transactional(readOnly = true) // 시장별 총매출액 조회
     public Long getTotalSalesPrice(Long marketNo) {
         Market market = findMarket(marketNo);
         return market.getTotalSalesPrice();
     }
 
     @Override
-    @Transactional(readOnly = true) // 모든 시장의 총매출액 합계
+    @Transactional(readOnly = true) // 모든 시장의 총매출액 합계 조회
     public Long getMarketSalesSum() {
         Long marketSalesSum = 0L;
         List<Market> marketList = marketRepository.findAll();

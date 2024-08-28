@@ -233,21 +233,28 @@ public class ShopServiceImpl implements ShopService {
         Shop shop = findShop(shopNo);
         shopLikeRepository.save(new ShopLike(shop, member));
 
-        // create alarm
-        Member receiver;
-        if (shop.getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
-            receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)
-            );
+        /*상점 판매자 번호가 등록되어 있지 않으면 관리자에게 알람*/
+        // 상점의 판매자 확인
+        Member seller = shop.getSeller();
+        if (seller == null) {
+            // 판매자가 등록되어 있지 않은 경우, 모든 관리자에게 알림을 전송
+            List<Member> adminList = memberRepository.findAllByRole(Role.ADMIN);
+            // 관리자 리스트가 비어 있는지 확인
+            if (adminList.isEmpty()) {
+                throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+            }
+            // 관리자에게 알림을 보낼 경우
+            NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), shopNo);
+            // 모든 관리자에게 알림 전송
+            for (Member admin : adminList) {
+                notificationService.send(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
+                    admin);
+            }
         } else {
-            receiver = shop.getSeller();
+            // 판매자에게 알림을 보낼 경우
+            NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), shopNo);
+            notificationService.send(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs, seller);
         }
-        NotificationArgs notificationArgs = NotificationArgs.builder()
-            .fromMemberNo(member.getMemberNo())
-            .targetId(shop.getNo())
-            .build();
-        notificationService.send(
-            NotificationType.NEW_LIKE_ON_SHOP, notificationArgs, receiver);
     }
 
     @Override
@@ -276,6 +283,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override // 시장 찾기
+    @Transactional(readOnly = true)
     public Shop findShop(Long shopNo) {
         return shopRepository.findById(shopNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_SHOP));
@@ -296,20 +304,32 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional(readOnly = true) // 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
     public Page<ShopResponseDto> getShopsBySellerNo(Member seller, Pageable pageable) {
-        if (!seller.getRole().equals(Role.SELLER)) { // 로그인한 유저가 SELLER가 아니면 접근 차단
-            throw new BusinessException(ErrorCode.NOT_EXISTS_SELLER);
-        }
+        validateIsSeller(seller);
         Page<Shop> shops = shopRepository.findBySeller_MemberNo(seller.getMemberNo(), pageable);
         return shops.map(ShopResponseDto::of);
     }
 
     @Override
     @Transactional(readOnly = true) // 판매자가 소유한 상점 목록 조회 (관리자가 특정 판매자의 상점 목록 조회)
-    public Page<ShopResponseDto> getShopsBySellerNoAdmin(Member member, Long sellerNo, Pageable pageable) {
-        if (!member.getRole().equals(Role.ADMIN)) {
-            throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
-        }
+    public Page<ShopResponseDto> getShopsBySellerNoAdmin(Member member, Long sellerNo,
+        Pageable pageable) {
+        validateIsAdmin(member);
         Page<Shop> shops = shopRepository.findBySeller_MemberNo(sellerNo, pageable);
         return shops.map(ShopResponseDto::of);
+    }
+
+    @Override // 관리자인지 확인
+    public void validateIsAdmin(Member member) {
+        if (!member.getRole().equals(Role.ADMIN)) {
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY_ON_SHOP);
+        }
+    }
+
+    @Override // 상점에 대한 판매자인지 확인
+    public void validateIsSeller(Member member) {
+        boolean isSeller = shopRepository.existsBySeller_MemberNo(member.getMemberNo());
+        if (!isSeller) {
+            throw new BusinessException(ErrorCode.ONLY_SELLER_HAVE_AUTHORITY_ON_SHOP);
+        }
     }
 }

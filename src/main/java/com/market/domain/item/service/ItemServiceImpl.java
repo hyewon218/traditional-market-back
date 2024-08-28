@@ -278,19 +278,30 @@ public class ItemServiceImpl implements ItemService {
         Item item = findItem(itemNo);
         itemLikeRepository.save(new ItemLike(item, member));
 
-        // create alarm
-        Member receiver;
-        if (item.getShop().getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
-            receiver = memberRepository.findByRole(Role.ADMIN)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
+        /*상점 판매자 번호가 등록되어 있지 않으면 관리자에게 알람*/
+        // 상점의 판매자 확인
+        Member seller = item.getShop().getSeller();
+        if (seller == null) {
+            // 판매자가 등록되어 있지 않은 경우, 모든 관리자에게 알림을 전송
+            List<Member> adminList = memberRepository.findAllByRole(Role.ADMIN);
+            // 관리자 리스트가 비어 있는지 확인
+            if (adminList.isEmpty()) {
+                throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+            }
+            // 관리자에게 알림을 보낼 경우
+            NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
+                item.getShop().getNo());
+            // 모든 관리자에게 알림 전송
+            for (Member admin : adminList) {
+                notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs,
+                    admin);
+            }
         } else {
-            receiver = item.getShop().getSeller();
+            // 판매자에게 알림을 보낼 경우
+            NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
+                item.getShop().getNo());
+            notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs, seller);
         }
-        NotificationArgs notificationArgs = NotificationArgs.builder()
-            .fromMemberNo(member.getMemberNo())
-            .targetId(item.getShop().getNo())
-            .build();
-        notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs, receiver);
     }
 
     @Override
@@ -319,6 +330,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override // 상품 찾기
+    @Transactional(readOnly = true)
     public Item findItem(Long itemNo) {
         return itemRepository.findById(itemNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ITEM));

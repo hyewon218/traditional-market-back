@@ -91,7 +91,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    @Transactional(readOnly = true)  // 채팅방 단건 조회
+    @Transactional(readOnly = true)  // 채팅방 읽음 상태 조회
     public ChatRoomResponseDto getChatRoomIsRead(Long chatRoomNo) {
         ChatRoom chatRoom = findChatRoom(chatRoomNo);
         return ChatRoomResponseDto.of(chatRoom);
@@ -105,8 +105,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         chatRoom.markAsUnread();
     }
 
-    @Override
-    @Transactional // 작성자거나 관리자인지 확인
+    @Override // 작성자거나 관리자인지 확인
     public void validateIsMasterAndAdmin(Long chatRoomNo, Member member) {
         boolean isOwner = chatRoomRepository.existsByNoAndMember_MemberNo(chatRoomNo,
             member.getMemberNo());
@@ -115,8 +114,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
     }
 
-    @Override
-    @Transactional // 관리자인지 확인
+    @Override // 관리자인지 확인
     public void validateIsAdmin(Member member) {
         if (!member.getRole().equals(Role.ADMIN)) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);

@@ -157,4 +157,16 @@ public interface ShopService {
      * @return : 판매자가 소유한 상점 목록 조회
      */
     Page<ShopResponseDto> getShopsBySellerNoAdmin(Member member, Long sellerNo, Pageable pageable);
+
+    /**
+     * 관리자인지 확인
+     *
+     */
+    void validateIsAdmin(Member member);
+
+    /**
+     * 상점에 대한 판매자인지 확인
+     *
+     */
+    void validateIsSeller(Member member);
 }

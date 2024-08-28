@@ -95,9 +95,9 @@ public class NotificationService {
         );
     }
 
-    @Transactional
+    @Transactional // 알람 목록 최신순 조회
     public Page<NotificationResponseDto> notificationList(Long memberNo, Pageable pageable) {
-        return notificationRepository.findAllByMember_MemberNo(memberNo, pageable)
+        return notificationRepository.findAllByMember_MemberNoOrderByCreateTimeDesc(memberNo, pageable)
             .map(NotificationResponseDto::of);
     }
 

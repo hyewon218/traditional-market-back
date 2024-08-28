@@ -15,6 +15,7 @@ import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.profanityFilter.ProfanityFilter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,36 +35,44 @@ public class ItemCommentServiceImpl implements ItemCommentService {
     @Transactional
     public void createItemComment(ItemCommentRequestDto itemCommentRequestDto,
         Member member) {
-        // 선택한 상품에 댓글 등록
-        Item item = itemRepository.findById(itemCommentRequestDto.getItemNo()).orElseThrow(
-            () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
-        );
-
         // 댓글에 비속어 포함되어있는지 검증
         validationProfanity(itemCommentRequestDto.getComment());
-
-        // 만약 회원 제재 여부가 true면 댓글 작성 불가
+        // 만약 회원 제재 여부가 true 면 댓글 작성 불가
         if (member.isWarning()) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
         }
 
+        Item item = itemRepository.findById(itemCommentRequestDto.getItemNo()).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_FOUND_ITEM)
+        );
+        // 댓글 저장
         itemCommentRepository.save(itemCommentRequestDto.toEntity(item, member));
 
-        // create alarm
-        Member receiver;
-        if (item.getShop().getSeller() == null) { // 사장님이 등록되어 있지 않으면 관리자에게 알람이 가도록
-            receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN)
-            );
+        /*상품에 대한 판매자 번호가 등록되어 있지 않으면 관리자에게 알람*/
+        // 상품의 판매자 확인
+        Member seller = item.getShop().getSeller();
+        if (seller == null) {
+            // 판매자가 등록되어 있지 않은 경우, 모든 관리자에게 알림을 전송
+            List<Member> adminList = memberRepository.findAllByRole(Role.ADMIN);
+            // 관리자 리스트가 비어있는지 확인
+            if (adminList.isEmpty()) {
+                throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+            }
+            // 관리자에게 알림을 보낼 경우
+            NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
+                item.getNo());
+            // 모든 관리자에게 알림 전송
+            for (Member admin : adminList) {
+                notificationService.send(NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs,
+                    admin);
+            }
         } else {
-            receiver = item.getShop().getSeller();
+            // 판매자에게 알림을 보낼 경우
+            NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
+                item.getNo());
+            notificationService.send(NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs,
+                seller);
         }
-        NotificationArgs notificationArgs = NotificationArgs.builder()
-            .fromMemberNo(member.getMemberNo())
-            .targetId(item.getShop().getNo())
-            .build();
-        notificationService.send(
-            NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs, receiver);
     }
 
     @Override

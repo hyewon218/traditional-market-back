@@ -13,7 +13,6 @@ import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.inquiryAnswer.repository.InquiryAnswerRepository;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
-import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.service.MemberService;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
@@ -40,31 +39,17 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
     private final NotificationService notificationService;
 
     @Override
     @Transactional // 문의사항 답변 생성
-    public InquiryAnswerResponseDto createAnswer(
-        InquiryAnswerRequestDto requestDto, Long inquiryNo, List<MultipartFile> files)
+    public InquiryAnswerResponseDto createAnswer(Member member, InquiryAnswerRequestDto requestDto,
+        Long inquiryNo, List<MultipartFile> files)
         throws IOException {
+        validateIsAdmin(member);
         Inquiry inquiry = inquiryService.findById(inquiryNo);
         InquiryAnswer inquiryAnswer = requestDto.toEntity(inquiry);
         inquiry.updateState(InquiryState.ANSWER_COMPLETED);
-
-        /*문의사항 남긴 사용자에게 알람*/
-        Member admin = memberRepository.findByRole(Role.ADMIN).orElseThrow(
-            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
-        Member receiver = memberService.findById(inquiry.getMemberNo());
-
-        NotificationArgs notificationArgs = NotificationArgs.builder()
-            .fromMemberNo(admin.getMemberNo()) // 관리자 No
-            .targetId(inquiry.getInquiryNo())
-            .build();
-        notificationService.send(
-            NotificationType.NEW_INQUIRY_ANSWER, notificationArgs, receiver);
-
-        //log.info("작성 내용 : " + requestDto.getAnswerContent());
 
         inquiryAnswerRepository.save(inquiryAnswer);
 
@@ -82,6 +67,12 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
                 imageRepository.save(new Image(inquiryAnswer, fileUrl));
             }
         }
+        /*문의사항 남긴 사용자에게 알람*/
+        Member receiver = memberService.findById(inquiry.getMemberNo());
+        NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),// 로그인한 관리자 No
+            inquiry.getInquiryNo());
+        notificationService.send(NotificationType.NEW_INQUIRY_ANSWER, notificationArgs, receiver);
+
         return InquiryAnswerResponseDto.of(inquiryAnswer);
     }
 

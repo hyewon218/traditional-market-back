@@ -26,10 +26,12 @@ public class InquiryAnswerController {
     // 문의사항 답변 생성
     @PostMapping("/{inquiryNo}")
     public ResponseEntity<InquiryAnswerResponseDto> createAnswer(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         @ModelAttribute InquiryAnswerRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files,
         @PathVariable Long inquiryNo) throws IOException {
-        InquiryAnswerResponseDto savedInquiryAnswer = inquiryAnswerService.createAnswer(requestDto,
+        InquiryAnswerResponseDto savedInquiryAnswer = inquiryAnswerService.createAnswer(
+            userDetails.getMember(), requestDto,
             inquiryNo, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedInquiryAnswer);
     }

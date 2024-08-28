@@ -21,4 +21,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Long countByMarket_No(Long marketNo);
     
     Page<Shop> findBySeller_MemberNo(Long memberNo, Pageable pageable); // 판매자가 소유한 상점 목록 조회
+
+    boolean existsBySeller_MemberNo(Long memberNo); // 상점에 대한 판매자가 맞는지 확인
 }

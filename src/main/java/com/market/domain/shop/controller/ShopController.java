@@ -39,8 +39,8 @@ public class ShopController {
 
     private final ShopService shopService;
 
-    @PostMapping("/shops")
-    public ResponseEntity<ShopResponseDto> createShop( // 상점 생성
+    @PostMapping("/shops") // 상점 생성
+    public ResponseEntity<ShopResponseDto> createShop(
         @ModelAttribute ShopRequestDto requestDto,
         @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
         throws IOException {
@@ -133,7 +133,7 @@ public class ShopController {
     }
 
     @GetMapping("/shops/{shopNo}/likes-count") // 좋아요 수 조회
-    public ResponseEntity<Long> getShopLike(@PathVariable Long shopNo) {
+    public ResponseEntity<Long> getShopLikesCount(@PathVariable Long shopNo) {
         return ResponseEntity.ok(shopService.countShopLikes(shopNo));
     }
 

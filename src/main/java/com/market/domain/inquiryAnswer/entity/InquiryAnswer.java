@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "inquiryAnswer")
+@Table(name = "inquiry_answer")
 public class InquiryAnswer extends BaseEntity {
 
     @Id
@@ -29,7 +29,7 @@ public class InquiryAnswer extends BaseEntity {
 
     private Long inquiryNo; // 답변할 문의사항
 
-    private String answerTitle; // 아직 사용하지않음
+    private String answerTitle; // 아직 사용하지 않음
 
     @Column(nullable = false)
     private String answerContent;

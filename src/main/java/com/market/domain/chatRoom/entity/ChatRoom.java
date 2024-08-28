@@ -77,13 +77,13 @@ public class ChatRoom extends BaseEntity {
         if (this.member.getMemberNo().equals(sender.getMemberNo())) {
             return this.receivers; // sender 가 방을 생성한 사람인 경우 receivers(관리자) 목록 반환
         } else {
-            // sender 가 receiver 중 한 명인지 확인 (no 필드를 비교)
+            // sender 가 receiver(관리자) 중 한 명인지 확인 (no 필드를 비교)
             boolean isReceiver = this.receivers.stream()
                 .anyMatch(receiver -> receiver.getMemberNo().equals(sender.getMemberNo()));
 
             if (isReceiver) {
                 // 방을 생성한 사람만 포함된 리스트 반환
-                return List.of(this.member); // 방 생성자를 포함하는 리스트 반환
+                return List.of(this.member);
             } else {
                 throw new BusinessException(ErrorCode.SENDER_NOT_FOUND);
             }
