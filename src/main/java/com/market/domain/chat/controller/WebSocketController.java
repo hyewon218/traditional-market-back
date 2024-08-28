@@ -36,22 +36,20 @@ public class WebSocketController {
     @SendTo("/sub/chat/{roomId}") // react callback 함수 실행
     public ChatMessageDto message(@DestinationVariable Long roomId, ChatMessageDto messageDto) {
         chatService.saveMessage(roomId, messageDto);
-        // receiver 에게 알람 보내기
-        Member sender = memberService.findByMemberId(messageDto.getSender()); // 로그인한 사용자
+        /*receiver 에게 알람*/
+        // sender: 로그인한 사용자
+        Member sender = memberService.findByMemberId(messageDto.getSender());
+        // receivers: 보낸 사람에 따라 받는 사람(들)을 결정
         List<Member> receivers = memberService.findChatRoomRecipients(roomId, sender);
 
         if (receivers != null && !receivers.isEmpty()) {
-            NotificationArgs notificationArgs = NotificationArgs.builder()
-                .fromMemberNo(sender.getMemberNo())
-                .targetId(roomId)
-                .build();
+            NotificationArgs notificationArgs = NotificationArgs.of(sender.getMemberNo(), roomId);
             // 모든 수신자에게 알림 전송
             for (Member receiver : receivers) {
                 NotificationType notificationType = getNotificationType(receiver);
                 notificationService.send(notificationType, notificationArgs, receiver);
             }
         }
-
         return ChatMessageDto.builder()
             .roomId(roomId)
             .sender(messageDto.getSender())

@@ -19,8 +19,8 @@ public interface InquiryAnswerService {
      * @param files      : 생성된 첨부파일
      * @return : 생성된 문의사항 답변 responseDto 반환
      */
-    InquiryAnswerResponseDto createAnswer(InquiryAnswerRequestDto requestDto, Long inquiryNo,
-        List<MultipartFile> files)
+    InquiryAnswerResponseDto createAnswer(Member member, InquiryAnswerRequestDto requestDto,
+        Long inquiryNo, List<MultipartFile> files)
         throws IOException;
 
     /**

@@ -44,7 +44,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Long countByProviderType(ProviderType type);
 
-    // 30일 이전, isWarning(제재 여부)이 true인 회원 찾기
+    // 30일 이전, isWarning(제재 여부)이 true 인 회원 찾기
     List<Member> findByIsWarningAndWarningStartDateBefore(boolean isWarning,
         LocalDateTime thirtyDaysAgo);
 

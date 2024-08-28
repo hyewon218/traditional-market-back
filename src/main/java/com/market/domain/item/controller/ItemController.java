@@ -160,7 +160,7 @@ public class ItemController {
     }
 
     @GetMapping("/items/{itemNo}/likes-count")
-    public ResponseEntity<Long> getItemLike(@PathVariable Long itemNo) { // 좋아요 수 조회
+    public ResponseEntity<Long> getItemLikesCount(@PathVariable Long itemNo) { // 좋아요 수 조회
         return ResponseEntity.ok(itemService.countItemLikes(itemNo));
     }
 }

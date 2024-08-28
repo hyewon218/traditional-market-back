@@ -14,6 +14,10 @@ import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.inquiryAnswer.repository.InquiryAnswerRepository;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
+import com.market.domain.member.repository.MemberRepository;
+import com.market.domain.notification.constant.NotificationType;
+import com.market.domain.notification.entity.NotificationArgs;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.profanityFilter.ProfanityFilter;
@@ -40,6 +44,8 @@ public class InquiryServiceImpl implements InquiryService {
     private final ImageRepository imageRepository;
     private final InquiryAnswerRepository inquiryAnswerRepository;
     private final InquiryRepositoryQuery inquiryRepositoryQuery;
+    private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     // 문의사항 생성
     @Override
@@ -56,7 +62,7 @@ public class InquiryServiceImpl implements InquiryService {
         if (inquiriesCountToday >= maxInquiriesPerDay) {
             throw new BusinessException(ErrorCode.INQUIRY_LIMIT_EXCEEDED);
         }
-        
+
         // 문의하기 제목 또는 내용에 비속어 포함되어있는지 검증
         validationProfanity(inquiryRequestDto.getInquiryTitle(),
             inquiryRequestDto.getInquiryContent());
@@ -77,6 +83,20 @@ public class InquiryServiceImpl implements InquiryService {
                 }
                 imageRepository.save(new Image(inquiry, fileUrl));
             }
+        }
+
+        /*관리자에게 알람*/
+        List<Member> adminList = memberRepository.findAllByRole(Role.ADMIN);
+        // 관리자 리스트가 비어있지 않은지 확인
+        if (adminList.isEmpty()) {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+        }
+        NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
+            inquiry.getInquiryNo());
+        // 모든 관리자에게 알림 전송
+        for (Member admin : adminList) {
+            notificationService.send(
+                NotificationType.NEW_INQUIRY, notificationArgs, admin);
         }
         return InquiryResponseDto.of(inquiry);
     }
@@ -102,13 +122,13 @@ public class InquiryServiceImpl implements InquiryService {
         Page<Inquiry> inquiries = inquiryRepository.findAll(pageable);
         return inquiries.map(InquiryResponseDto::of);
     }
-    
+
     @Override
     @Transactional(readOnly = true) // 키워드 검색 문의사항 목록 조회
     public Page<InquiryResponseDto> searchInquiries(InquirySearchCond cond, Pageable pageable) {
         return inquiryRepositoryQuery.searchInquiries(cond, pageable).map(InquiryResponseDto::of);
     }
-    
+
     @Override
     @Transactional // 문의사항 수정
     public InquiryResponseDto updateInquiry(Long memberNo, InquiryUpdateRequestDto updateRequestDto,
@@ -200,16 +220,14 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
     @Override // 문의하기 제목 또는 내용에 비속어 포함되어있는지 검증
-    @Transactional
     public void validationProfanity(String title, String content) {
-        if (ProfanityFilter.containsProfanity(title) || ProfanityFilter.containsProfanity(content)) {
-//            throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_INQUIRY);
-            throw new IllegalArgumentException("비속어가 포함된 제목 또는 내용은 작성할 수 없습니다.");
+        if (ProfanityFilter.containsProfanity(title) || ProfanityFilter.containsProfanity(
+            content)) {
+            throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_INQUIRY);
         }
     }
 
-    @Override
-    @Transactional // 문의사항 작성자인지 확인
+    @Override // 문의사항 작성자인지 확인
     public boolean validateIsMaster(Long memberNo, Long inquiryNo) {
         boolean isOwner = inquiryRepository.existsByMemberNoAndInquiryNo(memberNo, inquiryNo);
         if (!isOwner) {
@@ -218,8 +236,7 @@ public class InquiryServiceImpl implements InquiryService {
         return true;
     }
 
-    @Override
-    @Transactional // 문의사항 작성자인지 관리자인지 확인
+    @Override // 문의사항 작성자인지 관리자인지 확인
     public void validateIsMasterAndAdmin(Member member, Long inquiryNo) {
         boolean isOwner = inquiryRepository.existsByMemberNoAndInquiryNo(member.getMemberNo(),
             inquiryNo);
@@ -228,8 +245,7 @@ public class InquiryServiceImpl implements InquiryService {
         }
     }
 
-    @Override
-    @Transactional // 관리자인지 확인
+    @Override // 관리자인지 확인
     public void validateIsAdmin(Member member) {
         if (!member.getRole().equals(Role.ADMIN)) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_HAVE_AUTHORITY);

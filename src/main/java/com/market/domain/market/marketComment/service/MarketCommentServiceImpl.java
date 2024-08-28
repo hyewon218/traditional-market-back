@@ -15,6 +15,7 @@ import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.profanityFilter.ProfanityFilter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,32 +35,33 @@ public class MarketCommentServiceImpl implements MarketCommentService {
     @Transactional
     public void createMarketComment(MarketCommentRequestDto marketCommentRequestDto,
         Member member) {
+        // 댓글에 비속어 포함되어있는지 검증
+        validationProfanity(marketCommentRequestDto.getComment());
+        // 만약 회원 제재 여부가 true 면 댓글 작성 불가
+        if (member.isWarning()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+        }
+
         // 선택한 시장에 댓글 등록
         Market market = marketRepository.findById(marketCommentRequestDto.getMarketNo())
             .orElseThrow(
                 () -> new BusinessException(ErrorCode.NOT_FOUND_MARKET)
             );
-
-        // 댓글에 비속어 포함되어있는지 검증
-        validationProfanity(marketCommentRequestDto.getComment());
-
-        // 만약 회원 제재 여부가 true면 댓글 작성 불가
-        if (member.isWarning()) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
-        }
-
         marketCommentRepository.save(marketCommentRequestDto.toEntity(market, member));
 
-        // create alarm
-        Member receiver = memberRepository.findByRole(Role.ADMIN).orElseThrow(
-            () -> new BusinessException(ErrorCode.NOT_EXISTS_ADMIN));
-
-        NotificationArgs notificationArgs = NotificationArgs.builder()
-            .fromMemberNo(member.getMemberNo())
-            .targetId(market.getNo())
-            .build();
-        notificationService.send(
-            NotificationType.NEW_COMMENT_ON_MARKET, notificationArgs, receiver);
+        /*관리자에게 알람*/
+        List<Member> adminList = memberRepository.findAllByRole(Role.ADMIN);
+        // 관리자 리스트가 비어있지 않은지 확인
+        if (adminList.isEmpty()) {
+            throw new BusinessException(ErrorCode.NOT_EXISTS_ADMIN);
+        }
+        NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
+            market.getNo());
+        // 모든 관리자에게 알림 전송
+        for (Member admin : adminList) {
+            notificationService.send(
+                NotificationType.NEW_COMMENT_ON_MARKET, notificationArgs, admin);
+        }
     }
 
     @Override

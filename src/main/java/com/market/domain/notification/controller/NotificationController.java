@@ -33,14 +33,14 @@ public class NotificationController {
     }
 
     @GetMapping("/notifications") // 알람 목록
-    public ResponseEntity<Page<NotificationResponseDto>> alarm(Pageable pageable,
+    public ResponseEntity<Page<NotificationResponseDto>> getNotificationList(Pageable pageable,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(notificationService.notificationList(
             userDetails.getMember().getMemberNo(), pageable));
     }
 
     @GetMapping("/notifications/count") // 로그인한 사용자 알람 수 조회
-    public ResponseEntity<Long> getMarketLike(
+    public ResponseEntity<Long> getUserNotificationCount(
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(
             notificationService.countNotifications(userDetails.getMember().getMemberNo()));
