@@ -41,7 +41,7 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    @Transactional
+    @Transactional // 장바구니 특정 상품 주문 수 수정
     public void updateCartItemCount(Long cartItemNo, CartItemRequestDto cartItemRequestDto,
         Member member) {
         CartItem cartItem = getCartItemById(cartItemNo);

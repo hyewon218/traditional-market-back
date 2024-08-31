@@ -72,15 +72,15 @@ public class Item extends BaseEntity {
     private Shop shop;
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<Image> imageList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<ItemLike> itemLikeList = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
     private List<ItemComment> itemCommentList = new ArrayList<>();
 
     public void updateItem(ItemRequestDto requestDto) {

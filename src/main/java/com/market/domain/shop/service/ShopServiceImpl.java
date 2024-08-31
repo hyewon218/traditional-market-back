@@ -155,15 +155,15 @@ public class ShopServiceImpl implements ShopService {
         // 새 파일이 업로드된 경우
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "shop " + shop.getNo());
+                String fileUrl = awsS3upload.upload(file, "shop " + shopNo);
 
-                if (imageRepository.existsByImageUrlAndShop_No(fileUrl, shop.getNo())) {
+                if (imageRepository.existsByImageUrlAndShop_No(fileUrl, shopNo)) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(shop, fileUrl));
             }
             // 새 이미지가 추가되면 기본 이미지를 삭제
-            deleteDefaultImageIfExists(shop.getNo());
+            deleteDefaultImageIfExists(shopNo);
         } else if (imageUrls != null) { // 기존 이미지 중 클라이언트에서 제거된 이미지를 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {

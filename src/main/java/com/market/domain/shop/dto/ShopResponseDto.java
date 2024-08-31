@@ -46,7 +46,7 @@ public class ShopResponseDto {
 
     private List<ShopCommentResponseDto> shopCommentList;
 
-    public static ShopResponseDto of(Shop shop) { // TODO : member 정보 추가
+    public static ShopResponseDto of(Shop shop) {
         return ShopResponseDto.builder()
             .shopNo(shop.getNo())
             .sellerNo(shop.getSeller() != null ? shop.getSeller().getMemberNo() : null)

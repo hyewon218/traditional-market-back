@@ -38,8 +38,7 @@ public class CartController {
     public ResponseEntity<Long> orderCartItems(
         @RequestBody List<CartItemOrderRequestDto> cartOrderDtoList,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Long orderNo = cartService.orderCartItems(cartOrderDtoList,
-            userDetails.getMember());
+        Long orderNo = cartService.orderCartItems(cartOrderDtoList, userDetails.getMember());
         return ResponseEntity.ok().body(orderNo);
     }
 
@@ -49,7 +48,7 @@ public class CartController {
         return ResponseEntity.ok(cartItemService.getCartItemList(userDetails.getMember()));
     }
 
-    @PatchMapping(value = "/cartitems/{cartItemNo}") // 장바구니 특정 상품 주문 갯수 수정
+    @PatchMapping(value = "/cartitems/{cartItemNo}") // 장바구니 특정 상품 주문 수 수정
     public ResponseEntity<Long> updateCartItem(@RequestBody CartItemRequestDto cartItemRequestDto,
         @PathVariable("cartItemNo") Long cartItemNo,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
