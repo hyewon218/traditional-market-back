@@ -122,15 +122,15 @@ public class MarketServiceImpl implements MarketService {
 
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "market " + market.getNo());
+                String fileUrl = awsS3upload.upload(file, "market " + marketNo);
 
-                if (imageRepository.existsByImageUrlAndMarket_No(fileUrl, market.getNo())) {
+                if (imageRepository.existsByImageUrlAndMarket_No(fileUrl, marketNo)) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(market, fileUrl));
             }
             // 새 이미지가 추가되면 기본 이미지를 삭제
-            deleteDefaultImageIfExists(market.getNo());
+            deleteDefaultImageIfExists(marketNo);
         } else if (imageUrls != null) { // 기존 이미지 중 클라이언트에서 제거된 이미지를 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {

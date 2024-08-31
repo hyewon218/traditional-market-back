@@ -198,15 +198,15 @@ public class ItemServiceImpl implements ItemService {
 
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
-                String fileUrl = awsS3upload.upload(file, "item " + item.getNo());
+                String fileUrl = awsS3upload.upload(file, "item " + itemNo);
 
-                if (imageRepository.existsByImageUrlAndItem_No(fileUrl, item.getNo())) {
+                if (imageRepository.existsByImageUrlAndItem_No(fileUrl, itemNo)) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(item, fileUrl));
             }
-            // 새 이미지가 추가되면 기본 이미지를 삭제
-            deleteDefaultImageIfExists(item.getNo());
+            // 새 이미지(files)가 추가되면 기본 이미지를 삭제
+            deleteDefaultImageIfExists(itemNo);
         } else if (imageUrls != null) { // 기존 이미지 중 클라이언트에서 제거된 이미지를 삭제
             for (Image existingImage : existingImages) {
                 if (!imageUrls.contains(existingImage.getImageUrl())) {
@@ -225,12 +225,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void deleteDefaultImageIfExists(Long itemNo) {
-        if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL,
-            itemNo)) {
+        if (imageRepository.existsByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL, itemNo)) {
             imageRepository.deleteByImageUrlAndItem_No(ImageConfig.DEFAULT_ITEM_IMAGE_URL, itemNo);
         }
     }
-
 
     private void deleteAllImages(List<Image> images) {
         for (Image image : images) {
@@ -239,7 +237,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void deleteImage(Image image) {
-        if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+        if (!image.getImageUrl().equals(ImageConfig.DEFAULT_ITEM_IMAGE_URL)) { // 기본이미지 제외
             awsS3upload.delete(image.getImageUrl()); // S3에서 이미지 삭제
         }
         imageRepository.delete(image); // DB 에서 이미지 삭제
@@ -260,7 +258,7 @@ public class ItemServiceImpl implements ItemService {
         // 이미지가 존재하는 경우에만 S3 삭제 작업 수행
         if (images != null && !images.isEmpty()) {
             for (Image image : images) {
-                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_IMAGE_URL)) {
+                if (!image.getImageUrl().equals(ImageConfig.DEFAULT_ITEM_IMAGE_URL)) {
                     awsS3upload.delete(image.getImageUrl()); // 기본이미지 제외 S3 에서도 이미지 삭제
                 }
             }
