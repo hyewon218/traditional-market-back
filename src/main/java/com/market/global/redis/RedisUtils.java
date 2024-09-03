@@ -16,7 +16,6 @@ public class RedisUtils {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final RedisTemplate<String, String> redisBlackListTemplate;
-    private final ModelMapper modelMapper;
 
     public void setValues(String key, String value, Duration expiredAt) {
         redisTemplate.opsForValue().set(key, value, expiredAt.toMillis(), TimeUnit.MILLISECONDS);

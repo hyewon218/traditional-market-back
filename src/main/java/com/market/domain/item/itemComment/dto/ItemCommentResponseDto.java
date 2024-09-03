@@ -3,11 +3,16 @@ package com.market.domain.item.itemComment.dto;
 import com.market.domain.item.itemComment.entity.ItemComment;
 import com.market.domain.member.constant.Role;
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemCommentResponseDto {
 
     private Long id;
