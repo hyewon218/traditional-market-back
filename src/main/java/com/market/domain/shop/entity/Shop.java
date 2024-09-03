@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -54,26 +55,32 @@ public class Shop extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "market_no")
+    @BatchSize(size = 100)
     private Market market;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_no")
+    @BatchSize(size = 100)
     private Member seller;
 
     @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @BatchSize(size = 100)
     private List<Item> itemList = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @BatchSize(size = 100)
     private List<Image> imageList = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @BatchSize(size = 100)
     private List<ShopLike> shopLikeList = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "shop", orphanRemoval = true, cascade = CascadeType.REMOVE)
+    @BatchSize(size = 100)
     private List<ShopComment> shopCommentList = new ArrayList<>();
 
     public void updateShop(ShopRequestDto requestDto) {
