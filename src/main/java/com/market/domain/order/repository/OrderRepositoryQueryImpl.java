@@ -212,6 +212,7 @@ public class OrderRepositoryQueryImpl implements OrderRepositoryQuery {
             .from(order)
             .where(
                 contentContains(cond.getKeyword(), cond.getType())
+                    .and(order.orderStatus.ne(OrderStatus.ORDER))
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
@@ -221,8 +222,8 @@ public class OrderRepositoryQueryImpl implements OrderRepositoryQuery {
         long totalSize = jpaQueryFactory.select(Wildcard.count) //select count(*)
             .from(order)
             .where(
-
                 contentContains(cond.getKeyword(), cond.getType())
+                    .and(order.orderStatus.ne(OrderStatus.ORDER))
             )
             .fetch().get(0);
         return PageableExecutionUtils.getPage(posts, pageable, () -> totalSize);
@@ -238,6 +239,7 @@ public class OrderRepositoryQueryImpl implements OrderRepositoryQuery {
             .where(
                 shop.seller.memberNo.eq(sellerNo)
                     .and(contentContains(cond.getKeyword(), cond.getType()))
+                    .and(order.orderStatus.ne(OrderStatus.ORDER))
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
@@ -252,6 +254,7 @@ public class OrderRepositoryQueryImpl implements OrderRepositoryQuery {
             .where(
                 shop.seller.memberNo.eq(sellerNo)
                     .and(contentContains(cond.getKeyword(), cond.getType()))
+                    .and(order.orderStatus.ne(OrderStatus.ORDER))
             )
             .fetch().get(0);
         return PageableExecutionUtils.getPage(posts, pageable, () -> totalSize);

@@ -91,6 +91,10 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "MB004", "접근 권한이 없습니다."),
     NOT_ALLOW_PROFANITY_ID(HttpStatus.BAD_REQUEST, "MB005", "비속어가 포함되어 있는 아이디는 사용할 수 없습니다."),
     NOT_ALLOW_PROFANITY_NICKNAME(HttpStatus.BAD_REQUEST, "MB006", "비속어가 포함되어 있는 닉네임은 사용할 수 없습니다."),
+    NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "MB007", "일치하는 회원이 없습니다."),
+    NOT_CORRECT_CODE(HttpStatus.NOT_FOUND, "MB008", "인증번호가 일치하지 않습니다."),
+    FAIL_TO_CHANGE_PW(HttpStatus.NOT_FOUND, "MB009", "비밀번호 변경에 실패했습니다."),
+    NOT_CORRECT_PW(HttpStatus.NOT_FOUND, "MB009", "비밀번호가 일치하지 않습니다."),
     // 탈퇴회원
     EXISTS_WITHDRAWMEMBER_ID(HttpStatus.CONFLICT, "W001", "탈퇴했거나 생성 불가능한 아이디입니다."),
     EXISTS_WITHDRAWMEMBER_EMAIL(HttpStatus.CONFLICT, "W002", "탈퇴했거나 생성 불가능한 이메일입니다."),
