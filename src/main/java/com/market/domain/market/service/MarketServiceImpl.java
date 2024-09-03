@@ -23,12 +23,16 @@ import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.market.global.ip.IpService;
+import com.market.global.redis.RestPage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -78,9 +82,17 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional(readOnly = true) // 시장 목록 조회
-    public Page<MarketResponseDto> getMarkets(Pageable pageable) {
-        Page<Market> marketList = marketRepository.findAll(pageable);
-        return marketList.map(MarketResponseDto::of);
+    @Cacheable(cacheNames = "markets",
+        key = "#pageable.pageNumber + '-' + #pageable.pageSize",
+        cacheManager = "marketCacheManager"
+    )
+    public RestPage<MarketResponseDto> getMarkets(Pageable pageable) {
+        Page<Market> marketPage = marketRepository.findAll(pageable);
+        List<MarketResponseDto> dtoList = marketPage.getContent().stream()
+            .map(MarketResponseDto::of)
+            .toList();
+        return new RestPage<>(dtoList, pageable.getPageNumber(), pageable.getPageSize(),
+            marketPage.getTotalElements());
     }
 
     @Override
@@ -91,10 +103,26 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional(readOnly = true) // 카테고리별 상점 목록 조회
-    public Page<MarketResponseDto> getCategoryMarkets(CategoryEnum category, Pageable pageable) {
-        Page<Market> marketList = marketRepository.findByCategoryOrderByMarketName(category,
-            pageable);
-        return marketList.map(MarketResponseDto::of);
+    @Cacheable(
+        cacheNames = "categoryMarkets",
+        key = "#category.name + '-' + #pageable.pageNumber + '-' + #pageable.pageSize",
+        cacheManager = "marketCacheManager",
+        unless = "#result.content.isEmpty()"
+    )
+    public RestPage<MarketResponseDto> getCategoryMarkets(CategoryEnum category, Pageable pageable) {
+        Page<Market> marketList = marketRepository.findByCategoryOrderByMarketName(category, pageable);
+
+        // 만약 레디스에 데이터가 없을 경우 (캐시 미스 상황)
+        if (marketList.isEmpty()) {
+            return new RestPage<>(Collections.emptyList(), pageable.getPageNumber(),
+                pageable.getPageSize(), 0);
+        }
+
+        List<MarketResponseDto> dtoList = marketList.getContent().stream()
+            .map(MarketResponseDto::of)
+            .toList();
+        return new RestPage<>(dtoList, pageable.getPageNumber(), pageable.getPageSize(),
+            marketList.getTotalElements());
     }
 
     @Transactional // 시장 단건 조회 // IP 주소당 하루에 조회수 1회 증가
@@ -112,6 +140,7 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional // 시장 수정
+    @CacheEvict(cacheNames = "markets", allEntries = true, cacheManager = "marketCacheManager") // 특정 시장 수정 시 전체 시장 캐시도 삭제해서 동기화 문제 해결
     public MarketResponseDto updateMarket(Long marketNo, MarketRequestDto requestDto,
         List<MultipartFile> files) throws IOException {
         Market market = findMarket(marketNo);
@@ -176,6 +205,7 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional // 시장 삭제
+    @CacheEvict(cacheNames = "markets", allEntries = true, cacheManager = "marketCacheManager") // 특정 시장 삭제 시 전체 시장 캐시도 삭제해서 동기화 문제 해결
     public void deleteMarket(Long marketNo) {
         Market market = findMarket(marketNo);
         List<Image> images = imageRepository.findByMarket_No(marketNo);
@@ -267,7 +297,7 @@ public class MarketServiceImpl implements MarketService {
     public Long getCountMarket() {
         return marketRepository.count();
     }
-    
+
     @Override
     @Transactional(readOnly = true) // 시장별 총매출액 조회
     public Long getTotalSalesPrice(Long marketNo) {

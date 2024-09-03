@@ -24,11 +24,18 @@ import com.market.domain.shop.shopLike.repository.ShopLikeRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.ip.IpService;
+import com.market.global.redis.RestPage;
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -93,9 +100,17 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional(readOnly = true) // 시장 내 상점 목록 조회
-    public Page<ShopResponseDto> getShopsByMarketNo(Long marketNo, Pageable pageable) {
+    @Cacheable(cacheNames = "shops",
+        key = "#marketNo + '-' + #pageable.pageNumber + '-' + #pageable.pageSize",
+        cacheManager = "marketCacheManager"
+    )
+    public RestPage<ShopResponseDto> getShopsByMarketNo(Long marketNo, Pageable pageable) {
         Page<Shop> shopList = shopRepository.findAllByMarket_No(marketNo, pageable);
-        return shopList.map(ShopResponseDto::of);
+        List<ShopResponseDto> dtoList = shopList.getContent().stream()
+            .map(ShopResponseDto::of)
+            .toList();
+        return new RestPage<>(dtoList, pageable.getPageNumber(), pageable.getPageSize(),
+            shopList.getTotalElements());
     }
 
     @Override
@@ -113,11 +128,27 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional(readOnly = true) // 특정 시장 내 상점 카테고리별 조회
-    public Page<ShopResponseDto> getShopsByCategory(Long marketNo,
+    @Cacheable(
+        cacheNames = "categoryShops",
+        key = "#category.name + '-' + #pageable.pageNumber + '-' + #pageable.pageSize",
+        cacheManager = "marketCacheManager",
+        unless = "#result.content.isEmpty()"
+    )
+    public RestPage<ShopResponseDto> getShopsByCategory(Long marketNo,
         CategoryEnum category, Pageable pageable) {
         Page<Shop> shopList = shopRepository.findByMarketNoAndCategory(marketNo, category,
             pageable);
-        return shopList.map(ShopResponseDto::of);
+
+        if (shopList.isEmpty()) {
+            return new RestPage<>(Collections.emptyList(), pageable.getPageNumber(),
+                pageable.getPageSize(), 0);
+        }
+
+        List<ShopResponseDto> dtoList = shopList.getContent().stream()
+            .map(ShopResponseDto::of)
+            .toList();
+        return new RestPage<>(dtoList, pageable.getPageNumber(), pageable.getPageSize(),
+            shopList.getTotalElements());
     }
 
     @Transactional // 상점 단건 조회 // IP 주소당 하루에 조회수 1회 증가
@@ -135,6 +166,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 수정
+    @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager") // 특정 상점 수정 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
     public ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto,
         List<MultipartFile> files) throws IOException {
         Shop shop = findShop(shopNo);
@@ -209,6 +241,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 삭제
+    @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager") // 특정 상점 삭제 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
     public void deleteShop(Long shopNo) {
         Shop shop = findShop(shopNo);
         List<Image> images = imageRepository.findByShop_No(shopNo);
