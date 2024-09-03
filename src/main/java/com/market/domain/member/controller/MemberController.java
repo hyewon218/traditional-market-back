@@ -6,7 +6,6 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.repository.MemberSearchCond;
 import com.market.domain.member.service.MemberServiceImpl;
-import com.market.global.exception.BusinessException;
 import com.market.global.response.ApiResponse;
 import com.market.global.security.UserDetailsImpl;
 import com.market.global.security.oauth2.ProviderType;
@@ -19,10 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -54,8 +50,6 @@ public class MemberController {
             MemberResponseDto responseDto = memberService.logIn(httpServletRequest,
                 httpServletResponse, requestDto);
             return ResponseEntity.ok(responseDto);
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 틀렸습니다.");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -80,8 +74,8 @@ public class MemberController {
     @GetMapping("/search")
     public ResponseEntity<Page<MemberResponseDto>> searchMembers(MemberSearchCond cond,
         Pageable pageable) {
-        Page<MemberResponseDto> result = memberService.searchMembers(cond, pageable);
-        return ResponseEntity.ok().body(result);
+        Page<MemberResponseDto> searchMembers = memberService.searchMembers(cond, pageable);
+        return ResponseEntity.ok().body(searchMembers);
     }
 
     // 특정 회원 조회(일반 회원이 자신의 상세정보 열람)
@@ -96,25 +90,15 @@ public class MemberController {
     @GetMapping("/myinfo/{memberNo}")
     public ResponseEntity<?> myInfo(@AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable Long memberNo) {
-        Member member;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication.getAuthorities().stream()
-            .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-        // admin 권한일 경우
-        if (isAdmin) {
-            member = memberService.findById(memberNo);
-            return ResponseEntity.ok().body(MemberResponseDto.of(member));
-
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근이 거부되었습니다");
-        }
+        memberService.validationAdmin(userDetails.getMember());
+        return ResponseEntity.ok().body(MemberResponseDto.of(memberService.findById(memberNo)));
     }
 
     // memberId 이용한 특정 회원 조회(관리자만 가능)
     @GetMapping("/info-id")
     public ResponseEntity<MemberResponseDto> getMemberById(String memberId) {
-        MemberResponseDto memberResponseDto = memberService.getMemberById(memberId);
-        return ResponseEntity.ok().body(memberResponseDto);
+        return ResponseEntity.ok()
+            .body(MemberResponseDto.of(memberService.findByMemberId(memberId)));
     }
 
     // 회원 수정
@@ -132,22 +116,12 @@ public class MemberController {
         return ResponseEntity.ok().body(memberService.getRemainingTime(memberNo));
     }
 
-    // 회원 권한 수정
+    // 회원 권한 변경
     @PutMapping("/admin/u/{memberNo}")
     public ResponseEntity<?> updateMemberRole(@AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody MemberRequestDto memberRequestDto, @PathVariable Long memberNo) {
-        Member member;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication.getAuthorities().stream()
-            .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-        // admin 권한일 경우
-        if (isAdmin) {
-            member = memberService.findById(memberNo);
-            memberService.updateRole(member.getMemberNo(), memberRequestDto);
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근이 거부되었습니다");
-        }
-        return ResponseEntity.ok().body(MemberResponseDto.of(member));
+        memberService.updateRole(userDetails.getMember(), memberNo, memberRequestDto);
+        return ResponseEntity.ok().body(new ApiResponse("회원 권한 변경 성공", HttpStatus.OK.value()));
     }
 
     // 회원 제재
@@ -181,18 +155,10 @@ public class MemberController {
     public ResponseEntity<?> deleteMemberAdmin(@AuthenticationPrincipal UserDetailsImpl userDetails,
         HttpServletRequest httpRequest, HttpServletResponse httpResponse,
         @PathVariable Long memberNo) {
-        Member member;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = authentication.getAuthorities().stream()
-            .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-        // admin 권한일 경우
-        if (isAdmin) {
-            member = memberService.findById(memberNo);
-            memberService.deleteMemberAdmin(member.getMemberNo(), member.getMemberId(), httpRequest,
-                httpResponse);
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근이 거부되었습니다");
-        }
+
+        Member member = memberService.findById(memberNo);
+        memberService.deleteMemberAdmin(userDetails.getMember(),
+            member.getMemberNo(), member.getMemberId(), httpRequest, httpResponse);
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 
@@ -209,56 +175,28 @@ public class MemberController {
     @PostMapping("/verifycode")
     public ResponseEntity<String> verifyCode(
         @RequestBody VerifyCodeRequestDto verifyCodeRequestDto) {
-        if (memberService.verifyCode(verifyCodeRequestDto.getMemberEmail(),
-            verifyCodeRequestDto.getCode())) {
-            return ResponseEntity.ok(verifyCodeRequestDto.getCode());
-        } else {
-            return ResponseEntity.badRequest().body("인증번호가 일치하지않습니다.");
-        }
+        memberService.verifyCode(verifyCodeRequestDto.getMemberEmail(),
+            verifyCodeRequestDto.getCode());
+        return ResponseEntity.ok().body(verifyCodeRequestDto.getCode());
     }
 
     // 아이디 찾기
     @PostMapping("/findid")
     public ResponseEntity<String> findMemberId(@RequestBody FindIdRequestDto findIdRequestDto) {
-        String foundMemberId = memberService.findIdByEmail(findIdRequestDto);
-        if (foundMemberId != null) {
-            return ResponseEntity.ok().body(foundMemberId);
-        } else {
-            return ResponseEntity.badRequest().body("아이디 찾기 실패");
-        }
+        return ResponseEntity.ok().body(memberService.findIdByEmail(findIdRequestDto));
     }
 
+    // 배포 전 로그 지우기
     // 비밀번호 변경
     @PutMapping("/changepw")
     public ResponseEntity<String> changeMemberPw(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody ChangePwRequestDto changePwRequestDto) {
-        Optional<Member> optionalMember = memberRepository.findById(
-            userDetails.getMember().getMemberNo());
-        if (optionalMember.isPresent()) {
-            if (memberService.changePassword(userDetails.getMember().getMemberNo(),
-                changePwRequestDto.getChangePw(), changePwRequestDto.getConfirmPw())) {
-                return ResponseEntity.ok()
-                    .body("비밀번호 변경 성공, 변경한 비밀번호 : " + changePwRequestDto.getChangePw());
-            }
-        }
-        return ResponseEntity.badRequest().body("비밀번호 변경 실패");
+        memberService.changePassword(userDetails.getMember().getMemberNo(),
+            changePwRequestDto.getChangePw(), changePwRequestDto.getConfirmPw());
+        return ResponseEntity.ok()
+            .body("비밀번호 변경 성공, 변경한 비밀번호 : " + changePwRequestDto.getChangePw());
     }
-
-//    // 회원가입 시 아이디 중복 확인 및 탈퇴 회원에서 아이디 검증
-//    @GetMapping("/checkid")
-//    public ResponseEntity<ApiResponse> existsMemberId(String memberId) {
-//        try {
-//            memberService.validationId(memberId);
-//            return ResponseEntity.ok()
-//                .body(new ApiResponse("사용 가능한 아이디입니다.", HttpStatus.OK.value()));
-//        } catch (BusinessException e) {
-//            // 예외에 따라 다른 메시지를 반환
-//            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-//                .body(new ApiResponse(e.getErrorCode().getMessage(),
-//                    e.getErrorCode().getHttpStatus().value()));
-//        }
-//    }
 
     // 회원가입 시 아이디 중복 확인 및 탈퇴 회원에서 아이디 검증
     @GetMapping("/checkid")
@@ -267,21 +205,6 @@ public class MemberController {
         return ResponseEntity.ok()
             .body(new ApiResponse("사용 가능한 아이디입니다.", HttpStatus.OK.value()));
     }
-
-    // 회원가입 시 이메일 중복 확인 및 탈퇴 회원에서 이메일 검증
-//    @GetMapping("/checkemail")
-//    public ResponseEntity<ApiResponse> existsMemberEmail(String memberEmail) {
-//        try {
-//            memberService.validationEmail(memberEmail);
-//            return ResponseEntity.ok()
-//                .body(new ApiResponse("사용 가능한 이메일입니다.", HttpStatus.OK.value()));
-//        } catch (BusinessException e) {
-//            // 예외에 따라 다른 메시지를 반환
-//            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-//                .body(new ApiResponse(e.getErrorCode().getMessage(),
-//                    e.getErrorCode().getHttpStatus().value()));
-//        }
-//    }
 
     // 회원가입 시 이메일 중복 확인 및 탈퇴 회원에서 이메일 검증
     @GetMapping("/checkemail")
@@ -296,40 +219,21 @@ public class MemberController {
     public ResponseEntity<ApiResponse> verifyPassword(
         @AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request,
         HttpServletResponse response, String password) {
-        boolean isValid = memberService.checkPassword(request, response, password,
+        memberService.checkPassword(request, response, password,
             userDetails.getMember().getMemberNo());
-        if (isValid) {
-            return ResponseEntity.ok().body(new ApiResponse("성공", HttpStatus.OK.value()));
-        } else {
-            return ResponseEntity.badRequest()
-                .body(new ApiResponse("비밀번호가 틀립니다", HttpStatus.BAD_REQUEST.value()));
-        }
+        return ResponseEntity.ok().body(new ApiResponse("성공", HttpStatus.OK.value()));
     }
 
     // 권한 조회(admin만 가능)
     @GetMapping("/admin/role")
     public ResponseEntity<Page<MyInfoResponseDto>> getRole(Role role, Pageable pageable) {
-        Page<MyInfoResponseDto> members = memberService.getRole(role, pageable);
-        return ResponseEntity.ok().body(members);
+        return ResponseEntity.ok().body(memberService.getRole(role, pageable));
     }
 
     // 총 회원 수
     @GetMapping("/admin/count")
     public ResponseEntity<?> countMembers() {
         return ResponseEntity.ok().body(memberService.countMembers());
-    }
-
-    // 권한 admin인지 확인
-    @GetMapping("/check-admin")
-    public ResponseEntity<Map<String, Boolean>> checkAdminRole() {
-        // 서비스에서 관리자 권한 확인
-        boolean isAdmin = memberService.isAdmin();
-
-        // 결과를 JSON 형식으로 반환
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("isAdmin", isAdmin);
-
-        return ResponseEntity.ok(response);
     }
 
     // providerType별 회원 수

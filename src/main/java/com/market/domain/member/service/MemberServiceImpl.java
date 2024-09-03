@@ -79,8 +79,8 @@ public class MemberServiceImpl implements MemberService {
         validationId(memberRequestDto.getMemberId()); // 가입하려는 id가 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationEmail(memberRequestDto.getMemberEmail()); // 가입하려는 email이 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationNickname(memberRequestDto.getMemberNickname()); // 닉네임에 비속어가 포함되어있는지 검증
-        Member savedMember = memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
-        return MemberResponseDto.of(savedMember);
+        memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
+        return MemberResponseDto.of(memberRepository.save(memberRequestDto.toEntity(passwordEncoder)));
     }
 
     // 로그인
@@ -133,11 +133,10 @@ public class MemberServiceImpl implements MemberService {
                     refreshToken.getRefreshToken());
                 newRefreshToken = refreshToken.getRefreshToken();
             }
-
+            log.info("실행");
             return MemberResponseDto.ofLogin(member, accessToken, newRefreshToken);
 
         } catch (AuthenticationException e) {
-            log.info("아이디 또는 패스워드가 틀렸습니다");
             throw e;
         }
     }
@@ -159,28 +158,12 @@ public class MemberServiceImpl implements MemberService {
         CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified");
     }
 
-    // 전체 회원 조회
+    // 전체 회원 조회(admin만 가능)
     @Override
     @Transactional(readOnly = true)
     public Page<MemberResponseDto> findAll(Pageable pageable) {
         Page<Member> members = memberRepository.findAll(pageable);
         return members.map(MemberResponseDto::of);
-    }
-
-    // memberNo 이용한 특정 회원 조회(관리자만 가능)
-    @Override
-    @Transactional(readOnly = true)
-    public Member findById(long memberNo) {
-        return memberRepository.findById(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
-    }
-
-    // memberId 이용한 특정 회원 조회(관리자만 가능)
-    @Override
-    @Transactional(readOnly = true)
-    public MemberResponseDto getMemberById(String memberId) {
-        Optional<Member> findMember = memberRepository.findByMemberId(memberId);
-        return MemberResponseDto.of(findMember.get());
     }
 
     // 키워드 검색 회원 목록 조회
@@ -190,12 +173,11 @@ public class MemberServiceImpl implements MemberService {
         return memberRepositoryQuery.searchMembers(cond, pageable).map(MemberResponseDto::of);
     }
 
-    // 회원 수정
+    // 회원 수정 (닉네임 변경)
     @Override
     @Transactional
     public Member update(long memberNo, MemberRequestDto requestDto) {
-        Member member = memberRepository.findById(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+        Member member = findById(memberNo);
 
         // 변경하려는 닉네임에 비속어 있는지 검증
         validationNickname(requestDto.getMemberNickname());
@@ -218,9 +200,7 @@ public class MemberServiceImpl implements MemberService {
     // 닉네임 변경 가능까지 남은 시간 변환해 알려주는 메서드(timeUntilNextNicknameChange, formatDuration 메서드 이용)
     @Override
     public String getRemainingTime(Long memberNo) {
-        Member findMember = memberRepository.findById(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("해당하는 회원이 존재하지않습니다."));
-
+        Member findMember = findById(memberNo);
         Duration duration = timeUntilNextNicknameChange(findMember);
 
         if (duration.isZero()) {
@@ -277,14 +257,13 @@ public class MemberServiceImpl implements MemberService {
         return sb.toString().trim();
     }
 
-    // 권한 수정
+    // 권한 변경
     @Override
     @Transactional
-    public Member updateRole(long memberNo, MemberRequestDto requestDto) {
-        Member member = memberRepository.findById(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
-        member.updateRole(requestDto);
-        return member;
+    public void updateRole(Member member, long memberNo, MemberRequestDto requestDto) {
+        validationAdmin(member);
+        Member findMember = findById(memberNo);
+        findMember.updateRole(requestDto);
     }
 
     // 특정 회원 제재 (댓글, 일대일 채팅 상담 30일간 제한)
@@ -314,11 +293,10 @@ public class MemberServiceImpl implements MemberService {
         log.info("제재 여부 업데이트 스케줄러 실행");
 
         LocalDateTime now = LocalDateTime.now();
-//        LocalDateTime thirtyDaysAgo = now.minusDays(30);
-        LocalDateTime oneMinutesAgo = now.minusMinutes(1);
+        LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
         // isWarning(제재 여부)이 true인 사용자 중 warningStartDate가 30일 이전인 사용자 찾기
-        memberRepository.findByIsWarningAndWarningStartDateBefore(true, oneMinutesAgo)
+        memberRepository.findByIsWarningAndWarningStartDateBefore(true, thirtyDaysAgo)
             .forEach(member -> {
                 member.setIsWarning(false);
                 member.setCountWarning(member.getCountWarning()); // 제재 누적 횟수 증가
@@ -350,8 +328,10 @@ public class MemberServiceImpl implements MemberService {
     // 관리자가 특정 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
     @Transactional
-    public void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest,
+    public void deleteMemberAdmin(Member member, Long memberNo, String memberId, HttpServletRequest httpRequest,
         HttpServletResponse httpResponse) {
+
+        validationAdmin(member);
         String ipAddr = ipService.getIpAddress(httpRequest);
         withdrawMemberService.createWithdrawMember(findById(memberNo), ipAddr); // 탈퇴회원에 정보 추가
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
@@ -371,35 +351,32 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public Member updateOAuthAddInfo(long memberNo, MemberRequestDto memberRequestDto) {
-        Member member = memberRepository.findById(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberNo));
+        Member member = findById(memberNo);
 
         // 전송하려는 채팅 메세지에 비속어 포함되어있는지 검증
         validationNickname(memberRequestDto.getMemberNickname());
-
         member.updateOAuthInfo(memberRequestDto.getMemberNickname());
-        memberRepository.save(member);
-        return member;
+        return memberRepository.save(member);
     }
 
     // 인증번호 확인(회원가입 시 입력한 인증번호와 redis에 저장된 인증번호 일치하는지 확인)
     @Override
     public boolean verifyCode(String memberEmail, String inputCode) {
         String savedCode = redisUtils.getValues(memberEmail);
-        return inputCode.equals(savedCode);
+        if (!inputCode.equals(savedCode)) {
+            throw new BusinessException(ErrorCode.NOT_CORRECT_CODE);
+        }
+        return true;
     }
 
     // 아이디 찾기(이메일 이용, 추후 member Entity에 휴대전화번호필드 추가해서 휴대전화번호도 같이 이용하는걸로 변경하기)
     @Override
     public String findIdByEmail(FindIdRequestDto findIdRequestDto) {
-        Member member = memberRepository.findByMemberEmail(findIdRequestDto.getMemberEmail())
-            .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 회원이 없습니다."));
+        Member member = findByMemberEmail(findIdRequestDto.getMemberEmail());
         String savedCode = redisUtils.getValues(member.getMemberEmail());
 
         if (findIdRequestDto.getCode().equals(savedCode)) {
             return member.getMemberId();
-        } else {
-            log.info("인증번호가 일치하지않습니다");
         }
         return null;
     }
@@ -407,59 +384,35 @@ public class MemberServiceImpl implements MemberService {
     // 아이디 찾기 시 닉네임, 이메일에 해당하는 회원이 있는지 검증
     @Override
     public boolean findMemberByEmail(String memberEmail) {
-        Member member = memberRepository.findByMemberEmail(memberEmail)
-            .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 회원이 없습니다."));
-        if (member != null) {
-            log.info("member : {}", member);
-            return true;
-        }
-        log.info("입력정보와 일치하는 회원이 존재하지않습니다");
-        return false;
+        Member member = findByMemberEmail(memberEmail);
+        return member != null;
     }
 
     // 임시비밀번호 발급(비밀번호 찾기에서 해당 이메일로 임시비밀번호 전송)
     @Override
     public void SetTempPassword(String memberEmail, String tempPassword) {
-        Optional<Member> optionalMember = memberRepository.findByMemberEmail(memberEmail);
-
-        if (optionalMember.isPresent()) {
-            Member member = optionalMember.get();
-            member.setMemberPw(passwordEncoder.encode(tempPassword));
-            memberRepository.save(member);
-            log.info("해당 이메일에 임시비밀번호가 전송되었습니다: {}", memberEmail);
-        }
+        Member findMember = findByMemberEmail(memberEmail);
+        findMember.setMemberPw(passwordEncoder.encode(tempPassword));
+        memberRepository.save(findMember);
     }
 
     // 임시비밀번호 발급 시 아이디, 이메일에 해당하는 회원이 있는지 검증
     @Override
     public boolean findMemberByIdAndEmail(String memberId, String memberEmail) {
         Member member = memberRepository.findByMemberIdAndMemberEmail(memberId, memberEmail);
-        if (member != null) {
-            log.info("member : {}", member);
-            return true;
-        }
-        log.info("입력정보와 일치하는 회원이 존재하지않습니다");
-        return false;
+        return member != null;
     }
 
     // 비밀번호 변경
     @Override
-    public boolean changePassword(long memberNo, String changePw, String confirmPw) {
-        Optional<Member> optionalMember = memberRepository.findById(memberNo);
-        Member member = optionalMember.get();
-        log.info("member : {}", member);
+    public void changePassword(long memberNo, String changePw, String confirmPw) {
+        Member findMember = findById(memberNo);
         // 변경할 비밀번호와 변경할 비밀번호 재확인 일치하는지 확인
         if (changePw.equals(confirmPw)) {
-            member.setMemberPw(
-                passwordEncoder.encode(changePw)); // member entity에 setMemberPw 메서드 만들기
-            memberRepository.save(member);
-            log.info("비밀번호 변경 성공");
-            return true;
-
-        } else {
-            log.info("변경할 비밀번호가 일치하지않습니다");
+            findMember.updatePw(passwordEncoder.encode(changePw));
+            memberRepository.save(findMember);
         }
-        return false;
+        throw new BusinessException(ErrorCode.FAIL_TO_CHANGE_PW);
     }
 
     // 회원가입 시 탈퇴회원 DB에서 Ip주소 존재하는지 검증
@@ -476,11 +429,9 @@ public class MemberServiceImpl implements MemberService {
     public void validationId(String memberId) {
         if (ProfanityFilter.containsProfanity(memberId)) { // 비속어 검증
             throw new BusinessException(ErrorCode.NOT_ALLOW_PROFANITY_ID);
-        }
-
-        if (memberRepository.existsByMemberId(memberId)) { // 존재 여부 검증
+        } else if (memberRepository.existsByMemberId(memberId)) { // 회원 DB에 존재 여부 검증
             throw new BusinessException(ErrorCode.EXISTS_ID);
-        } else if (withdrawMemberService.existsMemberId(memberId)) {
+        } else if (withdrawMemberService.existsMemberId(memberId)) { // 탈퇴회원 DB에 존재 여부 검증
             throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_ID);
         }
     }
@@ -505,23 +456,20 @@ public class MemberServiceImpl implements MemberService {
 
     // 비밀번호 확인
     @Override
-    public boolean checkPassword(HttpServletRequest request, HttpServletResponse response,
+    public void checkPassword(HttpServletRequest request, HttpServletResponse response,
         String inputPassword, long memberNo) {
-        Member member = memberRepository.findById(memberNo)
-            .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
+        Member member = findById(memberNo);
 
         if (passwordEncoder.matches(inputPassword, member.getMemberPw()) || isOAuthMember(member)) {
             setPasswordVerifiedToCookie(request, response, member.getRandomTag());
-            return true;
         }
-        return false;
+        throw new BusinessException(ErrorCode.NOT_CORRECT_PW);
     }
 
     // OAuth2 로그인 회원의 경우, 별도의 인증 프로세스(이미 인증된 상태)
     @Override
     public boolean isOAuthMember(Member member) {
-        Member oAuthMember = memberRepository.findById(member.getMemberNo())
-            .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다"));
+        Member oAuthMember = findById(member.getMemberNo());
         return oAuthMember.getProviderType() != ProviderType.LOCAL;
     }
 
@@ -583,29 +531,6 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.count();
     }
 
-    // 권한이 admin인지 확인
-    @Override
-    public boolean isAdmin() {
-        // 현재 인증된 사용자 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-
-            // principal이 UserDetails 타입인지 확인
-            if (principal instanceof UserDetails userDetails) {
-
-                // 사용자의 권한 목록에서 ROLE_ADMIN이 있는지 확인
-                return userDetails.getAuthorities().stream()
-                    .anyMatch(
-                        grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-            }
-        }
-
-        // 권한이 없거나 인증되지 않은 경우 false 반환
-        return false;
-    }
-
     // admin 권한 검증
     public void validationAdmin(Member member) {
         if (member.getRole() != Role.ADMIN) {
@@ -622,7 +547,6 @@ public class MemberServiceImpl implements MemberService {
             long count = memberRepository.countByProviderType(type);
             countMap.put(type, count);
         }
-
         return countMap;
     }
 
@@ -639,24 +563,18 @@ public class MemberServiceImpl implements MemberService {
             throw new IllegalArgumentException("이미 신고한 회원입니다.");
         }
 
-        Optional<Member> findReportMember = memberRepository.findByMemberId(requestDto.getMemberId());
-        if (findReportMember.isPresent()) {
-            Member reportMember = findReportMember.get();
+        Member reportMember = findByMemberId(requestDto.getMemberId());
 
 //            if (reportMember.getRole() == Role.ADMIN) {
 //                throw new IllegalArgumentException("관리자는 신고할 수 없습니다.");
 //            }
 
-            reportMember.setCountReport(); // 신고하려는 회원의 신고 누적 횟수 +1 증가
-            reportMember.getReporters().add(member.getMemberId()); // 나를 신고한 회원 목록에 본인 아이디 추가
-            memberRepository.save(reportMember); // 변경 사항 DB에 저장
+        reportMember.setCountReport(); // 신고하려는 회원의 신고 누적 횟수 +1 증가
+        reportMember.getReporters().add(member.getMemberId()); // 나를 신고한 회원 목록에 본인 아이디 추가
+        memberRepository.save(reportMember); // 변경 사항 DB에 저장
 
-            todayReportMember.add(requestDto.getMemberId()); // 오늘 신고한 회원 목록에 신고하려는 회원 아이디 추가
-            memberRepository.save(member); // 변경 사항 DB에 저장
-
-        } else {
-            throw new IllegalArgumentException("신고할 회원을 찾을 수 없습니다.");
-        }
+        todayReportMember.add(requestDto.getMemberId()); // 오늘 신고한 회원 목록에 신고하려는 회원 아이디 추가
+        memberRepository.save(member); // 변경 사항 DB에 저장
     }
 
     // 모든 회원의 reportMember 리스트를 빈 리스트로 설정 (내가 신고한 회원 목록 초기화)
@@ -685,19 +603,35 @@ public class MemberServiceImpl implements MemberService {
         return String.join(", ", reporters);
     }
 
+    // memberNo 이용한 특정 회원 조회(관리자만 가능)
+    @Override
+    @Transactional(readOnly = true)
+    public Member findById(long memberNo) {
+        return memberRepository.findById(memberNo)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    // memberId 이용한 특정 회원 조회(관리자만 가능)
+    @Override
+    @Transactional(readOnly = true)
+    public Member findByMemberId(String memberId) {
+        return memberRepository.findByMemberId(memberId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    // memberEmail 이용한 특정 회원 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Member findByMemberEmail(String memberEmail) {
+        return memberRepository.findByMemberEmail(memberEmail)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_MEMBER));
+    }
+
     // 회원 아이디 마스킹 처리
     @Override
     public String idMasking(String memberId) {
         // 2 범위 뒤로는 모두 마스킹 처리
         return memberId.replaceAll("(?<=.{4}).", "*");
-    }
-
-    // 특정 회원 조회
-    @Override
-    @Transactional(readOnly = true)
-    public Member findByMemberId(String memberId) {
-        return memberRepository.findByMemberId(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 아이디 조회 실패 : " + memberId));
     }
 
     // 회원 이메일 마스킹 처리

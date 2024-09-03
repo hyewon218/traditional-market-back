@@ -62,22 +62,6 @@ public interface MemberService {
     Page<MemberResponseDto> findAll(Pageable pageable);
 
     /**
-     * memberNo 이용한 특정 회원 조회(관리자만 가능)
-     *
-     * @param memberNo : 조회할 회원 고유번호
-     * @return : 회원 Entity
-     */
-    Member findById(long memberNo);
-
-    /**
-     * memberId 이용한 특정 회원 조회(관리자만 가능)
-     *
-     * @param memberId : 조회할 회원 아이디 
-     * @return         : 회원 Entity
-     */
-    MemberResponseDto getMemberById(String memberId);
-
-    /**
      * 키워드 검색 회원 목록 조회
      *
      * @param cond 조건
@@ -121,11 +105,11 @@ public interface MemberService {
     /**
      * 회원 권한 수정(admin만 가능)
      *
+     * @param member : admin인지 확인할 회원
      * @param memberNo         : 수정할 회원 고유번호
      * @param memberRequestDto : 회원 수정 요청 정보
-     * @return : 회원 Entity
      */
-    Member updateRole(long memberNo, MemberRequestDto memberRequestDto);
+    void updateRole(Member member, long memberNo, MemberRequestDto memberRequestDto);
 
     /**
      * 회원 제재 (admin만 가능)
@@ -157,10 +141,11 @@ public interface MemberService {
     /**
      * 회원 삭제(admin이 다른 회원 삭제)
      *
+     * @param member        : admin인지 확인할 회원
      * @param memberNo      : 삭제할 회원 고유번호
      * @param memberId      : 삭제할 회원 아이디
      */
-    void deleteMemberAdmin(Long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
+    void deleteMemberAdmin(Member member, Long memberNo, String memberId, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
 
     /**
      * OAuth2 최초 로그인 시 닉네임 수정
@@ -217,7 +202,7 @@ public interface MemberService {
      * @param changePw  : 변경할 비밀번호
      * @param confirmPw : 변경할 비밀번호 재확인
      */
-    boolean changePassword(long memberNo, String changePw, String confirmPw);
+    void changePassword(long memberNo, String changePw, String confirmPw);
 
     /**
      * 회원가입 시 탈퇴회원 DB에서 Ip주소 존재하는지 검증
@@ -249,9 +234,8 @@ public interface MemberService {
      *
      * @param inputPassword : 비밀번호 확인 위해 입력한 비밀번호
      * @param memberNo      : 비밀번호 확인할 회원의 고유번호
-     * @return : true / false
      */
-    boolean checkPassword(HttpServletRequest request, HttpServletResponse response,
+    void checkPassword(HttpServletRequest request, HttpServletResponse response,
         String inputPassword, long memberNo);
 
     /**
@@ -296,13 +280,6 @@ public interface MemberService {
     Long countMembers();
 
     /**
-     * 권한이 admin인지 확인
-     *
-     * @return : true / false
-     */
-    boolean isAdmin();
-
-    /**
      * 가입 경로별 회원 수
      *
      * @return : 가입 경로별 회원 수
@@ -334,6 +311,30 @@ public interface MemberService {
     String getReporterList(Long memberNo);
 
     /**
+     * memberNo 이용한 특정 회원 조회(관리자만 가능)
+     *
+     * @param memberNo : 조회할 회원 고유번호
+     * @return : 회원 Entity
+     */
+    Member findById(long memberNo);
+
+    /**
+     * memberId 이용한 특정 회원 조회(관리자만 가능)
+     *
+     * @param memberId : 조회할 회원 아이디
+     * @return : 회원 Entity
+     */
+    Member findByMemberId(String memberId);
+
+    /**
+     * memberEmail 이용한 특정 회원 조회(관리자만 가능)
+     *
+     * @param memberEmail : 조회할 회원 이메일
+     * @return : 회원 Entity
+     */
+    Member findByMemberEmail(String memberEmail);
+
+    /**
      * 회원 아이디 마스킹 처리
      *
      * @param memberId : 마스킹 처리 할 회원 아이디
@@ -356,6 +357,4 @@ public interface MemberService {
      */
     List<Member> findChatRoomRecipients(Long roomId, Member sender);
 
-
-    Member findByMemberId(String memberId);
 }

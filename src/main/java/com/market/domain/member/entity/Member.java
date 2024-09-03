@@ -152,4 +152,9 @@ public class Member extends BaseEntity {
     public void updateEmail(String memberEmail) {
         this.memberEmail = memberEmail;
     }
+    
+    // 비밀번호 변경
+    public void updatePw(String changePw) {
+        this.memberPw = changePw;
+    }
 }
