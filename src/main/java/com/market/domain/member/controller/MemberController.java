@@ -32,7 +32,6 @@ import java.util.Optional;
 public class MemberController {
 
     private final MemberServiceImpl memberService;
-    private final MemberRepository memberRepository;
 
     // 회원가입
     @PostMapping("/signup")
