@@ -17,6 +17,14 @@ public class CookieUtil {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
+
+        // HttpOnly 설정: 자바스크립트에서 쿠키를 접근하지 못하게 합니다.
+//        cookie.setHttpOnly(true);
+
+        // Secure 설정: HTTPS를 통해서만 쿠키가 전송되도록 합니다.
+        // (개발 환경에서는 HTTPS가 아닐 수 있으므로, 상황에 맞게 설정)
+//        cookie.setSecure(true);
+
         response.addCookie(cookie);
         if (cookie != null) {
             log.info("쿠키가 생성되었습니다 : " + cookie.getValue());
