@@ -74,12 +74,11 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public MemberResponseDto createMember(MemberRequestDto memberRequestDto,
         HttpServletRequest request) {
-        // 최종 배포할땐 주석 해제하기
-//        validationIpAddr(request); // ip주소가 탈퇴회원 DB에 있는지 검증
+
+        validationIpAddr(request); // ip주소가 탈퇴회원 DB에 있는지 검증
         validationId(memberRequestDto.getMemberId()); // 가입하려는 id가 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationEmail(memberRequestDto.getMemberEmail()); // 가입하려는 email이 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationNickname(memberRequestDto.getMemberNickname()); // 닉네임에 비속어가 포함되어있는지 검증
-        memberRepository.save(memberRequestDto.toEntity(passwordEncoder));
         return MemberResponseDto.of(memberRepository.save(memberRequestDto.toEntity(passwordEncoder)));
     }
 
@@ -88,9 +87,10 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
         MemberRequestDto request) throws Exception {
         try {
-              // 최종 배포할땐 주석 해제하기
-//            validationIpAddr(httpRequest); // 1차 검증, 로그인 시 탈퇴회원 DB에서 로그인하려는 아이피주소 있는지 검증(IP 주소는  유동적으로 변해서 안될 가능성 있음) // OAuth, LOCAL 검증
-//            validationId(request.getMemberId()); // 2차 검증, LOCAL만 검증 가능, OAuth는 검증 못함(OAuth2UserCustomService에서 처리)
+            validationIpAddr(httpRequest); // 1차 검증, 로그인 시 탈퇴회원 DB에서 로그인하려는 아이피주소 있는지 검증(IP 주소는  유동적으로 변해서 안될 가능성 있음) // OAuth, LOCAL 검증
+            if (withdrawMemberService.existsMemberId(request.getMemberId())) { // 탈퇴회원 DB에 존재 여부 검증
+                throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_ID);
+            }
 
             Authentication authentication = authenticationConfiguration.getAuthenticationManager()
                 .authenticate(new UsernamePasswordAuthenticationToken(
@@ -411,8 +411,9 @@ public class MemberServiceImpl implements MemberService {
         if (changePw.equals(confirmPw)) {
             findMember.updatePw(passwordEncoder.encode(changePw));
             memberRepository.save(findMember);
+        } else {
+            throw new BusinessException(ErrorCode.FAIL_TO_CHANGE_PW);
         }
-        throw new BusinessException(ErrorCode.FAIL_TO_CHANGE_PW);
     }
 
     // 회원가입 시 탈퇴회원 DB에서 Ip주소 존재하는지 검증
@@ -462,8 +463,9 @@ public class MemberServiceImpl implements MemberService {
 
         if (passwordEncoder.matches(inputPassword, member.getMemberPw()) || isOAuthMember(member)) {
             setPasswordVerifiedToCookie(request, response, member.getRandomTag());
+        } else {
+            throw new BusinessException(ErrorCode.NOT_CORRECT_PW);
         }
-        throw new BusinessException(ErrorCode.NOT_CORRECT_PW);
     }
 
     // OAuth2 로그인 회원의 경우, 별도의 인증 프로세스(이미 인증된 상태)

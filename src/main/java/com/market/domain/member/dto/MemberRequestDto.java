@@ -40,19 +40,6 @@ public class MemberRequestDto {
 
     private Role role;
 
-    // 테스트에서만 사용함
-    public MemberRequestDto(String modifiedMemberNickname, String modifiedMemberPw) {
-        this.memberNickname = modifiedMemberNickname;
-        this.memberPw = modifiedMemberPw;
-    }
-
-    // 테스트에서만 사용함
-    public MemberRequestDto(String memberId, String memberEmail, String memberPw) {
-        this.memberId = memberId;
-        this.memberEmail = memberEmail;
-        this.memberPw = memberPw;
-    }
-
     public Member toEntity(PasswordEncoder passwordEncoder){
         String randomTag = generateRandomTag();
 
