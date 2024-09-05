@@ -107,6 +107,13 @@ public class ItemController {
         return ResponseEntity.ok().body(top5Items);
     }
 
+    @GetMapping("/{shopNo}/items/by-shop") // 상품 TOP5 내 상점 No 와 상품 No로 조회
+    public ResponseEntity<ItemResponseDto> getItemInShopByItemNo(
+        @PathVariable("shopNo") Long shopNo, Long itemNo) {
+        ItemResponseDto Item = itemService.getItemInShopByItemNo(shopNo, itemNo);
+        return ResponseEntity.ok().body(Item);
+    }
+
     @GetMapping("/items/ranking") // 상품 가격 랭킹 조회
     public ResponseEntity<List<ItemResponseDto>> searchPriceRankFiveItems(ItemSearchCond cond) {
         List<ItemResponseDto> result = itemService.searchRankingFiveItems(cond);

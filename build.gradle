@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.market'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
     sourceCompatibility = '17'
@@ -89,4 +89,14 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(Test) {
     jvmArgs -= ["--enable-preview"]
+}
+
+bootJar{
+    archivesBaseName = 'tmarket'
+    archiveFileName = "tmarket-${version}.jar"
+}
+
+
+jar {
+    enabled = false
 }

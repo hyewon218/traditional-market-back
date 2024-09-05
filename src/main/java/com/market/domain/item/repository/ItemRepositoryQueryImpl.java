@@ -66,14 +66,15 @@ public class ItemRepositoryQueryImpl implements ItemRepositoryQuery {
 
     // 상점 고유번호와 상품 이름을 이용해 상품 조회
     @Override
-    public List<ItemTop5ResponseDto> searchItemsByShopNoAndItemName(Long marketNo,
-        String itemName) {
+    public List<ItemTop5ResponseDto> searchItemsByMarketNoAndItemName(Long marketNo, String itemName) {
 
         var query = jpaQueryFactory.select(
+                item.no,
                 item.itemName,
                 item.price,
-                market.marketName,
-                shop.shopName
+                shop.no,
+                shop.shopName,
+                market.marketName
             )
             .from(item)
             .join(item.shop, shop)
@@ -90,7 +91,9 @@ public class ItemRepositoryQueryImpl implements ItemRepositoryQuery {
         // Tuple 을 DTO 로 변환
         return results.stream()
             .map(tuple -> ItemTop5ResponseDto.builder()
+                .itemNo(tuple.get(item.no))
                 .price(tuple.get(item.price))
+                .shopNo(tuple.get(shop.no))
                 .shopName(tuple.get(shop.shopName))
                 .build())
             .collect(Collectors.toList());
