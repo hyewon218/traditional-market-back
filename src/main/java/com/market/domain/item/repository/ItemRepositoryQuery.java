@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 public interface ItemRepositoryQuery {
 
     Page<Item> searchItems(ItemSearchCond cond, Pageable pageable);
+
     List<Item> searchRankingFiveItems(ItemSearchCond cond);
-    List<ItemTop5ResponseDto> searchItemsByShopNoAndItemName(Long shopNo, String itemName);
+
+    List<ItemTop5ResponseDto> searchItemsByMarketNoAndItemName(Long marketNo, String itemName);
 }

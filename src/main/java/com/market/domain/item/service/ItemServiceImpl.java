@@ -172,18 +172,24 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional(readOnly = true)  // 상품 저렴한 순으로 5개 조회(-> Redis 저장-> Redis 에 존재하면 바로 반환)
+    @Transactional(readOnly = true) // 상품 저렴한 순으로 5개 조회(-> Redis 저장-> Redis 에 존재하면 바로 반환)
     @Cacheable(cacheNames = "getTop5Items", key = "'market:' + #marketNo + ':item:' + #itemName + ':top5'", cacheManager = "ItemTop5CacheManager")
-    public List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo,
-        String itemName) {
+    public List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo, String itemName) {
         // 해당 마켓의 상품 조회 및 DTO 변환
-        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery.searchItemsByShopNoAndItemName(
+        List<ItemTop5ResponseDto> top5Items = itemRepositoryQuery.searchItemsByMarketNoAndItemName(
             marketNo, itemName);
         // 각 상품에 rank 추가
         for (int i = 0; i < top5Items.size(); i++) {
             top5Items.get(i).setRank(i + 1);
         }
         return top5Items;
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 상품 TOP5 내 특정 상품 정보 조회
+    public ItemResponseDto getItemInShopByItemNo(Long shopNo, Long itemNo) {
+        Item item = itemRepository.findByShopNoAndNo(shopNo, itemNo);
+        return ItemResponseDto.of(item);
     }
 
     @Override

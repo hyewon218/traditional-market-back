@@ -1,6 +1,5 @@
 package com.market.domain.item.dto;
 
-import com.market.domain.item.entity.Item;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,15 +11,10 @@ import lombok.Getter;
 public class ItemTop5ResponseDto {
 
     private int rank;
+    private Long itemNo;
+    private Long shopNo;
     private String shopName;
     private int price;
-
-    public static ItemTop5ResponseDto of(Item item) {
-        return ItemTop5ResponseDto.builder()
-                .shopName(item.getShop().getShopName())
-                .price(item.getPrice())
-                .build();
-    }
 
     // 랭크 설정
     public void setRank(int rank) {

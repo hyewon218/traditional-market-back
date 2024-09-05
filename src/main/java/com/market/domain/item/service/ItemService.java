@@ -120,6 +120,15 @@ public interface ItemService {
     List<ItemTop5ResponseDto> getTop5ItemsInMarketByItemName(Long marketNo, String itemName);
 
     /**
+     * 상품 TOP5 내 특정 상품 정보 조회
+     *
+     * @param shopNo : 찾을 상점 no
+     * @param itemNo : 찾을 상품명
+     * @return ItemResponseDto : 상품 조회
+     */
+    ItemResponseDto getItemInShopByItemNo(Long shopNo, Long itemNo);
+
+    /**
      * 상품 수정
      *
      * @param itemNo     : 수정할 상품 no

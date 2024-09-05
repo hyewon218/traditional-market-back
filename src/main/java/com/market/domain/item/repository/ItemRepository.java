@@ -33,11 +33,10 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Page<Item> findByShopMarketNoAndItemCategory(Long marketNo, ItemCategoryEnum itemCategory,
         Pageable pageable);
 
-    List<Item> findByShopMarketNoAndItemName(Long marketNo, String itemName);
-
     Page<Item> findByItemCategoryOrderByItemCategoryDesc(ItemCategoryEnum itemCategory,
         Pageable pageable);
 
     Page<Item> findAllByShop_Market_No(Long marketNo, Pageable pageable);
 
+    Item findByShopNoAndNo(Long shopNo, Long itemNo);
 }
