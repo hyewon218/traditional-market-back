@@ -58,6 +58,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 생성
+    @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager") // 상점 생성 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
     public ShopResponseDto createShop(ShopRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
         // 선택한 시장에 상점 등록
