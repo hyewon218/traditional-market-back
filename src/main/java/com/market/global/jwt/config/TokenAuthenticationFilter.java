@@ -1,8 +1,5 @@
 package com.market.global.jwt.config;
 
-import com.market.domain.member.entity.Member;
-import com.market.domain.member.repository.MemberRepository;
-import com.market.global.redis.RedisUtils;
 import com.market.global.visitor.VisitorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
