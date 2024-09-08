@@ -54,6 +54,7 @@ public class MarketServiceImpl implements MarketService {
 
     @Override
     @Transactional // 시장 생성
+    @CacheEvict(cacheNames = "markets", allEntries = true, cacheManager = "marketCacheManager") // 시장 생성 시 전체 시장 캐시도 삭제해서 동기화 문제 해결
     public MarketResponseDto createMarket(MarketRequestDto requestDto, List<MultipartFile> files)
         throws IOException {
 
