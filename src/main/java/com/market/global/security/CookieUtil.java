@@ -33,6 +33,26 @@ public class CookieUtil {
         }
     }
 
+    public static void addCookieForRefreshToken(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+
+        // HttpOnly 설정: 클라이언트측 자바스크립트에서 쿠키를 접근하지 못하게 합니다.
+        cookie.setHttpOnly(true);
+
+        // Secure 설정: HTTPS를 통해서만 쿠키가 전송되도록 합니다.
+        // (개발 환경에서는 HTTPS가 아닐 수 있으므로, 상황에 맞게 설정)
+//        cookie.setSecure(true);
+
+        response.addCookie(cookie);
+        if (cookie != null) {
+            log.info("쿠키가 생성되었습니다 : " + cookie.getValue());
+        } else {
+            log.info("쿠키가 null입니다");
+        }
+    }
+
 //    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge,
 //                                 boolean httpOnly, boolean secure) {
 //        Cookie cookie = new Cookie(name, value);

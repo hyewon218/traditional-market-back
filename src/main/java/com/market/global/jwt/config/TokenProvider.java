@@ -219,7 +219,8 @@ public class TokenProvider {
         int cookieMaxAge = (int) REFRESH_TOKEN_DURATION.toSeconds();
         String encodeCode = URLEncoder.encode(refreshToken, "utf-8").replaceAll("\\+", "%20");
         CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
-        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, encodeCode, cookieMaxAge);
+//        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, encodeCode, cookieMaxAge);
+        CookieUtil.addCookieForRefreshToken(response, REFRESH_TOKEN_COOKIE_NAME, encodeCode, cookieMaxAge);
     }
 
     // 쿠키에서 액세스토큰 가져오는 메서드
