@@ -91,7 +91,7 @@ public class OrderController {
             .body(orderService.getOrdersSeller(userDetails.getMember(), pageable));
     }
 
-    @GetMapping("/orders-page-seller/cancel") // 판매자가 자신이 소유한 상점의 상품들에 대한 주문상태별 조회 (판매자만 가능)
+    @GetMapping("/orders-page-seller/status") // 판매자가 자신이 소유한 상점의 상품들에 대한 주문상태별 조회 (판매자만 가능)
     public ResponseEntity<Page<OrderHistResponseDto>> getCancelOrdersSeller(
         @AuthenticationPrincipal UserDetailsImpl userDetails, OrderStatus orderStatus, Pageable pageable) {
         return ResponseEntity.ok()
