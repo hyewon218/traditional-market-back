@@ -2,10 +2,6 @@ server:
   port: 8080
 
 spring:
-  profiles:
-    default: prod
-   #default: local # local 환경
-
   application:
     name: traditional-market
 
@@ -19,7 +15,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/${DB_NAME}
+    url: jdbc:mysql://mysql:3306/${DB_NAME} # 컨테이너 내부 포트는 3306
     username: ${DB_ID}
     password: ${DB_PW}
     hikari:
@@ -38,7 +34,7 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
   thymeleaf:
@@ -60,16 +56,18 @@ spring:
     properties: # 이메일 구성에 대한 추가 속성
       mail:
         smtp:
-          auth: true # SMTP 서버에 인증 필요한 경우 true 로 지정한다. Gmail SMTP 서버는 인증을 요구하기 때문에 true 로 설정해야 한다.
+          auth: true # SMTP 서버에 인증 필요한 경우 true로 지정한다. Gmail SMTP 서버는 인증을 요구하기 때문에 true로 설정해야 한다.
           connectiontimeout: 5000 # 클라이언트가 SMTP 서버와의 연결을 설정하는 데 대기해야 하는 시간(Millisecond). 연결이 불안정한 경우 대기 시간이 길어질 수 있기 때문에 너무 크게 설정하면 전송 속도가 느려질 수 있다.
           timeout: 5000 # 클라이언트가 SMTP 서버로부터 응답을 대기해야 하는 시간(Millisecond). 서버에서 응답이 오지 않는 경우 대기 시간을 제한하기 위해 사용된다.
-          writetimeout: 5000 # 클라이언트가 작업을 완료하는 데 대기해야 하는 시간(Millisecond). 이메일을 SMTP 서버로 전송하는 데 걸리는 시간을 제한하는 데 사용된다.
-          starttls: # SMTP 서버가 TLS 를 사용하여 안전한 연결을 요구하는 경우 true 로 설정한다. TLS 는 데이터를 암호화하여 안전한 전송을 보장하는 프로토콜이다.
+          writetimeout: 5000 # 클라이언트가 작업을 완료하는데 대기해야 하는 시간(Millisecond). 이메일을 SMTP 서버로 전송하는 데 걸리는 시간을 제한하는데 사용된다.
+          starttls: # SMTP 서버가 TLS를 사용하여 안전한 연결을 요구하는 경우 true로 설정한다. TLS는 데이터를 암호화하여 안전한 전송을 보장하는 프로토콜이다.
             enable: true
             required: true
           ssl:
             trust: smtp.gmail.com
             protocols: TLSv1.2
+
+  #    auth-code-expiration-millis: 180000 # 3*60*1000 = 3분   # redis에 저장해서 필요없음
 
   security:
     oauth2:
@@ -78,7 +76,7 @@ spring:
           google:
             client-id: ${GOOGLE_ID}
             client-secret: ${GOOGLE_PW}
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/google"
             authorization-grant-type: authorization_code
             scope: email, profile
             authorization-uri: https://accounts.google.com/o/oauth2/auth
@@ -87,7 +85,7 @@ spring:
           naver:
             client-id: ${NAVER_ID}
             client-secret: ${NAVER_PW}
-            redirect-uri: "http://localhost:8080/login/oauth2/code/naver" # callback uri
+            redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/naver" # callback uri
             authorization-grant-type: authorization_code
             scope: email, nickname
             client-name: Naver
@@ -95,7 +93,7 @@ spring:
           kakao:
             client-id: ${KAKAO_ID}
             client-secret: ${KAKAO_PW}
-            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao" # callback uri
+            redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/kakao" # callback uri
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope: profile_nickname, account_email, profile_image #동의 항목
@@ -132,6 +130,7 @@ jwt:
 kakaopay:
   secret_key: ${KAKAOPAY_SECRET_KEY_DEV}
   cid: TC0ONETIME
+
 
 logging:
   level:
