@@ -181,7 +181,11 @@ public class WebSecurityConfig {
         @Bean // 스프링 서버 전역적으로 CORS 설정
         public CorsConfigurationSource corsConfigurationSource() {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+            configuration.setAllowedOrigins(List.of(
+                //"http://example.com", // 실제 Nginx 도메인
+                "http://3.36.96.0", // 실제 Nginx 서버의 IP 주소
+                "http://localhost:3000" // 필요시 개발용 localhost 허용
+            ));
             configuration.setAllowedMethods(
                 Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE")); // 모든 HTTP 메서드 허용
             configuration.setAllowedHeaders(
