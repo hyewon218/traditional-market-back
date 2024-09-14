@@ -52,7 +52,7 @@ public class WebSecurityConfig {
         private final WithdrawMemberService withdrawMemberService;
 
         @Bean
-        public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
+        public WebSecurityCustomizer webSecurityCustomizer() { // security 를 적용하지 않을 리소스
             return web -> web.ignoring()
                 .requestMatchers("/error", "/favicon.ico");
         }
@@ -93,13 +93,14 @@ public class WebSecurityConfig {
                         .requestMatchers("/", "/api/visitors/**", "/api/members/signup", "/members/login",
                                 "/api/members/verifycode", "/api/members/addinfo", "/api/members/findid",
                                 "/api/oauth2/login", "/api/send-mail/**", "/api/members/checkemail", "/api/members/checkid",
-                                "/api/markets", "/api/markets/**", "/api/shops", "/api/shops/**",
+                                "/api/markets", "/api/markets/**", "/api/{marketNo}/shops/**", "/api/{marketNo}/items/**",
+                                "/api/shops", "/api/shops/**", "/api/{shopNo}/items/**", "/api/notices/**",
                                 "/api/members/login", "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
                         .requestMatchers("/api/members/**","/api/chatrooms", "/api/chatrooms/**", "/myinfo/inquiry/**",
                                 "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
                                 "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
                         .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
-                        .anyRequest().authenticated() // authenticated로 바꾸기
+                        .anyRequest().authenticated()
                 )
 
                 .oauth2Login(oauth2 -> oauth2
