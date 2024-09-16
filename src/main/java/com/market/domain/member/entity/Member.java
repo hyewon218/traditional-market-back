@@ -4,7 +4,7 @@ import com.market.domain.base.BaseEntity;
 import com.market.domain.cart.entity.Cart;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.MemberRequestDto;
-import com.market.domain.member.dto.MemberResponseDto;
+import com.market.domain.notification.entity.Notification;
 import com.market.domain.order.entity.Order;
 import com.market.domain.shop.entity.Shop;
 import com.market.global.security.oauth2.ProviderType;
@@ -18,7 +18,7 @@ import java.util.List;
 @Builder
 @Entity
 @Getter
-@Setter // 임시비밀번호 설정때문에 import
+@Setter // 임시비밀번호 설정 때문에 import
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member")
@@ -81,6 +81,10 @@ public class Member extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     public Member(String memberId, String memberEmail, String memberNickname, String memberPw, String nicknameWithRandomTag, ProviderType providerType, Role role) {
         this.memberId = memberId;
@@ -148,7 +152,7 @@ public class Member extends BaseEntity {
         this.reporters = reporters;
     }
 
-    // OAuth2 로그인 시 해당 사이트의 email과 다르다면 해당 사이트 이메일로 업데이트
+    // OAuth2 로그인 시 해당 사이트의 email 과 다르다면 해당 사이트 이메일로 업데이트
     public void updateEmail(String memberEmail) {
         this.memberEmail = memberEmail;
     }
