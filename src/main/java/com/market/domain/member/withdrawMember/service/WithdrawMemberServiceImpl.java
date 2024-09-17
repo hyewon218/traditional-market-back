@@ -30,9 +30,9 @@ public class WithdrawMemberServiceImpl implements WithdrawMemberService {
     // 탈퇴 회원 생성
     @Override
     @Transactional
-    public WithdrawMemberResponseDto createWithdrawMember(Member member, String ipAddr) {
+    public WithdrawMemberResponseDto createWithdrawMember(Member member) {
         return WithdrawMemberResponseDto.of(
-            withdrawMemberRepository.save(WithdrawMember.toEntity(member, ipAddr)));
+            withdrawMemberRepository.save(WithdrawMember.toEntity(member)));
     }
 
     // 전체 조회
@@ -118,9 +118,4 @@ public class WithdrawMemberServiceImpl implements WithdrawMemberService {
         return withdrawMemberRepository.existsByWithdrawMemberEmail(memberEmail);
     }
 
-    // 회원가입 시 탈퇴 회원 검증 (ipAddr 이용)
-    @Override
-    public boolean existsIpAddr(String ipAddr) {
-        return withdrawMemberRepository.existsByWithdrawIpAddr(ipAddr);
-    }
 }

@@ -24,19 +24,16 @@ public class WithdrawMember extends BaseEntity {
 
     private String withdrawMemberEmail;
 
-    private String withdrawIpAddr;
-
     private LocalDateTime withdrawDate;
 
     public void setWithdrawDate(LocalDateTime withdrawDate) {
         this.withdrawDate = withdrawDate;
     }
 
-    public static WithdrawMember toEntity(Member member, String ipAddr) {
+    public static WithdrawMember toEntity(Member member) {
         return WithdrawMember.builder()
             .withdrawMemberId(member.getMemberId())
             .withdrawMemberEmail(member.getMemberEmail())
-            .withdrawIpAddr(ipAddr)
             .withdrawDate(LocalDateTime.now())
             .build();
     }

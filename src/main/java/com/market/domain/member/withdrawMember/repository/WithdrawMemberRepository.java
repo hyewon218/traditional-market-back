@@ -14,7 +14,5 @@ public interface WithdrawMemberRepository extends JpaRepository<WithdrawMember, 
 
     boolean existsByWithdrawMemberEmail(String memberEmail);
 
-    boolean existsByWithdrawIpAddr(String ipAddr);
-
     List<WithdrawMember> findByWithdrawDateBefore(LocalDateTime withdrawDate);
 }

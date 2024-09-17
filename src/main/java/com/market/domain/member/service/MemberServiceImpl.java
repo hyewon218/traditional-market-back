@@ -75,7 +75,6 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto createMember(MemberRequestDto memberRequestDto,
         HttpServletRequest request) {
 
-        validationIpAddr(request); // ip주소가 탈퇴회원 DB에 있는지 검증
         validationId(memberRequestDto.getMemberId()); // 가입하려는 id가 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationEmail(memberRequestDto.getMemberEmail()); // 가입하려는 email이 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationNickname(memberRequestDto.getMemberNickname()); // 닉네임에 비속어가 포함되어있는지 검증
@@ -87,7 +86,6 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
         MemberRequestDto request) throws Exception {
         try {
-            validationIpAddr(httpRequest); // 1차 검증, 로그인 시 탈퇴회원 DB에서 로그인하려는 아이피주소 있는지 검증(IP 주소는  유동적으로 변해서 안될 가능성 있음) // OAuth, LOCAL 검증
             if (withdrawMemberService.existsMemberId(request.getMemberId())) { // 탈퇴회원 DB에 존재 여부 검증
                 throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_ID);
             }
@@ -310,8 +308,8 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void deleteMember(long memberNo, String memberId, HttpServletRequest httpRequest,
         HttpServletResponse httpResponse) {
-        String ipAddr = ipService.getIpAddress(httpRequest);
-        withdrawMemberService.createWithdrawMember(findById(memberNo), ipAddr); // 탈퇴회원에 정보 추가
+
+        withdrawMemberService.createWithdrawMember(findById(memberNo)); // 탈퇴회원에 정보 추가
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
         deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
@@ -332,8 +330,7 @@ public class MemberServiceImpl implements MemberService {
         HttpServletResponse httpResponse) {
 
         validationAdmin(member);
-        String ipAddr = ipService.getIpAddress(httpRequest);
-        withdrawMemberService.createWithdrawMember(findById(memberNo), ipAddr); // 탈퇴회원에 정보 추가
+        withdrawMemberService.createWithdrawMember(findById(memberNo)); // 탈퇴회원에 정보 추가
         inquiryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 문의사항 모두 삭제
         deliveryRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송지 모두 삭제
         deliveryMessageRepository.deleteAllByMemberNo(memberNo); // 해당 회원의 배송메시지 모두 삭제
@@ -413,15 +410,6 @@ public class MemberServiceImpl implements MemberService {
             memberRepository.save(findMember);
         } else {
             throw new BusinessException(ErrorCode.FAIL_TO_CHANGE_PW);
-        }
-    }
-
-    // 회원가입 시 탈퇴회원 DB에서 Ip주소 존재하는지 검증
-    @Override
-    public void validationIpAddr(HttpServletRequest request) {
-        String myIpAddr = ipService.getIpAddress(request);
-        if (withdrawMemberService.existsIpAddr(myIpAddr)) {
-            throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_IPADDR);
         }
     }
 
