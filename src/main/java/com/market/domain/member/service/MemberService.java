@@ -205,12 +205,6 @@ public interface MemberService {
     void changePassword(long memberNo, String changePw, String confirmPw);
 
     /**
-     * 회원가입 시 탈퇴회원 DB에서 Ip주소 존재하는지 검증
-     *
-     */
-    void validationIpAddr(HttpServletRequest request);
-
-    /**
      * 회원가입 시 회원 DB에서 아이디 중복 확인 및 탈퇴회원에서 아이디 검증
      *
      */

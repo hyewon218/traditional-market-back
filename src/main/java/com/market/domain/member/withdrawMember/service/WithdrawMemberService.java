@@ -12,10 +12,9 @@ public interface WithdrawMemberService {
      * 탈퇴 회원 생성
      *
      * @param member : 생성 시 필요한 탈퇴 회원 정보
-     * @param ipAddr : 탈퇴 회원의 ip 주소
      * @return : 탈퇴 정보
      */
-    WithdrawMemberResponseDto createWithdrawMember(Member member, String ipAddr);
+    WithdrawMemberResponseDto createWithdrawMember(Member member);
 
     /**
      * 전체 조회
@@ -86,11 +85,4 @@ public interface WithdrawMemberService {
      * @param memberEmail : 찾을 탈퇴 회원 정보
      */
     boolean existsMemberEmail(String memberEmail);
-
-    /**
-     * 회원가입 시 탈퇴 회원 검증 (ipAddr 이용)
-     *
-     * @param ipAddr : 찾을 탈퇴 회원 정보
-     */
-    boolean existsIpAddr(String ipAddr);
 }

@@ -103,7 +103,7 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 카테고리별 상점 목록 조회
+    @Transactional(readOnly = true) // 카테고리별 시장 목록 조회
     @Cacheable(
         cacheNames = "categoryMarkets",
         key = "#category.name + '-' + #pageable.pageNumber + '-' + #pageable.pageSize",

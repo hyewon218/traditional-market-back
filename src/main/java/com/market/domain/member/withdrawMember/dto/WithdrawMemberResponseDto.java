@@ -25,7 +25,6 @@ public class WithdrawMemberResponseDto {
             .withdrawMemberNo(withdrawMember.getWithdrawMemberNo())
             .withdrawMemberId(withdrawMember.getWithdrawMemberId())
             .withdrawMemberEmail(withdrawMember.getWithdrawMemberEmail())
-            .withdrawIpAddr(withdrawMember.getWithdrawIpAddr())
             .withdrawDate(withdrawMember.getWithdrawDate())
             .build();
     }
