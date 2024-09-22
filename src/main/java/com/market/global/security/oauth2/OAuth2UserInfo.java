@@ -76,6 +76,9 @@ public record OAuth2UserInfo(
                 .memberPw(encodedPassword)
                 .role(Role.MEMBER)
                 .providerType(providerType)
+                .countReport(0L)
+                .countWarning(0L)
+                .isWarning(false)
                 .build();
     }
 

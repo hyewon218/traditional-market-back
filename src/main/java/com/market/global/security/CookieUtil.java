@@ -26,11 +26,6 @@ public class CookieUtil {
 //        cookie.setSecure(true);
 
         response.addCookie(cookie);
-        if (cookie != null) {
-            log.info("쿠키가 생성되었습니다 : " + cookie.getValue());
-        } else {
-            log.info("쿠키가 null입니다");
-        }
     }
 
     public static void addCookieForRefreshToken(HttpServletResponse response, String name, String value, int maxAge) {
@@ -46,11 +41,6 @@ public class CookieUtil {
 //        cookie.setSecure(true);
 
         response.addCookie(cookie);
-        if (cookie != null) {
-            log.info("쿠키가 생성되었습니다 : " + cookie.getValue());
-        } else {
-            log.info("쿠키가 null입니다");
-        }
     }
 
 //    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge,
