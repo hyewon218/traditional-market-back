@@ -96,9 +96,15 @@ public class KakaoPayService {
             param.add("quantity", totalQuantity);
             param.add("total_amount", totalPrice);
             param.add("tax_free_amount", 0);
-            param.add("approval_url", "http://localhost:8080/api/payment/success");
-            param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
-            param.add("fail_url", "http://localhost:8080/api/payment/fail");
+            //param.add("approval_url", "http://localhost:8080/api/payment/success");
+            //param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
+            //param.add("fail_url", "http://localhost:8080/api/payment/fail");
+            //param.add("approval_url", "http://3.36.96.0:8080/api/payment/success");
+            //param.add("cancel_url", "http://3.36.96.0:8080/api/payment/cancel");
+            //param.add("fail_url", "http://3.36.96.0:8080/api/payment/fail");
+            param.add("approval_url", "http://tmarket.kro.kr:8080/api/payment/success");
+            param.add("cancel_url", "http://tmarket.kro.kr:8080/api/payment/cancel");
+            param.add("fail_url", "http://tmarket.kro.kr:8080/api/payment/fail");
 
             // 주문 상품이 1개일 경우
         } else {
@@ -111,9 +117,15 @@ public class KakaoPayService {
             param.add("quantity", orderItem.getCount());
             param.add("total_amount", orderItem.getTotalPrice());
             param.add("tax_free_amount", 0);
-            param.add("approval_url", "http://localhost:8080/api/payment/success");
-            param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
-            param.add("fail_url", "http://localhost:8080/api/payment/fail");
+            //param.add("approval_url", "http://localhost:8080/api/payment/success");
+            //param.add("cancel_url", "http://localhost:8080/api/payment/cancel");
+            //param.add("fail_url", "http://localhost:8080/api/payment/fail");
+            //param.add("approval_url", "http://3.36.96.0:8080/api/payment/success");
+            //param.add("cancel_url", "http://3.36.96.0:8080/api/payment/cancel");
+            //param.add("fail_url", "http://3.36.96.0:8080/api/payment/fail");
+            param.add("approval_url", "http://tmarket.kro.kr:8080/api/payment/success");
+            param.add("cancel_url", "http://tmarket.kro.kr:8080/api/payment/cancel");
+            param.add("fail_url", "http://tmarket.kro.kr:8080/api/payment/fail");
         }
 
         // 파라미터, 헤더
