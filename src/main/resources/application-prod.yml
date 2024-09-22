@@ -76,7 +76,8 @@ spring:
           google:
             client-id: ${GOOGLE_ID}
             client-secret: ${GOOGLE_PW}
-            redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/google"
+            #redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/google"
+            redirect-uri: "http://tmarket.kro.kr:8080/login/oauth2/code/google"
             authorization-grant-type: authorization_code
             scope: email, profile
             authorization-uri: https://accounts.google.com/o/oauth2/auth
@@ -85,7 +86,8 @@ spring:
           naver:
             client-id: ${NAVER_ID}
             client-secret: ${NAVER_PW}
-            redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/naver" # callback uri
+            #redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/naver" # callback uri
+            redirect-uri: "http://tmarket.kro.kr:8080/login/oauth2/code/naver" # callback uri
             authorization-grant-type: authorization_code
             scope: email, nickname
             client-name: Naver
@@ -93,7 +95,8 @@ spring:
           kakao:
             client-id: ${KAKAO_ID}
             client-secret: ${KAKAO_PW}
-            redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/kakao" # callback uri
+            #redirect-uri: "http://3.36.96.0:8080/login/oauth2/code/kakao" # callback uri
+            redirect-uri: "http://tmarket.kro.kr:8080/login/oauth2/code/kakao" # callback uri
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope: profile_nickname, account_email, profile_image #동의 항목

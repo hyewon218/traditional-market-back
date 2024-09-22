@@ -28,7 +28,7 @@ public class OrderItemRequestDto {
 
     public OrderItem toEntity(Item item) {
         // 주문 상품을 생성한다는 것은 수량만큼 상품의 재고를 차감하는 것
-        item.decreaseStock(count);
+        // item.decreaseStock(count); // 결제 후 재고 차감되도록 수정
 
         return OrderItem.builder()
             .orderPrice(item.getPrice())

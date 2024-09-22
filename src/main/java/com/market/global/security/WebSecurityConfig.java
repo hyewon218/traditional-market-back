@@ -182,7 +182,7 @@ public class WebSecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
             CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOrigins(List.of(
-                //"http://example.com", // 실제 Nginx 도메인
+                "http://tmarket.kro.kr", // 실제 Nginx 도메인
                 "http://3.36.96.0", // 실제 Nginx 서버의 IP 주소
                 "http://localhost:3000" // 필요시 개발용 localhost 허용
             ));

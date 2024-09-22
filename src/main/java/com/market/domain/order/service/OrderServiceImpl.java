@@ -156,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional // 주문 상태 COMPLETE 로 변경, COMPLETE 시 재고 감소
     public void setOrderComplete(Order order) {
         order.setOrderComplete();
-        // 각 상품 판매량 및 총판매액, 그리고 상점의 총 매출액 증가
+        // 각 상품 판매량 및 총 판매액, 그리고 상점의 총 매출액 증가
         List<OrderItem> orderItemList = order.getOrderItemList();
         for (OrderItem orderItem : orderItemList) {
             orderItem.getItem().decreaseStock(orderItem.getCount()); // 주문상품 개수 상품 재고에서 차감
@@ -164,7 +164,7 @@ public class OrderServiceImpl implements OrderService {
             orderItem.getItem().getShop().setTotalSalesPrice(
                 orderItem.getTotalPrice()); // 상품 매출액을 해당 상품을 보유한 상점의 총매출액에 합산
             orderItem.getItem().getShop().getMarket().setTotalSalesPrice(
-                orderItem.getTotalPrice()); // 상품 매출액을 해당 상품을 보유한 상점을 소유하고있는 시장의 총매출액에 합산
+                orderItem.getTotalPrice()); // 상품 매출액을 해당 상품을 보유한 상점을 소유하고 있는 시장의 총매출액에 합산
         }
     }
 
