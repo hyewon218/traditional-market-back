@@ -26,10 +26,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        if (uri.equals("/api/members/signup") || uri.equals("/members/signup") || uri.equals("/auth/success") ||
+        if (uri.equals("/api/members/signup") || uri.equals("/members/signup") || uri.equals(
+            "/auth/success") ||
             uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") || uri.equals(
-            "/api/send-mail/email") || uri.equals("/api/members/login") || uri.equals("/api/members/checkid")
-            || uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode")) {
+            "/api/send-mail/email") || uri.equals("/api/members/login") || uri.equals(
+            "/api/members/checkid")
+            || uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode")
+            || uri.equals("/api/markets") || uri.equals("/api/notices") || uri.startsWith("/api/") && uri.endsWith("/likes-count")
+            || uri.startsWith("/api/") && uri.endsWith("/shops") || uri.startsWith("/api/") && uri.endsWith("/category")
+            || uri.startsWith("/api/") && uri.endsWith("/rank")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,14 +58,16 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 액세스토큰 만료 시 리프레시토큰 이용해 새로운 액세스토큰 발급
+            // 액세스토큰 만료 시 리프레시토큰 이용해 새로운 액세스토큰 발급
         } else {
             String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
 
             if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
                 // 새로운 액세스토큰 발급과 동시에 리프레시토큰도 재발급
-                String newAccessToken = tokenProvider.createNewAccessToken(refreshToken, request, response);
-                String realNewAccessToken = tokenProvider.getAccessToken(newAccessToken); // Bearer 제거
+                String newAccessToken = tokenProvider.createNewAccessToken(refreshToken, request,
+                    response);
+                String realNewAccessToken = tokenProvider.getAccessToken(
+                    newAccessToken); // Bearer 제거
 
                 // 새로운 인증정보 저장
                 Authentication newAuth = tokenProvider.getAuthentication(realNewAccessToken);
