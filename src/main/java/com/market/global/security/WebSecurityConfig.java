@@ -106,11 +106,11 @@ public class WebSecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
 //                            .loginPage("/members/login")
                     .authorizationEndpoint(authorization -> authorization
-                        .baseUri("/oauth2/authorization")
+                        .baseUri("/api/oauth2/authorization")
                         .authorizationRequestRepository(
                             oAuth2AuthorizationRequestBasedOnCookieRepository()))
                     .redirectionEndpoint(redirection -> redirection
-                        .baseUri("/login/oauth2/code/*"))
+                        .baseUri("/api/login/oauth2/code/*"))
                     // OAuth2 로그인 성공 이후 사용자 정보를 가져올 때의 설정을 담당
                     .userInfoEndpoint(userinfo -> userinfo
                         .userService(oAuth2UserCustomService()))
@@ -182,7 +182,7 @@ public class WebSecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
             CorsConfiguration configuration = new CorsConfiguration();
             configuration.setAllowedOrigins(List.of(
-                "http://tmarket.kro.kr", // 실제 Nginx 도메인
+                "https://tmarket.store", // 실제 Nginx 도메인
                 "http://3.36.96.0", // 실제 Nginx 서버의 IP 주소
                 "http://localhost:3000" // 필요시 개발용 localhost 허용
             ));
