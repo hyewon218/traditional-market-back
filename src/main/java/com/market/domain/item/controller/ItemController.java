@@ -167,7 +167,8 @@ public class ItemController {
     }
 
     @GetMapping("/items/{itemNo}/likes-count") // 좋아요 수 조회
-    public ResponseEntity<Long> getItemLikesCount(@PathVariable Long itemNo) {
-        return ResponseEntity.ok(itemService.countItemLikes(itemNo));
+    public ResponseEntity<Long> getItemLikesCount(HttpServletRequest request,
+        @PathVariable Long itemNo) {
+        return ResponseEntity.ok(itemService.countItemLikes(request, itemNo));
     }
 }

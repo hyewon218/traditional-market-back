@@ -268,8 +268,10 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override
-    @Transactional(readOnly = true) // 좋아요 수 조회
-    public Long countMarketLikes(Long marketNo) {
+    @Transactional // 좋아요 수 조회
+    public Long countMarketLikes(HttpServletRequest request, Long marketNo) {
+        // 시장 조회수 증가 (특정 시장 조회 시 좋아요 수 조회는 무조건 일어나므로 여기에 시장 조회수 증가 로직 추가)
+        addViewCount(request, marketNo);
         return marketLikeRepository.countByMarketNo(marketNo);
     }
 
@@ -315,5 +317,16 @@ public class MarketServiceImpl implements MarketService {
             marketSalesSum += market.getTotalSalesPrice();
         }
         return marketSalesSum;
+    }
+
+    @Override
+    @Transactional // 조회수 증가 로직
+    public void addViewCount(HttpServletRequest request, Long marketNo) {
+        Market market = findMarket(marketNo);
+        String ipAddr = ipService.getIpAddress(request);
+        if (!ipService.hasTypeBeenViewed(ipAddr, "market", marketNo)) {
+            ipService.markTypeAsViewed(ipAddr, "market", marketNo);
+            market.setViewCount(market.getViewCount() + 1);
+        }
     }
 }

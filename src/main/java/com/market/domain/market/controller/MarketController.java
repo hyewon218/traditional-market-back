@@ -113,8 +113,9 @@ public class MarketController {
     }
 
     @GetMapping("/markets/{marketNo}/likes-count") // 좋아요 수 조회
-    public ResponseEntity<Long> getMarketLikesCount(@PathVariable Long marketNo) {
-        return ResponseEntity.ok(marketService.countMarketLikes(marketNo));
+    public ResponseEntity<Long> getMarketLikesCount(HttpServletRequest request,
+        @PathVariable Long marketNo) {
+        return ResponseEntity.ok(marketService.countMarketLikes(request, marketNo));
     }
 
     @GetMapping("/markets/sorted-by-likes") // 시장 좋아요 많은 순 조회

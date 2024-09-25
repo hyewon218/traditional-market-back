@@ -328,8 +328,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override // 좋아요 수 조회
-    @Transactional(readOnly = true)
-    public Long countItemLikes(Long itemNo) {
+    @Transactional
+    public Long countItemLikes(HttpServletRequest request, Long itemNo) {
+        // 상품 조회수 증가 (특정 상품 조회 시 좋아요 수 조회는 무조건 일어나므로 여기에 상품 조회수 증가 로직 추가)
+        addViewCount(request, itemNo);
         return itemLikeRepository.countByItemNo(itemNo);
     }
 
@@ -338,5 +340,16 @@ public class ItemServiceImpl implements ItemService {
     public Item findItem(Long itemNo) {
         return itemRepository.findById(itemNo)
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ITEM));
+    }
+
+    @Override
+    @Transactional // 조회수 증가 로직
+    public void addViewCount(HttpServletRequest request, Long itemNo) {
+        Item Item = findItem(itemNo);
+        String ipAddr = ipService.getIpAddress(request);
+        if (!ipService.hasTypeBeenViewed(ipAddr, "item", itemNo)) {
+            ipService.markTypeAsViewed(ipAddr, "item", itemNo);
+            Item.setViewCount(Item.getViewCount() + 1);
+        }
     }
 }
