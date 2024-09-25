@@ -44,14 +44,11 @@ public class MemberController {
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<?> logIn(HttpServletRequest httpServletRequest,
-        HttpServletResponse httpServletResponse, @RequestBody MemberRequestDto requestDto) {
-        try {
-            MemberResponseDto responseDto = memberService.logIn(httpServletRequest,
-                httpServletResponse, requestDto);
-            return ResponseEntity.ok(responseDto);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        HttpServletResponse httpServletResponse, @RequestBody MemberRequestDto requestDto)
+        throws Exception {
+        MemberResponseDto responseDto = memberService.logIn(httpServletRequest,
+            httpServletResponse, requestDto);
+        return ResponseEntity.ok(responseDto);
     }
 
     // 로그아웃
