@@ -102,9 +102,9 @@ public class KakaoPayService {
             //param.add("approval_url", "http://3.36.96.0:8080/api/payment/success");
             //param.add("cancel_url", "http://3.36.96.0:8080/api/payment/cancel");
             //param.add("fail_url", "http://3.36.96.0:8080/api/payment/fail");
-            param.add("approval_url", "http://tmarket.kro.kr:8080/api/payment/success");
-            param.add("cancel_url", "http://tmarket.kro.kr:8080/api/payment/cancel");
-            param.add("fail_url", "http://tmarket.kro.kr:8080/api/payment/fail");
+            param.add("approval_url", "https://tmarket.store/api/payment/success");
+            param.add("cancel_url", "https://tmarket.store/api/payment/cancel");
+            param.add("fail_url", "https://tmarket.store/api/payment/fail");
 
             // 주문 상품이 1개일 경우
         } else {
@@ -123,9 +123,9 @@ public class KakaoPayService {
             //param.add("approval_url", "http://3.36.96.0:8080/api/payment/success");
             //param.add("cancel_url", "http://3.36.96.0:8080/api/payment/cancel");
             //param.add("fail_url", "http://3.36.96.0:8080/api/payment/fail");
-            param.add("approval_url", "http://tmarket.kro.kr:8080/api/payment/success");
-            param.add("cancel_url", "http://tmarket.kro.kr:8080/api/payment/cancel");
-            param.add("fail_url", "http://tmarket.kro.kr:8080/api/payment/fail");
+            param.add("approval_url", "https://tmarket.store/api/payment/success");
+            param.add("cancel_url", "https://tmarket.store/api/payment/cancel");
+            param.add("fail_url", "https://tmarket.store/api/payment/fail");
         }
 
         // 파라미터, 헤더

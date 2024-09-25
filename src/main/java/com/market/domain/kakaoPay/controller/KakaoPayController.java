@@ -45,7 +45,7 @@ public class KakaoPayController {
         // 결제 완료 후 리액트 결제 완료된 주문 상세 페이지로 이동
         //response.sendRedirect("http://localhost:3000/order-complete");
         //response.sendRedirect("http://3.36.96.0/order-complete");
-        response.sendRedirect("http://tmarket.kro.kr/order-complete");
+        response.sendRedirect("https://tmarket.store/order-complete");
         return ResponseEntity.ok()
             .body(approveResponseDto);
     }
