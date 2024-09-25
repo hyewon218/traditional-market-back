@@ -311,8 +311,10 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override // 좋아요 수 조회
-    @Transactional(readOnly = true)
-    public Long countShopLikes(Long shopNo) {
+    @Transactional
+    public Long countShopLikes(HttpServletRequest request, Long shopNo) {
+        // 상점 조회수 증가 (특정 상점 조회 시 좋아요 수 조회는 무조건 일어나므로 여기에 상점 조회수 증가 로직 추가)
+        addViewCount(request, shopNo);
         return shopLikeRepository.countByShopNo(shopNo);
     }
 
@@ -364,6 +366,17 @@ public class ShopServiceImpl implements ShopService {
         boolean isSeller = shopRepository.existsBySeller_MemberNo(member.getMemberNo());
         if (!isSeller) {
             throw new BusinessException(ErrorCode.ONLY_SELLER_HAVE_AUTHORITY_ON_SHOP);
+        }
+    }
+
+    @Override
+    @Transactional // 조회수 증가 로직
+    public void addViewCount(HttpServletRequest request, Long shopNo) {
+        Shop shop = findShop(shopNo);
+        String ipAddr = ipService.getIpAddress(request);
+        if (!ipService.hasTypeBeenViewed(ipAddr, "shop", shopNo)) {
+            ipService.markTypeAsViewed(ipAddr, "shop", shopNo);
+            shop.setViewCount(shop.getViewCount() + 1);
         }
     }
 }

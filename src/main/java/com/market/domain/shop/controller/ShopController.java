@@ -133,8 +133,9 @@ public class ShopController {
     }
 
     @GetMapping("/shops/{shopNo}/likes-count") // 좋아요 수 조회
-    public ResponseEntity<Long> getShopLikesCount(@PathVariable Long shopNo) {
-        return ResponseEntity.ok(shopService.countShopLikes(shopNo));
+    public ResponseEntity<Long> getShopLikesCount(HttpServletRequest request,
+        @PathVariable Long shopNo) {
+        return ResponseEntity.ok(shopService.countShopLikes(request, shopNo));
     }
 
     @GetMapping("/admin/shops/count")
@@ -148,7 +149,8 @@ public class ShopController {
     }
 
     @GetMapping("/shops/seller") // 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
-    public ResponseEntity<Page<ShopResponseDto>> getShopsBySeller(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<Page<ShopResponseDto>> getShopsBySeller(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
         Pageable pageable) {
         return ResponseEntity.ok()
             .body(shopService.getShopsBySellerNo(userDetails.getMember(), pageable));

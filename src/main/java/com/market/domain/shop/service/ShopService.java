@@ -117,7 +117,7 @@ public interface ShopService {
      *
      * @return : 좋아요 수
      */
-    Long countShopLikes(Long shopNo);
+    Long countShopLikes(HttpServletRequest request, Long shopNo);
 
     /**
      * 상점 찾기
@@ -169,4 +169,11 @@ public interface ShopService {
      *
      */
     void validateIsSeller(Member member);
+
+    /**
+     * 조회수 증가
+     * 
+     * @param shopNo : 조회수 증가시킬 상점 고유번호
+     */
+    void addViewCount(HttpServletRequest request, Long shopNo);
 }

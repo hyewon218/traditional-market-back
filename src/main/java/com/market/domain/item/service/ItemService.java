@@ -175,7 +175,7 @@ public interface ItemService {
      *
      * @return : 좋아요 수 조회
      */
-    Long countItemLikes(Long itemNo);
+    Long countItemLikes(HttpServletRequest request, Long itemNo);
 
     /**
      * 상점 찾기
@@ -184,4 +184,11 @@ public interface ItemService {
      * @return : 상품 Entity
      */
     Item findItem(Long itemNo);
+
+    /**
+     * 조회수 증가
+     *
+     * @param itemNo : 조회수 증가시킬 상품 고유번호
+     */
+    void addViewCount(HttpServletRequest request, Long itemNo);
 }

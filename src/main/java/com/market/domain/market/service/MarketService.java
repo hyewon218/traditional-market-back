@@ -104,7 +104,7 @@ public interface MarketService {
      *
      * @return : 좋아요 수 조회
      */
-    Long countMarketLikes(Long marketNo);
+    Long countMarketLikes(HttpServletRequest request, Long marketNo);
 
     /**
      * 시장 좋아요 많은 순 조회
@@ -149,4 +149,11 @@ public interface MarketService {
      * @param member : 로그인한 사용자
      */
     void validateIsAdmin(Member member);
+
+    /**
+     * 조회수 증가
+     *
+     * @param marketNo : 조회수 증가시킬 시장 고유번호
+     */
+    void addViewCount(HttpServletRequest request, Long marketNo);
 }
