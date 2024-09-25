@@ -66,7 +66,6 @@ public class MemberServiceImpl implements MemberService {
     private final DeliveryMessageRepository deliveryMessageRepository;
     private final MemberRepositoryQuery memberRepositoryQuery;
     private final WithdrawMemberService withdrawMemberService;
-    private final IpService ipService;
     private final ChatRoomRepository chatRoomRepository;
 
     // 회원 생성
@@ -134,8 +133,8 @@ public class MemberServiceImpl implements MemberService {
             log.info("실행");
             return MemberResponseDto.ofLogin(member, accessToken, newRefreshToken);
 
-        } catch (AuthenticationException e) {
-            throw e;
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_MEMBER);
         }
     }
 
