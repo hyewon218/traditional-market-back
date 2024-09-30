@@ -134,7 +134,7 @@ public class MemberServiceImpl implements MemberService {
             return MemberResponseDto.ofLogin(member, accessToken, newRefreshToken);
 
         } catch (Exception e) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_MEMBER);
+            throw new BusinessException(ErrorCode.NOT_CORRECT_ID_PW);
         }
     }
 
