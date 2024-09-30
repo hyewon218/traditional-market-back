@@ -32,9 +32,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") ||
             uri.equals("/api/send-mail/email") || uri.equals("/api/members/login") ||
             uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode") ||
-            uri.equals("/api/markets") || uri.equals("/api/notices") ||
             uri.equals("/api/notices/search") ||
-            (uri.startsWith("/api/shops") && method.equalsIgnoreCase("get")) ||
+            (uri.startsWith("/api/") && uri.endsWith("/markets")
+                && method.equalsIgnoreCase("get")) ||
+            (uri.startsWith("/api/") && uri.endsWith("/notices")
+                && method.equalsIgnoreCase("get")) ||
             (uri.startsWith("/api/") && uri.endsWith("/shops")
                 && method.equalsIgnoreCase("get")) ||
             (uri.startsWith("/api/") && uri.endsWith("/items")
