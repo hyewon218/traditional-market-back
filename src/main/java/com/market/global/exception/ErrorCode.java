@@ -94,7 +94,8 @@ public enum ErrorCode {
     NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "MB007", "일치하는 회원이 없습니다."),
     NOT_CORRECT_CODE(HttpStatus.NOT_FOUND, "MB008", "인증번호가 일치하지 않습니다."),
     FAIL_TO_CHANGE_PW(HttpStatus.NOT_FOUND, "MB009", "비밀번호 변경에 실패했습니다."),
-    NOT_CORRECT_PW(HttpStatus.NOT_FOUND, "MB009", "비밀번호가 일치하지 않습니다."),
+    NOT_CORRECT_PW(HttpStatus.NOT_FOUND, "MB010", "비밀번호가 일치하지 않습니다."),
+    NOT_CORRECT_ID_PW(HttpStatus.NOT_FOUND, "MB011", "아이디 또는 비밀번호가 틀렸습니다."),
     // 탈퇴회원
     EXISTS_WITHDRAWMEMBER_ID(HttpStatus.CONFLICT, "W001", "탈퇴했거나 생성 불가능한 아이디입니다."),
     EXISTS_WITHDRAWMEMBER_EMAIL(HttpStatus.CONFLICT, "W002", "탈퇴했거나 생성 불가능한 이메일입니다."),
