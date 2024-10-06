@@ -2,7 +2,6 @@ package com.market.global.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -59,7 +58,7 @@ public class RedisUtils {
     }
 
     public void setBlackList(String key, String value, long expiredAt) {
-        redisBlackListTemplate.opsForValue().set(key, "logout", expiredAt, TimeUnit.MILLISECONDS);
+        redisBlackListTemplate.opsForValue().set(key, value, expiredAt, TimeUnit.MILLISECONDS);
     }
 
 //    public <T> T getBlackList(String key, Class<T> clazz){
