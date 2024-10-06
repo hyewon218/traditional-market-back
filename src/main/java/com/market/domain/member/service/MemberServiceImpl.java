@@ -1,6 +1,5 @@
 package com.market.domain.member.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.market.domain.chatRoom.entity.ChatRoom;
 import com.market.domain.chatRoom.repository.ChatRoomRepository;
 import com.market.domain.delivery.repository.DeliveryRepository;
@@ -18,7 +17,6 @@ import com.market.domain.member.repository.MemberSearchCond;
 import com.market.domain.member.withdrawMember.service.WithdrawMemberService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
-import com.market.global.ip.IpService;
 import com.market.global.jwt.config.TokenProvider;
 import com.market.global.jwt.entity.RefreshToken;
 import com.market.global.profanityFilter.ProfanityFilter;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,9 +41,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,7 +114,7 @@ public class MemberServiceImpl implements MemberService {
                 newRefreshToken = refreshToken.getRefreshToken();
 
             // refresh 토큰이 유효하지않은 경우
-            } else if (!tokenProvider.validRefreshToken(findRefreshToken)) {
+            } else if (!tokenProvider.validRefreshToken(findRefreshToken, httpRequest, httpResponse)) {
                 log.info("두번째, !tokenProvider.validRefreshToken(findRefreshToken)");
                 redisUtils.deleteValues(member.getMemberId());
                 RefreshToken refreshToken = tokenProvider.generateRefreshToken(member,

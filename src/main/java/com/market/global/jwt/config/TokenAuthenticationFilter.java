@@ -1,5 +1,7 @@
 package com.market.global.jwt.config;
 
+import com.market.global.exception.BusinessException;
+import com.market.global.exception.ErrorCode;
 import com.market.global.visitor.VisitorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,7 +34,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") ||
             uri.equals("/api/send-mail/email") || uri.equals("/api/members/login") ||
             uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode") ||
-            uri.equals("/api/notices/search") ||
+            uri.equals("/api/notices/search") || uri.equals("/api/acc-token") ||
+            uri.equals("/api/ref-token") ||
             (uri.startsWith("/api/") && uri.endsWith("/markets")
                 && method.equalsIgnoreCase("get")) ||
             (uri.startsWith("/api/") && uri.endsWith("/notices")
@@ -43,8 +46,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 && method.equalsIgnoreCase("get")) ||
             (uri.startsWith("/api/") && uri.endsWith("/comments")
                 && method.equalsIgnoreCase("get")) ||
+            (uri.startsWith("/api/shops") && method.equalsIgnoreCase("get")) ||
             (uri.startsWith("/api/") && uri.endsWith("/likes-count")) ||
             (uri.startsWith("/api/") && uri.endsWith("/category")) ||
+            (uri.startsWith("/api/") && uri.endsWith("/by-shop")) ||
             (uri.startsWith("/api/") && uri.endsWith("/category-by-shop")) ||
             (uri.startsWith("/api/") && uri.endsWith("/rank"))) {
             filterChain.doFilter(request, response);
@@ -74,23 +79,23 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         } else {
             String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
 
-            if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken)) {
-                // 새로운 액세스토큰 발급과 동시에 리프레시토큰도 재발급
-                String newAccessToken = tokenProvider.createNewAccessToken(refreshToken, request,
-                    response);
-                String realNewAccessToken = tokenProvider.getAccessToken(
-                    newAccessToken); // Bearer 제거
+            if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken, request,
+                response)) {
+                // 새로운 액세스토큰 발급과 동시에 리프레시토큰도 재발급 (RTR 방식(Refresh Token Rotation))
+                String newAccessTokenBearer = tokenProvider.createNewAccessToken(refreshToken,
+                    request, response);
+                String NewAccessToken = tokenProvider.getAccessToken(
+                    newAccessTokenBearer); // Bearer 제거
 
                 // 새로운 인증정보 저장
-                Authentication newAuth = tokenProvider.getAuthentication(realNewAccessToken);
+                Authentication newAuth = tokenProvider.getAuthentication(NewAccessToken);
                 SecurityContextHolder.getContext().setAuthentication(newAuth);
 
-            } else if (refreshToken == null || tokenProvider.validRefreshToken(refreshToken)) {
-                log.info("리프레시토큰이 null이거나 유효하지않습니다. 다시 로그인 해주세요");
+            } else {
+                // 액세스토큰과 리프레시토큰이 모두 유효하지 않을 경우 예외 발생
+                throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);
             }
         }
         filterChain.doFilter(request, response);
     }
 }
-
-
