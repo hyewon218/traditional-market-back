@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Base64;
@@ -13,34 +14,61 @@ import java.util.Optional;
 public class CookieUtil {
 
     // 요청값(이름, 값, 만료기간)을 바탕으로 HTTP 응답에 쿠키 추가
-    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-
-        // HttpOnly 설정: 자바스크립트에서 쿠키를 접근하지 못하게 합니다.
+//    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+//        Cookie cookie = new Cookie(name, value);
+//        cookie.setPath("/");
+//        cookie.setMaxAge(maxAge);
+//
+//        // HttpOnly 설정: 자바스크립트에서 쿠키를 접근하지 못하게 합니다.
 //        cookie.setHttpOnly(true);
+//
+//
+//        // Secure 설정: HTTPS를 통해서만 쿠키가 전송되도록 합니다.
+//        // (개발 환경에서는 HTTPS가 아닐 수 있으므로, 상황에 맞게 설정)
+////        cookie.setSecure(true);
+//
+//        // sameSite 설정 : csrf 방어 위해 사용, 찾아보기
+//
+//        response.addCookie(cookie);
+//    }
 
-        // Secure 설정: HTTPS를 통해서만 쿠키가 전송되도록 합니다.
-        // (개발 환경에서는 HTTPS가 아닐 수 있으므로, 상황에 맞게 설정)
-//        cookie.setSecure(true);
-
-        response.addCookie(cookie);
+    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+            .path("/")
+            .maxAge(maxAge)
+            .sameSite("Lax")
+            .httpOnly(true)
+//            .secure(true) // https에서만 작동
+            .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
+//    public static void addCookieForRefreshToken(HttpServletResponse response, String name, String value, int maxAge) {
+//        Cookie cookie = new Cookie(name, value);
+//        cookie.setPath("/");
+//        cookie.setMaxAge(maxAge);
+//
+//        // HttpOnly 설정: 클라이언트측 자바스크립트에서 쿠키를 접근하지 못하게 합니다.
+//        cookie.setHttpOnly(true);
+//
+//        // Secure 설정: HTTPS를 통해서만 쿠키가 전송되도록 합니다.
+//        // (개발 환경에서는 HTTPS가 아닐 수 있으므로, 상황에 맞게 설정)
+////        cookie.setSecure(true);
+//
+//        // sameSite 설정 : csrf 방어 위해 사용, 찾아보기
+//
+//        response.addCookie(cookie);
+//    }
+
     public static void addCookieForRefreshToken(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-
-        // HttpOnly 설정: 클라이언트측 자바스크립트에서 쿠키를 접근하지 못하게 합니다.
-        cookie.setHttpOnly(true);
-
-        // Secure 설정: HTTPS를 통해서만 쿠키가 전송되도록 합니다.
-        // (개발 환경에서는 HTTPS가 아닐 수 있으므로, 상황에 맞게 설정)
-//        cookie.setSecure(true);
-
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+            .path("/")
+            .maxAge(maxAge)
+            .sameSite("Lax")
+            .httpOnly(true)
+//            .secure(true)
+            .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
 //    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge,
