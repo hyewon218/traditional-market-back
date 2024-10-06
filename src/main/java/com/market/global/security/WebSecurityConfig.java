@@ -95,7 +95,7 @@ public class WebSecurityConfig {
                                 "/api/oauth2/login", "/api/send-mail/**", "/api/members/checkemail", "/api/members/checkid",
                                 "/api/markets", "/api/markets/**", "/api/{marketNo}/shops/**", "/api/{marketNo}/items/**",
                                 "/api/shops", "/api/shops/**", "/api/{shopNo}/items/**", "/api/notices/**",
-                                "/api/members/login", "/api/items", "/api/items/**", "/css/**", "/js/**").permitAll()
+                                "/api/members/login", "/api/items", "/api/items/**", "/api/acc-token", "/api/ref-token", "/css/**", "/js/**").permitAll()
                         .requestMatchers("/api/members/**","/api/chatrooms", "/api/chatrooms/**", "/myinfo/inquiry/**",
                                 "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
                                 "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
@@ -118,7 +118,6 @@ public class WebSecurityConfig {
                 .logout(logout -> logout
                     .logoutSuccessUrl("/"))
 
-                // cookie 를 사용하지 않으면 꺼도 된다. (cookie 를 사용할 경우 httpOnly(XSS 방어), sameSite(CSRF 방어)로 방어해야 한다.)
                 .csrf((AbstractHttpConfigurer::disable))
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
