@@ -4,6 +4,7 @@ import com.market.domain.image.config.AwsS3upload;
 import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.market.entity.Market;
 import com.market.domain.market.repository.MarketRepository;
 import com.market.domain.member.constant.Role;
@@ -11,7 +12,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.CategoryEnum;
@@ -26,13 +27,10 @@ import com.market.global.exception.ErrorCode;
 import com.market.global.ip.IpService;
 import com.market.global.redis.RestPage;
 import jakarta.servlet.http.HttpServletRequest;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -52,7 +50,7 @@ public class ShopServiceImpl implements ShopService {
     private final AwsS3upload awsS3upload;
     private final ShopLikeRepository shopLikeRepository;
     private final MemberRepository memberRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
     private final IpService ipService;
     private final ShopRepositoryQuery shopRepositoryQuery;
 
@@ -281,13 +279,16 @@ public class ShopServiceImpl implements ShopService {
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), shopNo);
             // 모든 관리자에게 알림 전송
             for (Member admin : adminList) {
-                notificationService.send(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
-                    admin);
+                notificationProducer.send(
+                    new NotificationEvent(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
+                        admin.getMemberNo()));
             }
         } else {
             // 판매자에게 알림을 보낼 경우
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), shopNo);
-            notificationService.send(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs, seller);
+            notificationProducer.send(
+                new NotificationEvent(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
+                    seller.getMemberNo()));
         }
     }
 

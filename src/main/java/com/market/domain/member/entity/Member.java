@@ -4,16 +4,30 @@ import com.market.domain.base.BaseEntity;
 import com.market.domain.cart.entity.Cart;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.MemberRequestDto;
-import com.market.domain.notification.entity.Notification;
 import com.market.domain.order.entity.Order;
 import com.market.domain.shop.entity.Shop;
 import com.market.global.security.oauth2.ProviderType;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Builder
 @Entity
@@ -81,10 +95,6 @@ public class Member extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Notification> notifications = new ArrayList<>();
 
     public Member(String memberId, String memberEmail, String memberNickname, String memberPw, String nicknameWithRandomTag, ProviderType providerType, Role role) {
         this.memberId = memberId;

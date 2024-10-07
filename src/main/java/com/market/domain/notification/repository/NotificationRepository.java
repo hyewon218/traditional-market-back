@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    Page<Notification> findAllByMember_MemberNoOrderByCreateTimeDesc(Long memberNo, Pageable pageable);
+    Page<Notification> findAllByReceiverNoOrderByCreateTimeDesc(Long memberNo, Pageable pageable);
 
-    Long countByMember_MemberNoAndIsRead(Long userNo, boolean read);
+    Long countByReceiverNoAndIsRead(Long userNo, boolean read);
 }

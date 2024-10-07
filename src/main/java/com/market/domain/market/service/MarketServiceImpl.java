@@ -4,6 +4,7 @@ import com.market.domain.image.config.AwsS3upload;
 import com.market.domain.image.config.ImageConfig;
 import com.market.domain.image.entity.Image;
 import com.market.domain.image.repository.ImageRepository;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.market.dto.MarketLikeResponseDto;
 import com.market.domain.market.dto.MarketRequestDto;
 import com.market.domain.market.dto.MarketResponseDto;
@@ -19,17 +20,16 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
+import com.market.global.ip.IpService;
+import com.market.global.redis.RestPage;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import com.market.global.ip.IpService;
-import com.market.global.redis.RestPage;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -47,7 +47,7 @@ public class MarketServiceImpl implements MarketService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final MarketLikeRepository marketLikeRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
     private final MemberRepository memberRepository;
     private final MarketRepositoryQuery marketRepositoryQuery;
     private final IpService ipService;
@@ -241,8 +241,7 @@ public class MarketServiceImpl implements MarketService {
         NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), marketNo);
         // 모든 관리자에게 알림 전송
         for (Member admin : adminList) {
-            notificationService.send(
-                NotificationType.NEW_LIKE_ON_MARKET, notificationArgs, admin);
+            notificationProducer.send(new NotificationEvent(NotificationType.NEW_LIKE_ON_MARKET, notificationArgs, admin.getMemberNo()));
         }
     }
 

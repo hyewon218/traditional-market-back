@@ -30,9 +30,9 @@ public class StompHandler implements ChannelInterceptor {
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String jwt = accessor.getFirstNativeHeader("Authorization");
 
-            if (!tokenProvider.validToken(
-                Objects.requireNonNull(jwt)
-                    .substring(7))) {
+            log.info("jwt=============="+jwt);
+
+            if (!tokenProvider.validToken(tokenProvider.getAccessToken(jwt))) {
                 throw new BusinessException(ErrorCode.INVALID_AUTH_TOKEN);
             }
         }

@@ -1,11 +1,12 @@
 package com.market.domain.shop.shopComment.service;
 
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.domain.shop.shopComment.dto.ShopCommentRequestDto;
@@ -28,7 +29,7 @@ public class ShopCommentServiceImpl implements ShopCommentService {
 
     private final ShopCommentRepository shopCommentRepository;
     private final ShopRepository shopRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
     private final MemberRepository memberRepository;
 
     @Override
@@ -63,15 +64,17 @@ public class ShopCommentServiceImpl implements ShopCommentService {
                 shop.getNo());
             // 모든 관리자에게 알림 전송
             for (Member admin : adminList) {
-                notificationService.send(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
-                    admin);
+                notificationProducer.send(
+                    new NotificationEvent(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
+                        admin.getMemberNo()));
             }
         } else {
             // 판매자에게 알림을 보낼 경우
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
                 shop.getNo());
-            notificationService.send(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
-                seller);
+            notificationProducer.send(
+                new NotificationEvent(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
+                    seller.getMemberNo()));
         }
     }
 
