@@ -123,26 +123,16 @@ public class TokenProvider {
                 .parseClaimsJws(refreshToken);
 
             // 검증하려는 리프레시토큰이 레디스에 저장된 리프레시토큰과 같은지 검사
-            Long memberNo = getMemberNo(refreshToken);
-            Member member = memberRepository.findById(memberNo)
-                .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다."));
-            String savedRefreshToken = redisUtils.getValues(member.getMemberId());
-            if (!refreshToken.equals(savedRefreshToken)) {
-                log.error("리프레시토큰이 유효하지않습니다. 다시 로그인 해주세요.");
-                redisUtils.deleteValues(member.getMemberId());
-                CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
-                return false;
-            }
-            return true;
+            return hasRefreshTokenInRedis(refreshToken, request, response);
 
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 refresh 토큰 서명입니다.");
+            log.info("잘못된 refresh 토큰 서명입니다." + refreshToken);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 refresh 토큰입니다.");
+            log.info("만료된 refresh 토큰입니다." + refreshToken);
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 refresh 토큰입니다.");
+            log.info("지원되지 않는 refresh 토큰입니다." + refreshToken);
         } catch (IllegalArgumentException e) {
-            log.info("refresh 토큰이 잘못되었습니다.");
+            log.info("refresh 토큰이 잘못되었습니다." + refreshToken);
         }
         return false;
     }
@@ -303,5 +293,19 @@ public class TokenProvider {
         addRefreshTokenToCookie(request, response, newRefreshToken.getRefreshToken());
 
         return newAccessToken;
+    }
+
+    // 검증받으려는 리프레시토큰이 레디스에 저장된 리프레시토큰과 같은지 확인
+    public boolean hasRefreshTokenInRedis(String refreshToken, HttpServletRequest request,
+        HttpServletResponse response) {
+        Long memberNo = getRefreshMemberNo(refreshToken);
+        Member member = memberRepository.findById(memberNo)
+            .orElseThrow(() -> new IllegalArgumentException("일치하는 회원이 없습니다."));
+        String savedRefreshToken = redisUtils.getValues(member.getMemberId());
+        if (!refreshToken.equals(savedRefreshToken)) {
+            redisUtils.deleteValues(member.getMemberId());
+            CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
+        }
+        return true;
     }
 }

@@ -75,9 +75,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // 액세스토큰 만료 시 리프레시토큰 이용해 새로운 액세스토큰 발급
+        // 액세스토큰 만료 시 리프레시토큰 이용해 새로운 액세스토큰 발급
         } else {
             String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
+            log.info("액세스토큰 만료 시, 보유중인 리프레시토큰 : " + refreshToken);
 
             if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken, request,
                 response)) {
@@ -90,9 +91,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 // 새로운 인증정보 저장
                 Authentication newAuth = tokenProvider.getAuthentication(NewAccessToken);
                 SecurityContextHolder.getContext().setAuthentication(newAuth);
+                log.info("리프레시토큰을 이용해 새로운 액세스토큰이 발급되었습니다.");
 
-            } else {
-                // 액세스토큰과 리프레시토큰이 모두 유효하지 않을 경우 예외 발생
+            } else if (refreshToken == null || !tokenProvider.validRefreshToken(refreshToken,
+                request, response)) {
                 throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);
             }
         }
