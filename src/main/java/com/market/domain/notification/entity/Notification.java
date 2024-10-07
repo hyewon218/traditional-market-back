@@ -1,19 +1,15 @@
 package com.market.domain.notification.entity;
 
 import com.market.domain.base.BaseEntity;
-import com.market.domain.member.entity.Member;
 import com.market.domain.notification.constant.NotificationType;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
@@ -36,9 +32,7 @@ public class Notification extends BaseEntity {
     @Column(name = "notification_no")
     private Long no;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_no")
-    private Member member;
+    private Long receiverNo;
 
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
@@ -65,11 +59,12 @@ public class Notification extends BaseEntity {
     }
 
     public static Notification toEntity(NotificationType notificationType, NotificationArgs args,
-        Member member) {
+        Long receiverNo) {
+
         return Notification.builder()
             .notificationType(notificationType)
             .args(args)
-            .member(member)
+            .receiverNo(receiverNo)
             .build();
     }
 }

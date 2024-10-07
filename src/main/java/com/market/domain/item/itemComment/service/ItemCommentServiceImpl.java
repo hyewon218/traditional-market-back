@@ -6,12 +6,13 @@ import com.market.domain.item.itemComment.dto.ItemCommentResponseDto;
 import com.market.domain.item.itemComment.entity.ItemComment;
 import com.market.domain.item.itemComment.repository.ItemCommentRepository;
 import com.market.domain.item.repository.ItemRepository;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.profanityFilter.ProfanityFilter;
@@ -28,7 +29,7 @@ public class ItemCommentServiceImpl implements ItemCommentService {
 
     private final ItemCommentRepository itemCommentRepository;
     private final ItemRepository itemRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
     private final MemberRepository memberRepository;
 
     @Override
@@ -63,15 +64,17 @@ public class ItemCommentServiceImpl implements ItemCommentService {
                 item.getNo());
             // 모든 관리자에게 알림 전송
             for (Member admin : adminList) {
-                notificationService.send(NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs,
-                    admin);
+                notificationProducer.send(
+                    new NotificationEvent(NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs,
+                        admin.getMemberNo()));
             }
         } else {
             // 판매자에게 알림을 보낼 경우
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
                 item.getNo());
-            notificationService.send(NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs,
-                seller);
+            notificationProducer.send(
+                new NotificationEvent(NotificationType.NEW_COMMENT_ON_ITEM, notificationArgs,
+                    seller.getMemberNo()));
         }
     }
 

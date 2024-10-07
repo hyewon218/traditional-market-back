@@ -11,12 +11,13 @@ import com.market.domain.inquiryAnswer.dto.InquiryAnswerRequestDto;
 import com.market.domain.inquiryAnswer.dto.InquiryAnswerResponseDto;
 import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.inquiryAnswer.repository.InquiryAnswerRepository;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberService;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final MemberService memberService;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     @Override
     @Transactional // 문의사항 답변 생성
@@ -71,7 +72,9 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
         Member receiver = memberService.findById(inquiry.getMemberNo());
         NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),// 로그인한 관리자 No
             inquiry.getInquiryNo());
-        notificationService.send(NotificationType.NEW_INQUIRY_ANSWER, notificationArgs, receiver);
+        notificationProducer.send(
+            new NotificationEvent(NotificationType.NEW_INQUIRY_ANSWER, notificationArgs,
+                receiver.getMemberNo()));
 
         return InquiryAnswerResponseDto.of(inquiryAnswer);
     }

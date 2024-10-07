@@ -2,12 +2,13 @@ package com.market.domain.chat.controller;
 
 import com.market.domain.chat.dto.ChatMessageDto;
 import com.market.domain.chat.service.ChatService;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberService;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.util.List;
@@ -28,14 +29,15 @@ public class WebSocketController {
 
     private final ChatService chatService;
     private final MemberService memberService;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     // stompConfig 에서 설정한 applicationDestinationPrefixes 와 @MessageMapping 경로가 병합됨 (/pub + ...)
     // /pub/chat/message 에 메세지가 오면 동작
     @MessageMapping("chat/message/{roomId}")
     @SendTo("/sub/chat/{roomId}") // react callback 함수 실행
     public ChatMessageDto message(@DestinationVariable Long roomId, ChatMessageDto messageDto) {
-        chatService.saveMessage(roomId, messageDto);
+
+        chatService.saveMessage(roomId, messageDto); // chat DB 저장
         /*receiver 에게 알람*/
         // sender: 로그인한 사용자
         Member sender = memberService.findByMemberId(messageDto.getSender());
@@ -47,7 +49,8 @@ public class WebSocketController {
             // 모든 수신자에게 알림 전송
             for (Member receiver : receivers) {
                 NotificationType notificationType = getNotificationType(receiver);
-                notificationService.send(notificationType, notificationArgs, receiver);
+                notificationProducer.send(new NotificationEvent(notificationType, notificationArgs,
+                    receiver.getMemberNo()));
             }
         }
         return ChatMessageDto.builder()

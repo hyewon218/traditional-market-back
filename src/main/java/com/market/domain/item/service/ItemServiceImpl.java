@@ -15,12 +15,13 @@ import com.market.domain.item.itemLike.repository.ItemLikeRepository;
 import com.market.domain.item.repository.ItemRepository;
 import com.market.domain.item.repository.ItemRepositoryQuery;
 import com.market.domain.item.repository.ItemSearchCond;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.global.exception.BusinessException;
@@ -50,7 +51,7 @@ public class ItemServiceImpl implements ItemService {
     private final AwsS3upload awsS3upload;
     private final ItemLikeRepository itemLikeRepository;
     private final MemberRepository memberRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
     private final ItemRepositoryQuery itemRepositoryQuery;
     private final IpService ipService;
 
@@ -297,14 +298,17 @@ public class ItemServiceImpl implements ItemService {
                 item.getShop().getNo());
             // 모든 관리자에게 알림 전송
             for (Member admin : adminList) {
-                notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs,
-                    admin);
+                notificationProducer.send(
+                    new NotificationEvent(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs,
+                        admin.getMemberNo()));
             }
         } else {
             // 판매자에게 알림을 보낼 경우
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
                 item.getShop().getNo());
-            notificationService.send(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs, seller);
+            notificationProducer.send(
+                new NotificationEvent(NotificationType.NEW_LIKE_ON_ITEM, notificationArgs,
+                    seller.getMemberNo()));
         }
     }
 

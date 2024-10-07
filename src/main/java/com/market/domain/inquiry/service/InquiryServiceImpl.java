@@ -12,12 +12,13 @@ import com.market.domain.inquiry.repository.InquiryRepositoryQuery;
 import com.market.domain.inquiry.repository.InquirySearchCond;
 import com.market.domain.inquiryAnswer.entity.InquiryAnswer;
 import com.market.domain.inquiryAnswer.repository.InquiryAnswerRepository;
+import com.market.domain.kafka.producer.NotificationProducer;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.service.NotificationService;
+import com.market.domain.notification.entity.NotificationEvent;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.profanityFilter.ProfanityFilter;
@@ -45,7 +46,7 @@ public class InquiryServiceImpl implements InquiryService {
     private final InquiryAnswerRepository inquiryAnswerRepository;
     private final InquiryRepositoryQuery inquiryRepositoryQuery;
     private final MemberRepository memberRepository;
-    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     // 문의사항 생성
     @Override
@@ -95,8 +96,9 @@ public class InquiryServiceImpl implements InquiryService {
             inquiry.getInquiryNo());
         // 모든 관리자에게 알림 전송
         for (Member admin : adminList) {
-            notificationService.send(
-                NotificationType.NEW_INQUIRY, notificationArgs, admin);
+            notificationProducer.send(
+                new NotificationEvent(NotificationType.NEW_INQUIRY, notificationArgs,
+                    admin.getMemberNo()));
         }
         return InquiryResponseDto.of(inquiry);
     }
