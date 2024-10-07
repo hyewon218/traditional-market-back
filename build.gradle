@@ -60,6 +60,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.kafka:spring-kafka' // kafka
 }
 
 tasks.named('test') {
