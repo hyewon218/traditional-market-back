@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    default: prod
+   default: prod
    #default: local # local 환경
 
   application:
@@ -115,7 +115,7 @@ spring:
             user-name-attribute: id
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: 43.203.173.204:9092,3.36.131.169:9092,3.39.0.214:9092
     consumer:
       group-id: notification
       auto-offset-reset: latest

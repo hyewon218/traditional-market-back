@@ -115,6 +115,27 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+  kafka:
+    bootstrap-servers: 43.203.173.204:9092,3.36.131.169:9092,3.39.0.214:9092
+    consumer:
+      group-id: notification
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted.packages: "com.market.domain.notification.entity"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 3
+      acks: all
+    listener:
+      ack-mode: MANUAL
+    topic:
+      notification: r2rj2fh0-notification
+
 cloud:
   aws:
     credentials:
