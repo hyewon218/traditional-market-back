@@ -38,7 +38,7 @@ public class TokenProvider {
     public static final String HEADER_AUTHORIZATION = "Authorization"; // 못 알아보게 이름 변경하기, 프론트에서도 사용하는곳에서 변경해야함
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token"; // 못 알아보게 이름 변경하기
-    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(30);
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofMinutes(15);
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(3); // 보통 14일
 
     public String generateToken(Member member, Duration expiredAt) {
@@ -305,6 +305,9 @@ public class TokenProvider {
         if (!refreshToken.equals(savedRefreshToken)) {
             redisUtils.deleteValues(member.getMemberId());
             CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
+            CookieUtil.deleteCookie(request, response, HEADER_AUTHORIZATION);
+            log.info("리프레시토큰이 유효하지않아 다시 로그인해주세요.");
+            return false;
         }
         return true;
     }

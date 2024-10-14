@@ -29,10 +29,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        if (uri.equals("/api/members/signup") || uri.equals("/members/signup") ||
+        if (uri.equals("/api/members/signup") || uri.equals("/api/members/login") ||
             uri.equals("/auth/success") || uri.equals("/api/members/checkid") ||
-            uri.equals("/login/oauth2/code/*") || uri.equals("/members/login") ||
-            uri.equals("/api/send-mail/email") || uri.equals("/api/members/login") ||
+            uri.equals("/login/oauth2/code/*") || uri.equals("/api/send-mail/email") ||
             uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode") ||
             uri.equals("/api/notices/search") || uri.equals("/api/acc-token") ||
             uri.equals("/api/ref-token") ||
@@ -78,7 +77,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         // 액세스토큰 만료 시 리프레시토큰 이용해 새로운 액세스토큰 발급
         } else {
             String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
-            log.info("액세스토큰 만료 시, 보유중인 리프레시토큰 : " + refreshToken);
+            log.info("액세스토큰 만료 시, 쿠키에서 가져온 리프레시토큰 : " + refreshToken);
 
             if (refreshToken != null && tokenProvider.validRefreshToken(refreshToken, request,
                 response)) {
