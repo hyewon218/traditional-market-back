@@ -98,13 +98,11 @@ public class MemberServiceImpl implements MemberService {
                 TokenProvider.ACCESS_TOKEN_DURATION);
             tokenProvider.addTokenToCookie(httpRequest, httpResponse, accessToken);
 
-            String findRefreshToken = redisUtils.getValues(
-                member.getMemberId()); // 로그아웃 시 값 "logout"으로 변경됨
+            String findRefreshToken = redisUtils.getValues(member.getMemberId());
             String newRefreshToken = null;
 
             // refresh 토큰 없는 경우
             if (findRefreshToken == null) {
-                log.info("첫번째, findRefreshToken == null");
                 RefreshToken refreshToken = tokenProvider.generateRefreshToken(member,
                     TokenProvider.REFRESH_TOKEN_DURATION);
                 redisUtils.setValues(member.getMemberId(), refreshToken.getRefreshToken(),
@@ -115,7 +113,6 @@ public class MemberServiceImpl implements MemberService {
 
             // refresh 토큰이 유효하지않은 경우
             } else if (!tokenProvider.validRefreshToken(findRefreshToken, httpRequest, httpResponse)) {
-                log.info("두번째, !tokenProvider.validRefreshToken(findRefreshToken)");
                 redisUtils.deleteValues(member.getMemberId());
                 RefreshToken refreshToken = tokenProvider.generateRefreshToken(member,
                     TokenProvider.REFRESH_TOKEN_DURATION);
@@ -125,7 +122,6 @@ public class MemberServiceImpl implements MemberService {
                     refreshToken.getRefreshToken());
                 newRefreshToken = refreshToken.getRefreshToken();
             }
-            log.info("실행");
             return MemberResponseDto.ofLogin(member, accessToken, newRefreshToken);
 
         } catch (Exception e) {
