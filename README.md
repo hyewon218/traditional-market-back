@@ -1,4 +1,3 @@
-
 # 우리동네 전통시장 👨🏻‍🌾 🥕
 
 ## 📢 프로젝트 소개
@@ -9,13 +8,30 @@
 전통시장에는 수많은 점포들이 대부분 겹치는 품목의 상품들을 판매하고 있기 때문에 각 점포들에서 판매하고 있는 상품들에 대한 가격 정보를 홈페이지에서 편하게 확인할 수 있다면 소비자 입장에서 비교를 통해 합리적인 소비를 할 수 있다고 생각해서 이 주제를 선택했습니다.
 
 ## ✅ 사용 기술 및 개발 환경
-Java, Spring Boot, MySQL, Redis, kafka, Jenkins, Docker, React, Nginx, AWS EC2, S3, IntelliJ
+### Backend
+- Java
+- Spring Boot, Spring Data JPA, Spring Security
+- JPA, Querydsl
+- Gradle
+
+### Infra
+- AWS EC2, S3
+- MySQL
+- Redis
+- Kafka
+- Jenkins
+- Docker
+- Nginx
 
 ## ✅ Architecture
-<img src="https://github.com/user-attachments/assets/9336f310-f2e5-48ac-a0be-f60684d6720e" width="90%"/><br>
+<img src="https://github.com/user-attachments/assets/b824b6e2-0a6e-4f8f-8f90-137f6bc8d034" width="90%"/><br>
 
 ## ✅ ERD
 <img src="https://github.com/user-attachments/assets/810c45ff-b0f8-42d2-9487-8357bc5ca90b" width="90%"/><br>
+### Used RDBMS
+**MySQL**
+### Index
+
 
 ## ✅ 주요 기능
 ### 💁🏻‍ 사용자
@@ -36,8 +52,8 @@ Java, Spring Boot, MySQL, Redis, kafka, Jenkins, Docker, React, Nginx, AWS EC2, 
     - 닉네임 변경
     - 비밀번호 변경
     - 탈퇴
-  - 구매목록(주문내역) 
-  - 문의내역 
+  - 구매목록(주문내역)
+  - 문의내역
     - 문의사항 조회
   - 배송지 관리
     - 배송지 추가 / 수정 / 삭제 / 조회
@@ -59,7 +75,7 @@ Java, Spring Boot, MySQL, Redis, kafka, Jenkins, Docker, React, Nginx, AWS EC2, 
   - 상품 댓글 시 상품의 판매자에게 알람
     - 판매자 번호가 등록되어 있지 않으면 관리자에게 알람
   - 상품 좋아요 시 상품의 판매자에게 알람
-    - 판매자 번호가 등록되어 있지 않으면 관리자에게 알람 
+    - 판매자 번호가 등록되어 있지 않으면 관리자에게 알람
   - 상점 좋아요 시 상점의 판매자에게 알람
     - 상점 판매자 번호가 등록되어 있지 않으면 관리자에게 알람
 
@@ -70,7 +86,7 @@ Java, Spring Boot, MySQL, Redis, kafka, Jenkins, Docker, React, Nginx, AWS EC2, 
   - 매출액 조회
   - 방문자 수 조회
 - 회원 관리
-  - 탈퇴회원 관리 
+  - 탈퇴회원 관리
   - 회원 제재
   - 회원 권한 변경
   - 회원 강제 탈퇴
@@ -100,3 +116,78 @@ Java, Spring Boot, MySQL, Redis, kafka, Jenkins, Docker, React, Nginx, AWS EC2, 
   - 사용자가 상품 댓글 시 상품의 판매자에게 알람
   - 사용자가 상품 좋아요 시 상품의 판매자에게 알람
   - 사용자가 상점 좋아요 시 상점의 판매자에게 알람
+
+## ✅ 화면 UI
+#### 일반 사용자 UI
+| 회원가입                                                                                                            | 모바일                                                                                                           | 
+|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/cc0241c0-f996-4c06-95ab-8d801dc1da9d" width="1250px"/><br> | <img src="https://github.com/user-attachments/assets/d604097f-bdc4-46d8-a7f7-7d9fe1890221" width="350px"/><br> | 
+
+
+| 로그인                                                                                                             | 모바일                                                                                                            | 
+|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/dd6edd1c-29bb-4e3c-8087-7864d2aa3d4b" width="1250px"/><br> | <img src="https://github.com/user-attachments/assets/2b35593e-8c5c-4f71-9554-d7eb60dcc230" width="350px"/><br> | 
+
+
+| 시장 조회                                                                                                           | 모바일                                                                                                           | 
+|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/7e5c408f-cde3-42e3-9ca9-71d5bfb9d371" width="1250px"/><br> | <img src="https://github.com/user-attachments/assets/891782c0-2b4b-4006-b461-8fc2351b4611" width="350px"/><br> | 
+
+| 시장 상세 조회                                                                                                        | 모바일                                                                                                                                                                                                                  | 
+|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/a325d26a-1eac-4238-aaec-37f92d7f83cc" width="2000px"/><br> | <img src="https://github.com/user-attachments/assets/34a77834-b89a-497a-9290-2a02b9ba85b8" width="280px"/><img src="https://github.com/user-attachments/assets/567c88c3-6e09-4e32-9240-4c28902f5b81" width="280px"/> | 
+
+| 상점 상세 조회                                                                                                        | 모바일                                                                                                                                                                                                                  | 
+|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/72a66ffe-8724-4668-98e1-b2f24c4627e5" width="2000px"/><br> | <img src="https://github.com/user-attachments/assets/09a1368d-3d08-4afd-87ad-3d6083d54dd0" width="280px"/><img src="https://github.com/user-attachments/assets/9d4b8683-8a77-4d35-a7c7-a03ecf74cde4" width="280px"/> | 
+
+| 상품 상세 조회                                                                                                        | 모바일                                                                                                                                                                                                               | 
+|-----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/ecdcf1bc-a6e3-41e6-82ff-37e4e0aeeeed" width="1250px"/><br> | <img src="https://github.com/user-attachments/assets/6092ba0b-a77a-46b6-8c8a-20196bb6b554" width="350px"/>| 
+
+| 장바구니                                                                                                            | 모바일                                                                                                                                                                                                              | 
+|-----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/a24e1283-2271-4745-ad63-66db83443c26" width="1250px"/><br> | <img src="https://github.com/user-attachments/assets/9b30bcfc-9bf4-495b-ae6f-742eef7ee519" width="350px"/>| 
+
+
+| 주문                                                                                                                                                                                                                     | 모바일                                                                                                                                                                                                               | 
+|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/b9ad26ef-ad5b-45b7-b401-9fd096f55066" width="1020px"/><img src="https://github.com/user-attachments/assets/48454808-ef6c-4dfb-ad02-11ff9cd6b1a3" width="1020px"/> | <img src="https://github.com/user-attachments/assets/bbe8beba-25c2-4b3e-9254-95fd5b33407d" width="280px"/><img src="https://github.com/user-attachments/assets/a6697de2-ee81-4098-a081-af12c26b86d2" width="280px"/> | 
+
+| 배송지                                                                                                            | 모바일                                                                                                       | 
+|----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/a2a1d71b-c779-4fbf-b83e-826f66273bc3" width="1250px"/><br> | <img src="https://github.com/user-attachments/assets/1e0c708d-c08a-47e6-b348-a10854238035" width="350px"/> | 
+
+| 채팅                                                                                                            |
+|---------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/d3281554-62fd-469c-b0ad-2c8ae08f3703" width="100%"/><br> |
+
+| 알람                                                                                                            |
+|---------------------------------------------------------------------------------------------------------------|
+| <img src="https://github.com/user-attachments/assets/b55f4529-289f-4955-b56c-20d6b340d75a" width="100%"/><br> |
+
+
+## ✅ 기능별 비즈니스 로직
+
+
+
+## ✅ Git-Flow 브랜치 전략
+Git-Flow 브랜치 전략에 따라 기능별로 브랜치를 나누어 작업하고 있고 모든 브랜치에 대해 pull request를 통한 리뷰 완료 후 Merge를 하고 있습니다.
+- master : 제품으로 출시될 수 있는 브랜치
+- develop : 다음 출시 버전을 개발하는 브랜치. feature에서 리뷰완료한 브랜치를 Merge
+- feature : 기능을 개발하는 브랜치
+
+
+## ✅ 프로젝트를 진행하며 고민한 Technical Issue
+1. [JWT , 리프레시토큰](https://velog.io/@hyewon0218/JWT)<br>
+2. [특정 시장에서 최소 가격 5개 조회 API index, redis 사용하여 조회 성능 개선](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5%EA%B0%9C%EC%84%A0-%ED%8A%B9%EC%A0%95-%EC%8B%9C%EC%9E%A5%EC%97%90%EC%84%9C-%EC%B5%9C%EC%86%8C-%EA%B0%80%EA%B2%A9-5%EA%B0%9C-%EC%A1%B0%ED%9A%8C)<br>
+3. [상품 주문 시 비관적 Lock 으로 동시성 제어](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0-%EC%83%81%ED%92%88-%EC%A3%BC%EB%AC%B8-%EC%8B%9C-%EB%B9%84%EA%B4%80%EC%A0%81-Lock%EC%9C%BC%EB%A1%9C-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%A0%9C%EC%96%B4)<br>
+4. [Redis + @Cacheable + @CacheEvict 이용하여 시장, 상점 조회 성능 개선 및 데이터 동기화](https://velog.io/@hyewon0218/RedisCacheable)<br>
+5. [Spring Batch JPQL 쿼리 작성하여 조회없이 삭제 + 대규모 데이터 세트에서 배치 단위로 삭제](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0-%EB%8C%80%EA%B7%9C%EB%AA%A8-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%84%B8%ED%8A%B8%EC%97%90%EC%84%9C-%EC%84%B1%EB%8A%A5-%EB%AC%B8%EC%A0%9C%EB%A5%BC-%ED%94%BC%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%B4-%EB%B0%B0%EC%B9%98-%EB%8B%A8%EC%9C%84%EB%A1%9C-%EC%82%AD%EC%A0%9C)<br>
+6. [알람 기능 구현하기(Server Sent Event) vs LongPolling vs Polling 방식과 비교](https://velog.io/@hyewon0218/SSE)<br>
+7. [채팅 기능 구현하기(Stomp) vs WebSocket 방식과 비교 + JWT로 사용자 인증](https://velog.io/@hyewon0218/%EC%8B%A4%EC%8B%9C%EA%B0%84-%EC%B1%84%ED%8C%85-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)<br>
+8. [실시간 통신 기술 비교 및 분석 (LongPolling vs SSE / Websocket vs Stomp) K6로 성능 테스트](https://velog.io/@hyewon0218/%EB%B6%80%ED%95%98%ED%85%8C%EC%8A%A4%ED%8A%B8)<br>
+9. [Kafka 활용하여 SSE 알람 비동기 처리하기 + 전후 성능 테스트](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0-Kafka-%ED%99%9C%EC%9A%A9%ED%95%98%EC%97%AC-SSE-%EC%95%8C%EB%9E%8C-%EB%B9%84%EB%8F%99%EA%B8%B0-%EC%B2%98%EB%A6%AC%ED%95%98%EA%B8%B0)<br>
+10. [프로젝트에 Nginx, Docker, DockerFile, DockerCompose 적용하기](https://velog.io/@hyewon0218/CI-CD-Nginx-Docker-DockerFile-DockerCompose)<br>
+11. [Jenkins(젠킨스) CI/CD 구축](https://velog.io/@hyewon0218/CI-CD-Spring-React-Jenkins%EC%A0%A0%ED%82%A8%EC%8A%A4-CICD-%EA%B5%AC%EC%B6%95-with-AWS-EC2)<br>
+12. [nGrinder](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5%ED%85%8C%EC%8A%A4%ED%8A%B8-nGrinder)
