@@ -135,6 +135,11 @@ spring:
       ack-mode: MANUAL
     topic:
       notification: r2rj2fh0-notification
+      min:
+        insync:
+          replicas: 2
+      partitions: 3
+      replication-factor: 3
 
 cloud:
   aws:
