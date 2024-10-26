@@ -8,7 +8,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberService;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.entity.NotificationEvent;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.util.List;
@@ -30,6 +30,7 @@ public class WebSocketController {
     private final ChatService chatService;
     private final MemberService memberService;
     private final NotificationProducer notificationProducer;
+    private final NotificationService notificationService;
 
     // stompConfig 에서 설정한 applicationDestinationPrefixes 와 @MessageMapping 경로가 병합됨 (/pub + ...)
     // /pub/chat/message 에 메세지가 오면 동작
@@ -49,8 +50,13 @@ public class WebSocketController {
             // 모든 수신자에게 알림 전송
             for (Member receiver : receivers) {
                 NotificationType notificationType = getNotificationType(receiver);
-                notificationProducer.send(new NotificationEvent(notificationType, notificationArgs,
-                    receiver.getMemberNo()));
+                // 폴링, 롱폴링
+                //notificationService.sendPolling(notificationType, notificationArgs, receiver.getMemberNo());
+                // SSE
+                notificationService.send(notificationType, notificationArgs, receiver.getMemberNo());
+                // Kafka
+              /*  notificationProducer.send(new NotificationEvent(notificationType, notificationArgs,
+                    receiver.getMemberNo()));*/
             }
         }
         return ChatMessageDto.builder()
