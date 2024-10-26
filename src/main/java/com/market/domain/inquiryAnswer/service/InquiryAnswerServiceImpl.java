@@ -17,7 +17,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.service.MemberService;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.entity.NotificationEvent;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
@@ -40,6 +40,7 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     private final ImageRepository imageRepository;
     private final AwsS3upload awsS3upload;
     private final MemberService memberService;
+    private final NotificationService notificationService;
     private final NotificationProducer notificationProducer;
 
     @Override
@@ -72,9 +73,11 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
         Member receiver = memberService.findById(inquiry.getMemberNo());
         NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),// 로그인한 관리자 No
             inquiry.getInquiryNo());
-        notificationProducer.send(
+        notificationService.send(NotificationType.NEW_INQUIRY_ANSWER, notificationArgs,
+            receiver.getMemberNo());
+       /* notificationProducer.send(
             new NotificationEvent(NotificationType.NEW_INQUIRY_ANSWER, notificationArgs,
-                receiver.getMemberNo()));
+                receiver.getMemberNo()));*/
 
         return InquiryAnswerResponseDto.of(inquiryAnswer);
     }

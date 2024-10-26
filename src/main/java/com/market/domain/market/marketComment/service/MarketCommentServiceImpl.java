@@ -12,7 +12,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.entity.NotificationEvent;
+import com.market.domain.notification.service.NotificationService;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import com.market.global.profanityFilter.ProfanityFilter;
@@ -29,8 +29,9 @@ public class MarketCommentServiceImpl implements MarketCommentService {
 
     private final MarketCommentRepository marketCommentRepository;
     private final MarketRepository marketRepository;
-    private final NotificationProducer notificationProducer;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     @Override
     @Transactional
@@ -60,9 +61,11 @@ public class MarketCommentServiceImpl implements MarketCommentService {
             market.getNo());
         // 모든 관리자에게 알림 전송
         for (Member admin : adminList) {
-            notificationProducer.send(
+            notificationService.send(
+                NotificationType.NEW_COMMENT_ON_MARKET, notificationArgs, admin.getMemberNo());
+           /* notificationProducer.send(
                 new NotificationEvent(NotificationType.NEW_COMMENT_ON_MARKET, notificationArgs,
-                    admin.getMemberNo()));
+                    admin.getMemberNo()));*/
         }
     }
 

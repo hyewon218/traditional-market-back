@@ -12,7 +12,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.entity.NotificationEvent;
+import com.market.domain.notification.service.NotificationService;
 import com.market.domain.shop.dto.ShopRequestDto;
 import com.market.domain.shop.dto.ShopResponseDto;
 import com.market.domain.shop.entity.CategoryEnum;
@@ -50,9 +50,10 @@ public class ShopServiceImpl implements ShopService {
     private final AwsS3upload awsS3upload;
     private final ShopLikeRepository shopLikeRepository;
     private final MemberRepository memberRepository;
-    private final NotificationProducer notificationProducer;
     private final IpService ipService;
     private final ShopRepositoryQuery shopRepositoryQuery;
+    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     @Override
     @Transactional // 상점 생성
@@ -279,16 +280,20 @@ public class ShopServiceImpl implements ShopService {
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), shopNo);
             // 모든 관리자에게 알림 전송
             for (Member admin : adminList) {
-                notificationProducer.send(
+                notificationService.send(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
+                    admin.getMemberNo());
+               /* notificationProducer.send(
                     new NotificationEvent(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
-                        admin.getMemberNo()));
+                        admin.getMemberNo()));*/
             }
         } else {
             // 판매자에게 알림을 보낼 경우
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(), shopNo);
-            notificationProducer.send(
+            notificationService.send(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
+                seller.getMemberNo());
+          /*  notificationProducer.send(
                 new NotificationEvent(NotificationType.NEW_LIKE_ON_SHOP, notificationArgs,
-                    seller.getMemberNo()));
+                    seller.getMemberNo()));*/
         }
     }
 

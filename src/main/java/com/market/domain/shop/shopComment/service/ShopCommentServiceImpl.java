@@ -6,7 +6,7 @@ import com.market.domain.member.entity.Member;
 import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.notification.constant.NotificationType;
 import com.market.domain.notification.entity.NotificationArgs;
-import com.market.domain.notification.entity.NotificationEvent;
+import com.market.domain.notification.service.NotificationService;
 import com.market.domain.shop.entity.Shop;
 import com.market.domain.shop.repository.ShopRepository;
 import com.market.domain.shop.shopComment.dto.ShopCommentRequestDto;
@@ -29,8 +29,9 @@ public class ShopCommentServiceImpl implements ShopCommentService {
 
     private final ShopCommentRepository shopCommentRepository;
     private final ShopRepository shopRepository;
-    private final NotificationProducer notificationProducer;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
+    private final NotificationProducer notificationProducer;
 
     @Override
     @Transactional
@@ -64,17 +65,21 @@ public class ShopCommentServiceImpl implements ShopCommentService {
                 shop.getNo());
             // 모든 관리자에게 알림 전송
             for (Member admin : adminList) {
-                notificationProducer.send(
+                notificationService.send(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
+                    admin.getMemberNo());
+               /* notificationProducer.send(
                     new NotificationEvent(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
-                        admin.getMemberNo()));
+                        admin.getMemberNo()));*/
             }
         } else {
             // 판매자에게 알림을 보낼 경우
             NotificationArgs notificationArgs = NotificationArgs.of(member.getMemberNo(),
                 shop.getNo());
-            notificationProducer.send(
+            notificationService.send(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
+                seller.getMemberNo());
+            /*notificationProducer.send(
                 new NotificationEvent(NotificationType.NEW_COMMENT_ON_SHOP, notificationArgs,
-                    seller.getMemberNo()));
+                    seller.getMemberNo()));*/
         }
     }
 
