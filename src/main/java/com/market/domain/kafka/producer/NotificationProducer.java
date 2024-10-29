@@ -18,6 +18,7 @@ public class NotificationProducer {
     private String topic;
 
     public void send(NotificationEvent event) {
+        log.info("send start");
         alarmEventKafkaTemplate.send(topic, event.getReceiverNo(), event);
         log.info("send fin");
     }

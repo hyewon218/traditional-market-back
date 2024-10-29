@@ -272,7 +272,7 @@ public class TokenProvider {
         HttpServletResponse response) throws UnsupportedEncodingException {
         // 토큰 유효성 검사에 실패하면 예외 발생
         if (!validRefreshToken(refreshToken, request, response)) {
-            throw new IllegalArgumentException("토큰이 유효하지않습니다.");
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
         Long memberNo = getRefreshMemberNo(refreshToken);
         Member member = memberRepository.findById(memberNo)
