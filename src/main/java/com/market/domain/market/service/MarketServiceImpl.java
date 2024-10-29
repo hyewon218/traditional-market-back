@@ -27,7 +27,6 @@ import com.market.global.ip.IpService;
 import com.market.global.redis.RestPage;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -113,13 +112,6 @@ public class MarketServiceImpl implements MarketService {
     )
     public RestPage<MarketResponseDto> getCategoryMarkets(CategoryEnum category, Pageable pageable) {
         Page<Market> marketList = marketRepository.findByCategoryOrderByMarketName(category, pageable);
-
-        // 만약 레디스에 데이터가 없을 경우 (캐시 미스 상황)
-        if (marketList.isEmpty()) {
-            return new RestPage<>(Collections.emptyList(), pageable.getPageNumber(),
-                pageable.getPageSize(), 0);
-        }
-
         List<MarketResponseDto> dtoList = marketList.getContent().stream()
             .map(MarketResponseDto::of)
             .toList();
