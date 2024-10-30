@@ -61,6 +61,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.springframework.kafka:spring-kafka' // kafka
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus' // prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator' // actuator
 }
 
 tasks.named('test') {
