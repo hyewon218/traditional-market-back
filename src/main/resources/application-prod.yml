@@ -15,12 +15,14 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql:3306/${DB_NAME} # 컨테이너 내부 포트는 3306
+    url: jdbc:mysql://${DB_ENDPOINT}:3306/${DB_NAME} # 컨테이너 내부 포트는 3306
     username: ${DB_ID}
     password: ${DB_PW}
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 50
+      minimum-idle: 20
       connection-timeout: 30000
+      idle-timeout: 600000
 
   jpa:
     properties:
@@ -34,8 +36,15 @@ spring:
 
   data:
     redis:
-      host: redis
+      host: ${ELASTICACHE_ENDPOINT}
       port: 6379
+      lettuce:
+        pool:
+          max-active: 128
+          max-idle: 64
+          min-idle: 32
+          max-wait: 1000ms
+
 
   thymeleaf:
     cache: false
@@ -170,3 +179,11 @@ management:
     web:
       exposure:
         include: health, info, metrics, prometheus
+
+#---
+#spring:
+#  config:
+#    activate:
+#      on-profile: profile-one
+#server:
+#  port: 8083
