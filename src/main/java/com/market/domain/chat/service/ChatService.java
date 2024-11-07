@@ -28,4 +28,9 @@ public interface ChatService {
      * @param message     검증할 채팅 메세지
      */
     void validateProfanity(String message);
+
+    /**
+     * Websocket 채팅 메세지 저장
+     */
+    void saveWebSocketMessage(Long roomId, ChatMessageDto requestDto);
 }

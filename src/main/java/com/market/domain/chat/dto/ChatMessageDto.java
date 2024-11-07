@@ -15,14 +15,25 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ChatMessageDto {
 
+    private String type; // websocket 에서만 사용
     private Long roomId;
     private String sender;
     private String message;
     private String createdAt;
 
-    public Chat toEntity(ChatRoom chatRoom) {
+    public Chat toEntity(ChatRoom chatRoom) { // stomp 에서 사용
         return Chat.builder()
             .chatRoom(chatRoom)
+            .sender(this.sender)
+            .message(this.message)
+            .createdAt(this.createdAt)
+            .build();
+    }
+
+    public Chat toEntityWebSocket(ChatRoom chatRoom) { // websocket 에서 사용
+        return Chat.builder()
+            .chatRoom(chatRoom)
+            .type(this.type)
             .sender(this.sender)
             .message(this.message)
             .createdAt(this.createdAt)
