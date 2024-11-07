@@ -40,6 +40,16 @@ public class ChatServiceImpl implements ChatService {
         chatRepository.save(chat);
     }
 
+    @Override
+    @Transactional // Websocket 채팅 메세지 저장
+    public void saveWebSocketMessage(Long roomId, ChatMessageDto requestDto) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_CHATROOM));
+        validateProfanity(requestDto.getMessage());
+        Chat chatWebsocket = requestDto.toEntityWebSocket(chatRoom);
+        chatRepository.save(chatWebsocket);
+    }
+
     @Override // 전송하려는 채팅 메세지에 비속어 포함되어 있는지 검증
     public void validateProfanity(String message) {
         if (ProfanityFilter.containsProfanity(message)) {

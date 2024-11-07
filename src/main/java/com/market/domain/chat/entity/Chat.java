@@ -39,6 +39,8 @@ public class Chat extends BaseEntity {
     @Column(nullable = false)
     private String message;
 
-    @Column(nullable = false)
     private String createdAt;
+
+    @Column
+    private String type; // websocket 에서만 사용
 }
