@@ -179,7 +179,7 @@ Git-Flow 브랜치 전략에 따라 기능별로 브랜치를 나누어 작업�
 
 
 ## ✅ 프로젝트를 진행하며 고민한 Technical Issue
-1. [JWT , 리프레시토큰](https://velog.io/@hyewon0218/JWT)<br>
+1. [JWT , OAuth2.0](https://velog.io/@hyewon0218/JWT)<br>
 2. [특정 시장에서 최소 가격 5개 조회 API index, redis 사용하여 조회 성능 개선](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5%EA%B0%9C%EC%84%A0-%ED%8A%B9%EC%A0%95-%EC%8B%9C%EC%9E%A5%EC%97%90%EC%84%9C-%EC%B5%9C%EC%86%8C-%EA%B0%80%EA%B2%A9-5%EA%B0%9C-%EC%A1%B0%ED%9A%8C)<br>
 3. [상품 주문 시 비관적 Lock 으로 동시성 제어](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0-%EC%83%81%ED%92%88-%EC%A3%BC%EB%AC%B8-%EC%8B%9C-%EB%B9%84%EA%B4%80%EC%A0%81-Lock%EC%9C%BC%EB%A1%9C-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%A0%9C%EC%96%B4)<br>
 4. [Redis + @Cacheable + @CacheEvict 이용하여 시장, 상점 조회 성능 개선 및 데이터 동기화](https://velog.io/@hyewon0218/RedisCacheable)<br>
@@ -190,4 +190,4 @@ Git-Flow 브랜치 전략에 따라 기능별로 브랜치를 나누어 작업�
 9. [Kafka 활용하여 SSE 알람 비동기 처리하기 + 전후 성능 테스트](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0-Kafka-%ED%99%9C%EC%9A%A9%ED%95%98%EC%97%AC-SSE-%EC%95%8C%EB%9E%8C-%EB%B9%84%EB%8F%99%EA%B8%B0-%EC%B2%98%EB%A6%AC%ED%95%98%EA%B8%B0)<br>
 10. [프로젝트에 Nginx, Docker, DockerFile, DockerCompose 적용하기](https://velog.io/@hyewon0218/CI-CD-Nginx-Docker-DockerFile-DockerCompose)<br>
 11. [Jenkins(젠킨스) CI/CD 구축](https://velog.io/@hyewon0218/CI-CD-Spring-React-Jenkins%EC%A0%A0%ED%82%A8%EC%8A%A4-CICD-%EA%B5%AC%EC%B6%95-with-AWS-EC2)<br>
-12. [nGrinder](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5%ED%85%8C%EC%8A%A4%ED%8A%B8-nGrinder)
+12. [Scale-Up, Scale-Out(Nginx로 로드밸런싱)하여 성능 개선 + nGrinder로 성능 테스트](https://velog.io/@hyewon0218/%EC%84%B1%EB%8A%A5-%ED%85%8C%EC%8A%A4%ED%8A%B8-%EC%8A%A4%EC%BC%80%EC%9D%BC%EC%97%85-%EC%8A%A4%EC%BC%80%EC%9D%BC%EC%95%84%EC%9B%83)
