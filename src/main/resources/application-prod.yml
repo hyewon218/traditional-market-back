@@ -132,6 +132,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
+        max.poll.interval.ms: 300000  #5분으로 설정
+        heartbeat.interval.ms: 3000   #하트비트 간격 조정
+        session.timeout.ms: 10000     #세션 타임아웃 설정
         spring:
           json:
             trusted.packages: "com.market.domain.notification.entity"
