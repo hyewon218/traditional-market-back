@@ -48,6 +48,10 @@ public class Notification extends BaseEntity {
     @Column(name = "is_read")
     private boolean isRead = false; // 알람 읽음 여부
 
+    @Builder.Default
+    @Column(name = "is_sent")
+    private boolean isSent = false; // true if the notification has been sent to the client
+
     // 알람을 읽은 상태로 변경
     public void markAsRead() {
         this.isRead = true;
@@ -56,6 +60,10 @@ public class Notification extends BaseEntity {
     // 알람을 읽지 않은 상태로 변경
     public void markAsUnread() {
         this.isRead = false;
+    }
+
+    public void setIsSent() {
+        this.isSent = true;
     }
 
     public static Notification toEntity(NotificationType notificationType, NotificationArgs args,
