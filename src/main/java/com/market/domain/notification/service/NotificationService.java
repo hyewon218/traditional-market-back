@@ -11,13 +11,21 @@ import com.market.domain.notification.repository.NotificationRepository;
 import com.market.global.exception.BusinessException;
 import com.market.global.exception.ErrorCode;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Slf4j
@@ -30,7 +38,6 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final EmitterRepository emitterRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 
     public SseEmitter connectNotification(Long memberNo) {
@@ -39,7 +46,7 @@ public class NotificationService {
         emitter.onCompletion(() -> emitterRepository.delete(memberNo));
         emitter.onTimeout(() -> emitterRepository.delete(memberNo));
         try {
-            log.info("send");
+            log.info("send"+emitter);
             // 클라이언트에게 연결 정보 제공
             emitter.send(SseEmitter.event()
                 .id("id")
@@ -52,6 +59,7 @@ public class NotificationService {
     }
 
     // 댓글, 좋아요, 상품 판매, 상담 요청 및 답변 시 SseEmitter 보내줌
+    @Transactional
     public void send(NotificationType type, NotificationArgs args, Long receiverNo) {
         log.info("Receiver MemberNo: " + receiverNo);
 
@@ -93,6 +101,7 @@ public class NotificationService {
                         "Notification sent successfully to MemberNo: " + receiverNo);
                 } catch (IOException exception) {
                     // 전송 실패 시 오류를 기록하고 처리
+                    // IOException : SSE 데이터를 클라이언트에게 전송하는 과정에서 발생하는 오류
                     log.error("Failed to send notification. Removing emitter for MemberNo: "
                         + receiverNo, exception);
                     emitterRepository.delete(receiverNo);
@@ -103,7 +112,61 @@ public class NotificationService {
         );
     }
 
-    @Transactional // 알람 목록 최신순 조회
+    // 폴링, 롱폴링 (새 알람 생성만)
+    @Transactional
+    public void sendPolling(NotificationType type, NotificationArgs args, Long receiverNo) {
+        log.info("sendPolling Receiver MemberNo: " + receiverNo);
+        Notification notification = Notification.toEntity(type, args, receiverNo);
+        notificationRepository.save(notification);
+    }
+
+    // 롱폴링
+    public void longPollNotifications(Long memberNo,
+        DeferredResult<ResponseEntity<List<NotificationResponseDto>>> output, long timeout) {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        long pollingInterval = 5; // Poll every 5 seconds
+
+        // 서버 측에서 새 알림을 확인하기 위한 5초 간격을 설정
+        ScheduledFuture<?> scheduledFuture = executor.scheduleWithFixedDelay(() -> {
+            List<NotificationResponseDto> notifications = UnsentnotificationList(memberNo);
+            if (!notifications.isEmpty()) {
+                notifications.forEach(notification -> {
+                    Notification notificationEntity = notificationRepository.findById(
+                        notification.getNo()).orElse(null);
+                    if (notificationEntity != null) {
+                        notificationEntity.setIsSent(); // 알림을 보낸 것으로 표시
+                        notificationRepository.save(notificationEntity); // 수정된 엔터티를 데이터베이스에 다시 저장
+                    }
+                });
+                // 클라이언트에 응답을 반환. 그러면 실행 프로그램도 종료되어 추가 폴링이 중지된다.
+                output.setResult(ResponseEntity.ok(notifications));
+                log.info("output.setResult!??!??!?!!?"+output.getResult());
+                executor.shutdown(); // 불필요한 리소스 사용 방지
+            }
+            // 5초마다 notificationList(memberNo) 메소드가 호출되어 사용자에게 새로운 알림이 있는지 확인
+            // 알림이 발견되지 않으면 코드는 새 알림을 찾거나 시간 초과될 때까지 5초마다 계속 확인
+        }, 0, pollingInterval, TimeUnit.SECONDS);
+
+        output.onTimeout(() -> {
+            log.info("Request timed out after " + timeout + " milliseconds.");
+            output.setResult(ResponseEntity.ok(Collections.emptyList()));
+            scheduledFuture.cancel(false);
+            executor.shutdown();
+        });
+        output.onError(t -> {
+            log.error("Error during long polling", t);
+            executor.shutdown();
+        });
+    }
+
+    // 룡폴링
+    @Transactional(readOnly = true) // 클라이언트로 보내지지 않은 알람
+    public List<NotificationResponseDto> UnsentnotificationList(Long memberNo) {
+        return notificationRepository.findAllByReceiverNoAndIsSent(memberNo, false).stream()
+            .map(NotificationResponseDto::of).toList();
+    }
+
+    @Transactional(readOnly = true) // 알람 목록 최신순 조회
     public Page<NotificationResponseDto> notificationList(Long memberNo, Pageable pageable) {
         return notificationRepository.findAllByReceiverNoOrderByCreateTimeDesc(memberNo, pageable)
             .map(NotificationResponseDto::of);
