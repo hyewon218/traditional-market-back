@@ -70,9 +70,10 @@ public class MemberServiceImpl implements MemberService {
         HttpServletRequest request) {
 
         validationId(memberRequestDto.getMemberId()); // 가입하려는 id가 회원 DB, 탈퇴회원 DB에 있는지 검증
-        validationEmail(memberRequestDto.getMemberEmail()); // 가입하려는 email이 회원 DB, 탈퇴회원 DB에 있는지 검증
+        validationEmail(memberRequestDto.getMemberEmail()); // 가입하려는 email 이 회원 DB, 탈퇴회원 DB에 있는지 검증
         validationNickname(memberRequestDto.getMemberNickname()); // 닉네임에 비속어가 포함되어있는지 검증
-        return MemberResponseDto.of(memberRepository.save(memberRequestDto.toEntity(passwordEncoder)));
+        return MemberResponseDto.of(
+            memberRepository.save(memberRequestDto.toEntity(passwordEncoder)));
     }
 
     // 로그인
@@ -111,8 +112,9 @@ public class MemberServiceImpl implements MemberService {
                     refreshToken.getRefreshToken());
                 newRefreshToken = refreshToken.getRefreshToken();
 
-            // refresh 토큰이 유효하지않은 경우
-            } else if (!tokenProvider.validRefreshToken(findRefreshToken, httpRequest, httpResponse)) {
+                // refresh 토큰이 유효하지 않은 경우
+            } else if (!tokenProvider.validRefreshToken(findRefreshToken, httpRequest,
+                httpResponse)) {
                 redisUtils.deleteValues(member.getMemberId());
                 RefreshToken refreshToken = tokenProvider.generateRefreshToken(member,
                     TokenProvider.REFRESH_TOKEN_DURATION);
@@ -146,7 +148,7 @@ public class MemberServiceImpl implements MemberService {
         CookieUtil.deleteCookie(httpRequest, httpResponse, "isPasswordVerified");
     }
 
-    // 전체 회원 조회(admin만 가능)
+    // 전체 회원 조회(admin 만 가능)
     @Override
     @Transactional(readOnly = true)
     public Page<MemberResponseDto> findAll(Pageable pageable) {
@@ -187,6 +189,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 닉네임 변경 가능까지 남은 시간 변환해 알려주는 메서드(timeUntilNextNicknameChange, formatDuration 메서드 이용)
     @Override
+    @Transactional(readOnly = true)
     public String getRemainingTime(Long memberNo) {
         Member findMember = findById(memberNo);
         Duration duration = timeUntilNextNicknameChange(findMember);
@@ -199,7 +202,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    // 닉네임 변경 가능한지 계산(한달 지났으면 변경 가능, 안지났으면 변경 불가)
+    // 닉네임 변경 가능한지 계산(한달 지났으면 변경 가능, 안 지났으면 변경 불가)
     @Override
     public boolean canChangeNickname(Member member) {
         if (member.getLastNicknameChangeDate() == null) {
@@ -264,7 +267,7 @@ public class MemberServiceImpl implements MemberService {
         findMember.setWarningTime(LocalDateTime.now());
     }
 
-    // 특정 회원 제재 해제 (직접 해제할때는 countWarning(제재 누적 횟수 증가하지않음))
+    // 특정 회원 제재 해제 (직접 해제할 때는 countWarning(제재 누적 횟수 증가하지 않음))
     @Override
     @Transactional
     public void warningClear(Member loginMember, Long memberNo) {
@@ -274,7 +277,7 @@ public class MemberServiceImpl implements MemberService {
         findMember.setWarningTime(null);
     }
 
-    // 매일 0시 30분에 실행, 제재일 30일 지났는지 확인하고 30일 지났으면 isWarning값 false로 자동 변경
+    // 매일 0시 30분에 실행, 제재일 30일 지났는지 확인하고 30일 지났으면 isWarning 값 false 로 자동 변경
     @Scheduled(cron = "0 30 0 * * ?") // 스케줄러 동시 실행될 경우 자원 경합 문제로 시간 나눠서 설정
     @Transactional
     public void updateIsWarning() {
@@ -283,7 +286,7 @@ public class MemberServiceImpl implements MemberService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
-        // isWarning(제재 여부)이 true인 사용자 중 warningStartDate가 30일 이전인 사용자 찾기
+        // isWarning(제재 여부)이 true 인 사용자 중 warningStartDate 가 30일 이전인 사용자 찾기
         memberRepository.findByIsWarningAndWarningStartDateBefore(true, thirtyDaysAgo)
             .forEach(member -> {
                 member.setIsWarning(false);
@@ -316,7 +319,8 @@ public class MemberServiceImpl implements MemberService {
     // 관리자가 특정 회원 삭제(해당 회원의 refresh 토큰도 함께 삭제)
     @Override
     @Transactional
-    public void deleteMemberAdmin(Member member, Long memberNo, String memberId, HttpServletRequest httpRequest,
+    public void deleteMemberAdmin(Member member, Long memberNo, String memberId,
+        HttpServletRequest httpRequest,
         HttpServletResponse httpResponse) {
 
         validationAdmin(member);
@@ -346,8 +350,9 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.save(member);
     }
 
-    // 인증번호 확인(회원가입 시 입력한 인증번호와 redis에 저장된 인증번호 일치하는지 확인)
+    // 인증번호 확인(회원가입 시 입력한 인증번호와 redis 에 저장된 인증번호 일치하는지 확인)
     @Override
+    @Transactional(readOnly = true)
     public boolean verifyCode(String memberEmail, String inputCode) {
         String savedCode = redisUtils.getValues(memberEmail);
         if (!inputCode.equals(savedCode)) {
@@ -356,8 +361,9 @@ public class MemberServiceImpl implements MemberService {
         return true;
     }
 
-    // 아이디 찾기(이메일 이용, 추후 member Entity에 휴대전화번호필드 추가해서 휴대전화번호도 같이 이용하는걸로 변경하기)
+    // 아이디 찾기(이메일 이용, 추후 member Entity 에 휴대전화번호필드 추가해서 휴대전화번호도 같이 이용하는 걸로 변경하기)
     @Override
+    @Transactional(readOnly = true)
     public String findIdByEmail(FindIdRequestDto findIdRequestDto) {
         Member member = findByMemberEmail(findIdRequestDto.getMemberEmail());
         String savedCode = redisUtils.getValues(member.getMemberEmail());
@@ -370,6 +376,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 아이디 찾기 시 닉네임, 이메일에 해당하는 회원이 있는지 검증
     @Override
+    @Transactional(readOnly = true)
     public boolean findMemberByEmail(String memberEmail) {
         Member member = findByMemberEmail(memberEmail);
         return member != null;
@@ -377,6 +384,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 임시비밀번호 발급(비밀번호 찾기에서 해당 이메일로 임시비밀번호 전송)
     @Override
+    @Transactional
     public void SetTempPassword(String memberEmail, String tempPassword) {
         Member findMember = findByMemberEmail(memberEmail);
         findMember.setMemberPw(passwordEncoder.encode(tempPassword));
@@ -385,6 +393,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 임시비밀번호 발급 시 아이디, 이메일에 해당하는 회원이 있는지 검증
     @Override
+    @Transactional(readOnly = true)
     public boolean findMemberByIdAndEmail(String memberId, String memberEmail) {
         Member member = memberRepository.findByMemberIdAndMemberEmail(memberId, memberEmail);
         return member != null;
@@ -392,6 +401,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 비밀번호 변경
     @Override
+    @Transactional
     public void changePassword(long memberNo, String changePw, String confirmPw) {
         Member findMember = findById(memberNo);
         // 변경할 비밀번호와 변경할 비밀번호 재확인 일치하는지 확인
@@ -403,7 +413,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    // 회원가입 시 회원 DB에서 아이디 중복 확인 및 탈퇴회원에서 아이디 검증
+    // 회원가입 시 회원 DB 에서 아이디 중복 확인 및 탈퇴회원에서 아이디 검증
     @Override
     public void validationId(String memberId) {
         if (ProfanityFilter.containsProfanity(memberId)) { // 비속어 검증
@@ -415,7 +425,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    // 회원가입 시 회원 DB에서 이메일 중복 확인 및 탈퇴회원에서 이메일 검증
+    // 회원가입 시 회원 DB 에서 이메일 중복 확인 및 탈퇴회원에서 이메일 검증
     @Override
     public void validationEmail(String memberEmail) {
         if (memberRepository.existsByMemberEmail(memberEmail)) {
@@ -435,6 +445,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 비밀번호 확인
     @Override
+    @Transactional(readOnly = true)
     public void checkPassword(HttpServletRequest request, HttpServletResponse response,
         String inputPassword, long memberNo) {
         Member member = findById(memberNo);
@@ -448,6 +459,7 @@ public class MemberServiceImpl implements MemberService {
 
     // OAuth2 로그인 회원의 경우, 별도의 인증 프로세스(이미 인증된 상태)
     @Override
+    @Transactional(readOnly = true)
     public boolean isOAuthMember(Member member) {
         Member oAuthMember = findById(member.getMemberNo());
         return oAuthMember.getProviderType() != ProviderType.LOCAL;
@@ -483,6 +495,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 쿠키에서 비밀번호 확인 상태 체크
     @Override
+    @Transactional(readOnly = true)
     public boolean isPasswordVerified(HttpServletRequest request, String randomTag) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -609,6 +622,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원 아이디 마스킹 처리
     @Override
+    @Transactional(readOnly = true)
     public String idMasking(String memberId) {
         // 2 범위 뒤로는 모두 마스킹 처리
         return memberId.replaceAll("(?<=.{4}).", "*");
@@ -616,6 +630,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원 이메일 마스킹 처리
     @Override
+    @Transactional(readOnly = true)
     public String emailMasking(String memberEmail) {
         // (?<=.{3}) : 앞의 3개 문자(어떤 문자든 상관없음) 뒤에 있는 문자들을 찾고
         // (?<= : 찾으려는 패턴이 어떤 다른 패턴 뒤에 있어야 찾음)

@@ -48,7 +48,7 @@ public enum ErrorCode {
     INVALID_ACCESS(HttpStatus.BAD_REQUEST, "0007", "잘못된 접근입니다"),
     NOT_LESS_THAN_ZERO(HttpStatus.BAD_REQUEST, "O008", "재고는 0개 미만이 될 수 없습니다."),
     // 장바구니
-    NOT_FOUND_CART(HttpStatus.NOT_FOUND, "C001", "장바구니가 존재하지 않습니다."),
+    NOT_FOUND_CART(HttpStatus.NOT_FOUND, "CA001", "장바구니가 존재하지 않습니다."),
     // 장바구니 상품
     NOT_FOUND_CART_ITEM(HttpStatus.NOT_FOUND, "CI001", "장바구니에 존재하지 않는 상품입니다."),
     NOT_AUTHORITY_CART_ITEM(HttpStatus.BAD_REQUEST, "CI002", "장바구니 권한이 없습니다."),
@@ -100,6 +100,9 @@ public enum ErrorCode {
     EXISTS_WITHDRAWMEMBER_ID(HttpStatus.CONFLICT, "W001", "탈퇴했거나 생성 불가능한 아이디입니다."),
     EXISTS_WITHDRAWMEMBER_EMAIL(HttpStatus.CONFLICT, "W002", "탈퇴했거나 생성 불가능한 이메일입니다."),
     EXISTS_WITHDRAWMEMBER_IPADDR(HttpStatus.CONFLICT, "W003", "탈퇴한 회원입니다. 30일 후 가입 가능합니다."),
+    // 이메일
+    NOT_FOUND_EMAIL(HttpStatus.NOT_FOUND, "E001", "존재하지 않는 이메일입니다."),
+    EMAIL_SEND_FAIL(HttpStatus.NOT_FOUND, "E002", "이메일 전송에 실패했습니다."),
     ;
 
     private final HttpStatus httpStatus;
