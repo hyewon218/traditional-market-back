@@ -34,7 +34,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         // 만약 회원 제재 여부가 true 라면 채팅방 생성 불가
         if (member.isWarning()) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION);
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACTION_CHAT);
         }
 
         // ChatRoom 생성 시 다수의 receivers 를 사용
