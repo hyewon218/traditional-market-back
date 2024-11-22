@@ -47,6 +47,7 @@ public enum ErrorCode {
     NOT_FOUND_ORDER_ITEM(HttpStatus.BAD_REQUEST, "O006", "주문할 상품이 존재하지 않습니다."),
     INVALID_ACCESS(HttpStatus.BAD_REQUEST, "0007", "잘못된 접근입니다"),
     NOT_LESS_THAN_ZERO(HttpStatus.BAD_REQUEST, "O008", "재고는 0개 미만이 될 수 없습니다."),
+    INVALID_SEARCH_TYPE(HttpStatus.BAD_REQUEST, "O009", "유효하지 않은 검색 유형입니다."),
     // 장바구니
     NOT_FOUND_CART(HttpStatus.NOT_FOUND, "CA001", "장바구니가 존재하지 않습니다."),
     // 장바구니 상품
@@ -96,6 +97,7 @@ public enum ErrorCode {
     FAIL_TO_CHANGE_PW(HttpStatus.NOT_FOUND, "MB009", "비밀번호 변경에 실패했습니다."),
     NOT_CORRECT_PW(HttpStatus.NOT_FOUND, "MB010", "비밀번호가 일치하지 않습니다."),
     NOT_CORRECT_ID_PW(HttpStatus.NOT_FOUND, "MB011", "아이디 또는 비밀번호가 틀렸습니다."),
+    UNAUTHORIZED_ACTION_CHAT(HttpStatus.FORBIDDEN, "MB012", "현재 제재로 인해 30일간 1:1 채팅상담이 불가능합니다."),
     // 탈퇴회원
     EXISTS_WITHDRAWMEMBER_ID(HttpStatus.CONFLICT, "W001", "탈퇴했거나 생성 불가능한 아이디입니다."),
     EXISTS_WITHDRAWMEMBER_EMAIL(HttpStatus.CONFLICT, "W002", "탈퇴했거나 생성 불가능한 이메일입니다."),
