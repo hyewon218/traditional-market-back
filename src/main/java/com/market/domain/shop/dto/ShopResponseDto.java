@@ -64,7 +64,7 @@ public class ShopResponseDto {
             .viewCount(shop.getViewCount())
             .marketNo(shop.getMarket().getNo())
             .imageList(shop.getImageList().stream().map(ImageResponseDto::of).toList())
-            //.itemList(shop.getItemList().stream().map(ItemResponseDto::of).toList())
+            .itemList(shop.getItemList().stream().map(ItemResponseDto::of).toList())
             .shopCommentList(
                 shop.getShopCommentList().stream().map(ShopCommentResponseDto::of).toList())
             .build();

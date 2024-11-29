@@ -2,8 +2,8 @@ package com.market.domain.order.service;
 
 import com.market.domain.member.entity.Member;
 import com.market.domain.order.constant.OrderStatus;
-import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.order.dto.OrderHistResponseDto;
+import com.market.domain.order.dto.SaveDeliveryRequestDto;
 import com.market.domain.order.entity.Order;
 import com.market.domain.order.repository.OrderSearchCond;
 import com.market.domain.orderItem.dto.OrderItemHistResponseDto;
@@ -116,7 +116,7 @@ public interface OrderService {
     /**
      * order 의 status COMPLETE 로 변경
      */
-    void setOrderComplete(Order order);
+    void completeOrder(Order order);
 
     /**
      * ORDER 주문 목록 조회
