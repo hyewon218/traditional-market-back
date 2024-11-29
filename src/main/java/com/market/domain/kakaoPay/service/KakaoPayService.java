@@ -180,8 +180,8 @@ public class KakaoPayService {
         if (order.isCartOrder()) {
             cartItemService.deleteAllCartItems(member);
         }
-        // 주문 상태 COMPLETE 으로 변경
-        orderService.setOrderComplete(order);
+        // 주문 상태 COMPLETE 으로 변경 및 재고 감소
+        orderService.completeOrder(order);
 
         return approveResponseDto;
     }

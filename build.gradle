@@ -63,6 +63,8 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka' // kafka
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus' // prometheus
     implementation 'org.springframework.boot:spring-boot-starter-actuator' // actuator
+    implementation 'org.springframework.retry:spring-retry' // 비관적 락 획득 실패 시 재시도 관련
+    implementation 'org.springframework.boot:spring-boot-starter-aop' // @Retryable 동작을 위해 필요
 }
 
 tasks.named('test') {

@@ -74,7 +74,7 @@ public class MarketResponseDto {
             .subwayInfo(market.getSubwayInfo())
             .subwayLat(market.getSubwayLat())
             .subwayLng(market.getSubwayLng())
-            //.shopList(market.getShopList().stream().map(ShopResponseDto::of).toList())
+            .shopList(market.getShopList().stream().map(ShopResponseDto::of).toList())
             .imageList(market.getImageList().stream().map(ImageResponseDto::of).toList())
             .commentList(market.getMarketCommentList().stream().map(MarketCommentResponseDto::of).toList())
             .build();

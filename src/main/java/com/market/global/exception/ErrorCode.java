@@ -48,6 +48,8 @@ public enum ErrorCode {
     INVALID_ACCESS(HttpStatus.BAD_REQUEST, "0007", "잘못된 접근입니다"),
     NOT_LESS_THAN_ZERO(HttpStatus.BAD_REQUEST, "O008", "재고는 0개 미만이 될 수 없습니다."),
     INVALID_SEARCH_TYPE(HttpStatus.BAD_REQUEST, "O009", "유효하지 않은 검색 유형입니다."),
+    NOT_FOUND_ORDER(HttpStatus.BAD_REQUEST, "O010", "주문이 존재하지 않습니다."),
+    ORDER_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "0011", "주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
     // 장바구니
     NOT_FOUND_CART(HttpStatus.NOT_FOUND, "CA001", "장바구니가 존재하지 않습니다."),
     // 장바구니 상품
