@@ -77,17 +77,15 @@ public class WithdrawMemberServiceImpl implements WithdrawMemberService {
         withdrawMemberRepository.deleteAll();
     }
 
-    // 매일 자정마다 탈퇴회원 30일 지났는지 확인하고 30일 지났으면 DB에서 자동 삭제
+    // 매일 자정마다 탈퇴회원 30일 지났는지 확인하고 30일 지났으면 DB 에서 자동 삭제
     @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
+    @Transactional
     public void deleteWithdrawMember() {
         log.info("탈퇴회원 삭제 스케줄러 실행");
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneMinutesAgo = now.minusMinutes(1); // 30일로 변경하기
-
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
         // 탈퇴회원 중 탈퇴한 날짜가 30일 이전인 사용자 찾아서 삭제
-        withdrawMemberRepository.findByWithdrawDateBefore(oneMinutesAgo)
-            .forEach(withdrawMemberRepository::delete);
+        withdrawMemberRepository.deleteAll(
+            withdrawMemberRepository.findByWithdrawDateBefore(thirtyDaysAgo));
     }
 
     // 관리자 권한 검증
