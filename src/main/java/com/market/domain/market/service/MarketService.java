@@ -57,6 +57,13 @@ public interface MarketService {
     MarketResponseDto getMarket(Long marketNo, HttpServletRequest request);
 
     /**
+     * 시장 이름 조회
+     *
+     * @param marketNo : 시장 고유번호
+     */
+    String getMarketName(Long marketNo);
+
+    /**
      * 시장 수정
      *
      * @param marketNo   : 수정할 시장 no
