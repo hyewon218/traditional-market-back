@@ -72,6 +72,11 @@ public class MarketController {
         return ResponseEntity.ok(marketService.getMarket(marketNo, request));
     }
 
+    @GetMapping("/markets/name/{marketNo}") // 시장 이름 조회
+    public ResponseEntity<String> getMarketName(@PathVariable Long marketNo) {
+        return ResponseEntity.ok().body(marketService.getMarketName(marketNo));
+    }
+
     @PutMapping("/markets/{marketNo}") // 시장 수정
     public ResponseEntity<MarketResponseDto> updateMarket(
         @PathVariable("marketNo") Long marketNo,

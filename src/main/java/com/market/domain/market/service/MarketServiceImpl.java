@@ -119,6 +119,7 @@ public class MarketServiceImpl implements MarketService {
             marketList.getTotalElements());
     }
 
+    @Override
     @Transactional // 시장 단건 조회 // IP 주소당 하루에 조회수 1회 증가
     public MarketResponseDto getMarket(Long marketNo, HttpServletRequest request) {
         Market market = findMarket(marketNo);
@@ -130,6 +131,12 @@ public class MarketServiceImpl implements MarketService {
             market.setViewCount(market.getViewCount() + 1);
         }
         return MarketResponseDto.of(market);
+    }
+
+    @Override
+    @Transactional(readOnly = true) // 시장 이름 조회
+    public String getMarketName(Long marketNo) {
+        return findMarket(marketNo).getMarketName();
     }
 
     @Override
