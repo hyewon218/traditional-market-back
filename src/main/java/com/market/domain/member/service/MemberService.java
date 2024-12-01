@@ -162,7 +162,7 @@ public interface MemberService {
      * @param memberEmail : 해당 회원의 이메일
      * @param inputCode   : 입력한 인증번호
      */
-    boolean verifyCode(String memberEmail, String inputCode);
+    void verifyCode(String memberEmail, String inputCode);
 
     /**
      * 아이디 찾기

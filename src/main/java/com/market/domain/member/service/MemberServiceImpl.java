@@ -37,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseCookie;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -80,11 +81,12 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponseDto logIn(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
         MemberRequestDto request) throws Exception {
-        try {
-            if (withdrawMemberService.existsMemberId(request.getMemberId())) { // 탈퇴회원 DB에 존재 여부 검증
-                throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_ID);
-            }
 
+        if (withdrawMemberService.existsMemberId(request.getMemberId())) { // 탈퇴회원 DB에 존재 여부 검증
+            throw new BusinessException(ErrorCode.EXISTS_WITHDRAWMEMBER_ID);
+        }
+
+        try {
             Authentication authentication = authenticationConfiguration.getAuthenticationManager()
                 .authenticate(new UsernamePasswordAuthenticationToken(
                     request.getMemberId(),
@@ -353,12 +355,11 @@ public class MemberServiceImpl implements MemberService {
     // 인증번호 확인(회원가입 시 입력한 인증번호와 redis 에 저장된 인증번호 일치하는지 확인)
     @Override
     @Transactional(readOnly = true)
-    public boolean verifyCode(String memberEmail, String inputCode) {
+    public void verifyCode(String memberEmail, String inputCode) {
         String savedCode = redisUtils.getValues(memberEmail);
         if (!inputCode.equals(savedCode)) {
             throw new BusinessException(ErrorCode.NOT_CORRECT_CODE);
         }
-        return true;
     }
 
     // 아이디 찾기(이메일 이용, 추후 member Entity 에 휴대전화번호필드 추가해서 휴대전화번호도 같이 이용하는 걸로 변경하기)
@@ -466,7 +467,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // 쿠키에 비밀번호 확인 상태 저장
-    @Override
+/*    @Override
     public void setPasswordVerifiedToCookie(HttpServletRequest request,
         HttpServletResponse response, String randomTag) {
         Cookie[] cookies = request.getCookies();
@@ -490,6 +491,38 @@ public class MemberServiceImpl implements MemberService {
             cookie.setPath("/");
             cookie.setMaxAge(60 * 60); // 1시간
             response.addCookie(cookie);
+        }
+    }*/
+
+    // 쿠키에 비밀번호 확인 상태 저장
+    @Override
+    public void setPasswordVerifiedToCookie(HttpServletRequest request,
+        HttpServletResponse response, String randomTag) {
+        Cookie[] cookies = request.getCookies();
+        boolean cookieExists = false;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("isPasswordVerified".equals(cookie.getName())) {
+                    if (cookie.getValue().equals(randomTag)) {
+                        cookieExists = true; // 쿠키가 이미 존재함
+                    } else {
+                        CookieUtil.deleteCookie(request, response, "isPasswordVerified");
+                    }
+                    break; // 쿠키를 찾았으면 루프 종료
+                }
+            }
+        }
+        // 쿠키가 존재하지 않을 때만 생성
+        if (!cookieExists) {
+            ResponseCookie cookie = ResponseCookie.from("isPasswordVerified", randomTag)
+                .path("/")
+                .maxAge(60 * 60)
+                .sameSite("Lax")
+                .httpOnly(true)
+                //.secure(true) // https 에서만 작동
+                .build();
+            response.addHeader("Set-Cookie", cookie.toString());
         }
     }
 
