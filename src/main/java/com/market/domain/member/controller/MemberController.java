@@ -3,7 +3,6 @@ package com.market.domain.member.controller;
 import com.market.domain.member.constant.Role;
 import com.market.domain.member.dto.*;
 import com.market.domain.member.entity.Member;
-import com.market.domain.member.repository.MemberRepository;
 import com.market.domain.member.repository.MemberSearchCond;
 import com.market.domain.member.service.MemberServiceImpl;
 import com.market.global.response.ApiResponse;
@@ -21,9 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -253,10 +250,26 @@ public class MemberController {
         return ResponseEntity.ok().body(memberService.getReportMemberList(memberNo));
     }
 
-    // 내가 신고한 사람 목록 확인, 관리자만 가능
+    // 나를 신고한 사람 목록 확인, 관리자만 가능
     @GetMapping("/report-list/who")
     public ResponseEntity<String> getReporters(Long memberNo) {
         return ResponseEntity.ok().body(memberService.getReporterList(memberNo));
     }
 
+    @PostMapping("/make-cookie")
+    public ResponseEntity<ApiResponse> postCookie(HttpServletRequest request,
+        HttpServletResponse response, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Member member = userDetails.getMember();
+        memberService.setPasswordVerifiedToCookie(request, response, member.getRandomTag());
+        return ResponseEntity.ok().body(
+            new ApiResponse("isPasswordVerified 쿠키 생성", HttpStatus.OK.value()));
+    }
+
+    @GetMapping("/has-cookie")
+    public ResponseEntity<Boolean> getCookie(HttpServletRequest request,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Member member = userDetails.getMember();
+        Boolean hasCookie = memberService.isPasswordVerified(request, member.getRandomTag());
+        return ResponseEntity.ok().body(hasCookie);
+    }
 }
