@@ -26,17 +26,18 @@ public class NoticeController {
 
     // 공지사항 생성
     @PostMapping("")
-    public ResponseEntity<NoticeResponseDto> createNotice(@ModelAttribute NoticeRequestDto noticeRequestDto,
-                                                          @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
-            throws IOException {
+    public ResponseEntity<NoticeResponseDto> createNotice(
+        @ModelAttribute NoticeRequestDto noticeRequestDto,
+        @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
+        throws IOException {
         NoticeResponseDto savedNotice = noticeService.createNotice(noticeRequestDto, files);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedNotice);
     }
 
     // 공지사항 전체 조회
     @GetMapping("")
-    public ResponseEntity<Page<NoticeResponseDto>> findNotices(Pageable pageable) {
-        Page<NoticeResponseDto> notices = noticeService.findAll(pageable);
+    public ResponseEntity<Page<NoticeResponseDto>> getAllNotices(Pageable pageable) {
+        Page<NoticeResponseDto> notices = noticeService.getAllNotices(pageable);
         return ResponseEntity.ok().body(notices);
     }
 
@@ -50,25 +51,26 @@ public class NoticeController {
 
     // 특정 공지사항 조회
     @GetMapping("/{noticeNo}")
-    public ResponseEntity<NoticeResponseDto> findNotice(@PathVariable long noticeNo, HttpServletRequest request) {
+    public ResponseEntity<NoticeResponseDto> getNotice(@PathVariable Long noticeNo,
+        HttpServletRequest request) {
         NoticeResponseDto notice = noticeService.getNotice(noticeNo, request);
         return ResponseEntity.ok().body(notice);
     }
 
     // 공지사항 수정
     @PutMapping("/{noticeNo}")
-    public ResponseEntity<NoticeResponseDto> updateNotice(@PathVariable long noticeNo,
-                                               @ModelAttribute NoticeRequestDto requestDto,
-                                               @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
-            throws IOException {
-        NoticeResponseDto updatedNotice = noticeService.update(noticeNo, requestDto, files);
+    public ResponseEntity<NoticeResponseDto> updateNotice(@PathVariable Long noticeNo,
+        @ModelAttribute NoticeRequestDto requestDto,
+        @RequestPart(value = "imageFiles", required = false) List<MultipartFile> files)
+        throws IOException {
+        NoticeResponseDto updatedNotice = noticeService.updateNotice(noticeNo, requestDto, files);
         return ResponseEntity.ok().body(updatedNotice);
     }
-    
+
     // 공지사항 삭제
     @DeleteMapping("{noticeNo}")
-    public ResponseEntity<ApiResponse> deleteNotice(@PathVariable long noticeNo) {
-        noticeService.delete(noticeNo);
+    public ResponseEntity<ApiResponse> deleteNotice(@PathVariable Long noticeNo) {
+        noticeService.deleteNotice(noticeNo);
         return ResponseEntity.ok(new ApiResponse("삭제 성공", HttpStatus.OK.value()));
     }
 

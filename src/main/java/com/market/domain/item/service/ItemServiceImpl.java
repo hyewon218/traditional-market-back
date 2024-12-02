@@ -34,7 +34,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -118,7 +120,7 @@ public class ItemServiceImpl implements ItemService {
             .toList();
     }
 
-    @Transactional // 상품 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+/*    @Transactional // 상품 단건 조회 // IP 주소당 하루에 조회수 1회 증가
     public ItemResponseDto getItem(Long itemNo, HttpServletRequest request) {
         Item item = findItem(itemNo);
 
@@ -126,6 +128,19 @@ public class ItemServiceImpl implements ItemService {
 
         if (!ipService.hasTypeBeenViewed(ipAddress, "item", item.getNo())) {
             ipService.markTypeAsViewed(ipAddress, "item", item.getNo());
+            item.setViewCount(item.getViewCount() + 1);
+        }
+        return ItemResponseDto.of(item);
+    }*/
+
+    @Transactional // 상품 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+    public ItemResponseDto getItem(Long itemNo, HttpServletRequest request) {
+        Item item = findItem(itemNo);
+        String ipAddress = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddress, userAgent, "item", item.getItemName())) {
+            ipService.markTypeAsViewed(ipAddress, userAgent, "item", item.getItemName());
             item.setViewCount(item.getViewCount() + 1);
         }
         return ItemResponseDto.of(item);
@@ -196,6 +211,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional // 상품 수정
+    @Caching(evict = {
+        @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager"),
+        @CacheEvict(cacheNames = "getTop5Items", allEntries = true, cacheManager = "ItemTop5CacheManager")
+    })
     public ItemResponseDto updateItem(Long itemNo, ItemRequestDto requestDto,
         List<MultipartFile> files) throws IOException {
         Item item = findItem(itemNo);
@@ -260,6 +279,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional // 상품 삭제
+    @Caching(evict = {
+        @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager"),
+        @CacheEvict(cacheNames = "getTop5Items", allEntries = true, cacheManager = "ItemTop5CacheManager")
+    })
     public void deleteItem(Long itemNo) {
         Item item = findItem(itemNo);
         List<Image> images = imageRepository.findByItem_No(itemNo);
@@ -355,7 +378,7 @@ public class ItemServiceImpl implements ItemService {
             .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ITEM));
     }
 
-    @Override
+/*    @Override
     @Transactional // 조회수 증가 로직
     public void addViewCount(HttpServletRequest request, Long itemNo) {
         Item Item = findItem(itemNo);
@@ -363,6 +386,19 @@ public class ItemServiceImpl implements ItemService {
         if (!ipService.hasTypeBeenViewed(ipAddr, "item", itemNo)) {
             ipService.markTypeAsViewed(ipAddr, "item", itemNo);
             Item.setViewCount(Item.getViewCount() + 1);
+        }
+    }*/
+
+    @Override
+    @Transactional // 조회수 증가 로직
+    public void addViewCount(HttpServletRequest request, Long itemNo) {
+        Item item = findItem(itemNo);
+        String ipAddr = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddr, userAgent, "item", item.getItemName())) {
+            ipService.markTypeAsViewed(ipAddr, userAgent, "item", item.getItemName());
+            item.setViewCount(item.getViewCount() + 1);
         }
     }
 }

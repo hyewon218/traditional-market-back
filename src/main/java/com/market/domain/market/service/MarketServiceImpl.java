@@ -119,7 +119,7 @@ public class MarketServiceImpl implements MarketService {
             marketList.getTotalElements());
     }
 
-    @Override
+/*    @Override
     @Transactional // 시장 단건 조회 // IP 주소당 하루에 조회수 1회 증가
     public MarketResponseDto getMarket(Long marketNo, HttpServletRequest request) {
         Market market = findMarket(marketNo);
@@ -131,10 +131,24 @@ public class MarketServiceImpl implements MarketService {
             market.setViewCount(market.getViewCount() + 1);
         }
         return MarketResponseDto.of(market);
+    }*/
+
+    @Override
+    @Transactional // 시장 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+    public MarketResponseDto getMarket(Long marketNo, HttpServletRequest request) {
+        Market market = findMarket(marketNo);
+        String ipAddress = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddress, userAgent, "market", market.getMarketName())) {
+            ipService.markTypeAsViewed(ipAddress, userAgent, "market", market.getMarketName());
+            market.setViewCount(market.getViewCount() + 1);
+        }
+        return MarketResponseDto.of(market);
     }
 
     @Override
-    @Transactional(readOnly = true) // 시장 이름 조회
+    @Transactional(readOnly = true) // 시장 이름 조회(결제된 주문 상세정보에서 필요)
     public String getMarketName(Long marketNo) {
         return findMarket(marketNo).getMarketName();
     }
@@ -322,13 +336,26 @@ public class MarketServiceImpl implements MarketService {
         return marketSalesSum;
     }
 
-    @Override
+/*    @Override
     @Transactional // 조회수 증가 로직
     public void addViewCount(HttpServletRequest request, Long marketNo) {
         Market market = findMarket(marketNo);
         String ipAddr = ipService.getIpAddress(request);
         if (!ipService.hasTypeBeenViewed(ipAddr, "market", marketNo)) {
             ipService.markTypeAsViewed(ipAddr, "market", marketNo);
+            market.setViewCount(market.getViewCount() + 1);
+        }
+    }*/
+
+    @Override
+    @Transactional // 조회수 증가 로직
+    public void addViewCount(HttpServletRequest request, Long marketNo) {
+        Market market = findMarket(marketNo);
+        String ipAddr = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddr, userAgent, "market", market.getMarketName())) {
+            ipService.markTypeAsViewed(ipAddr, userAgent, "market", market.getMarketName());
             market.setViewCount(market.getViewCount() + 1);
         }
     }

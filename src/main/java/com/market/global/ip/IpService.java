@@ -21,8 +21,8 @@ public class IpService { // 공지사항, 시장, 상점 조회 시 클라이언
     private final RedisTemplate<String, String> redisTemplate;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-    // 아래 2개 조회수 증가 메서드
-    // ipAddress를 key로 하는 집합에 typeNo 추가(아래 hasMarketBeenViewed 메서드 결과 false라면 실행)
+   /* // 아래 2개 조회수 증가 메서드
+    // ipAddress 를 key 로 하는 집합에 typeNo 추가(아래 hasMarketBeenViewed 메서드 결과 false 라면 실행)
     public void markTypeAsViewed(String ipAddress, String type, Long typeNo) {
         String key = generateKey(ipAddress, type);
 
@@ -34,7 +34,7 @@ public class IpService { // 공지사항, 시장, 상점 조회 시 클라이언
         redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS); // 만료 시간 설정
     }
 
-    // ipAddress를 key로 하는 집합에 typeNo이 있는지 확인
+    // ipAddress 를 key 로 하는 집합에 typeNo이 있는지 확인
     public boolean hasTypeBeenViewed(String ipAddress, String type, Long typeNo) {
         String key = generateKey(ipAddress, type);
         return redisTemplate.opsForSet().isMember(key, typeNo.toString());
@@ -52,8 +52,64 @@ public class IpService { // 공지사항, 시장, 상점 조회 시 클라이언
         };
     }
 
-    // HttpServletRequest에서 IP 주소를 추출하는 메서드
-    // localhost로 접속 시 ip를 가져오면 0:0:0:0:0:0:0:1로 출력됨
+    // HttpServletRequest 에서 IP 주소를 추출하는 메서드
+    // localhost 로 접속 시 ip를 가져오면 0:0:0:0:0:0:0:1로 출력됨
+    // ip로 접속하면 정상적인 ip로 얻어옴
+    public String getIpAddress(HttpServletRequest request) {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        return ipAddress;
+    }*/
+
+    // 저장되는 key, value 값 변경
+    // 아래 2개 조회수 증가 메서드
+    // ipAddress 를 key 로 하는 집합에 typeNo 추가(아래 hasMarketBeenViewed 메서드 결과 false 라면 실행)
+    public void markTypeAsViewed(String ipAddress, String userAgent, String type, String typeName) {
+        String key = generateKey(type, typeName);
+        String identifier = ipAddress + "_" + userAgent; // IP 주소와 User-Agent 결합해 유동 IP 문제 해결
+
+        // 현재 시간에서 자정까지의 시간 간격을 계산하여 만료 시간을 설정
+        LocalDateTime midnight = LocalDateTime.now().plusDays(1).with(LocalTime.MIDNIGHT);
+        long secondsUntilExpiration = Duration.between(LocalDateTime.now(), midnight).getSeconds();
+
+        redisTemplate.opsForSet().add(key, identifier);
+        redisTemplate.expire(key, secondsUntilExpiration, TimeUnit.SECONDS); // 만료 시간 설정
+    }
+
+    // ipAddress 를 key 로 하는 집합에 typeNo이 있는지 확인
+    public boolean hasTypeBeenViewed(String ipAddress, String userAgent, String type, String typeName) {
+        String key = generateKey(type, typeName);
+        String identifier = ipAddress + "_" + userAgent;
+        // Redis Set 존재 여부 확인
+        Boolean result = redisTemplate.opsForSet().isMember(key, identifier);
+        return Boolean.TRUE.equals(result);
+    }
+
+    // switch 문을 사용하여 키 생성
+    private String generateKey(String type, String typeName) {
+        String today = LocalDate.now().format(DATE_FORMATTER);
+        return switch (type) {
+            case "notice", "market", "shop", "item" -> typeName + " 조회" + "_" + today;
+            default -> throw new IllegalArgumentException("Unsupported type: " + type);
+        };
+    }
+
+    // HttpServletRequest 에서 IP 주소를 추출하는 메서드
+    // localhost 로 접속 시 ip를 가져오면 0:0:0:0:0:0:0:1로 출력됨
     // ip로 접속하면 정상적인 ip로 얻어옴
     public String getIpAddress(HttpServletRequest request) {
         String ipAddress = request.getHeader("X-Forwarded-For");
@@ -75,4 +131,7 @@ public class IpService { // 공지사항, 시장, 상점 조회 시 클라이언
         return ipAddress;
     }
 
+    public String getUserAgent(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
+    }
 }

@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -75,12 +74,13 @@ public class VisitorService {
         return visitorId;
     }
 
+/*    // Redis 에 저장할 때 이미 유효 시간을 설정하므로 불필요함
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정에 실행
     public void resetDailyVisitorCount() {
         String today = LocalDate.now().format(DATE_FORMATTER);
         String key = "visitor:" + today;
         redisTemplate.delete(key);
-    }
+    }*/
 
     ////////////////////// 쿠키 사용해 조회수 증가 시 필요///////////////////////////////
     public void markMarketAsViewed(String visitorId, Long marketNo) {
