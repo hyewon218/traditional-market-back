@@ -34,6 +34,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -91,11 +92,26 @@ public class ShopServiceImpl implements ShopService {
         return ShopResponseDto.of(shop);
     }
 
-    @Override
+/*    @Override
     @Transactional(readOnly = true) // 상점 목록 조회
     public Page<ShopResponseDto> getShops(Pageable pageable) {
         Page<Shop> shopList = shopRepository.findAll(pageable);
         return shopList.map(ShopResponseDto::of);
+    }*/
+
+    @Override
+    @Transactional(readOnly = true) // 상점 목록 조회
+    @Cacheable(cacheNames = "shops",
+        key = "#pageable.pageNumber + '-' + #pageable.pageSize",
+        cacheManager = "marketCacheManager"
+    )
+    public RestPage<ShopResponseDto> getShops(Pageable pageable) {
+        Page<Shop> shopList = shopRepository.findAll(pageable);
+        List<ShopResponseDto> dtoList = shopList.getContent().stream()
+            .map(ShopResponseDto::of)
+            .toList();
+        return new RestPage<>(dtoList, pageable.getPageNumber(), pageable.getPageSize(),
+            shopList.getTotalElements());
     }
 
     @Override
@@ -151,7 +167,7 @@ public class ShopServiceImpl implements ShopService {
             shopList.getTotalElements());
     }
 
-    @Transactional // 상점 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+/*    @Transactional // 상점 단건 조회 // IP 주소당 하루에 조회수 1회 증가
     public ShopResponseDto getShop(Long shopNo, HttpServletRequest request) {
         Shop shop = findShop(shopNo);
 
@@ -162,11 +178,28 @@ public class ShopServiceImpl implements ShopService {
             shop.setViewCount(shop.getViewCount() + 1);
         }
         return ShopResponseDto.of(shop);
+    }*/
+
+    @Transactional // 상점 단건 조회 // IP 주소당 하루에 조회수 1회 증가
+    public ShopResponseDto getShop(Long shopNo, HttpServletRequest request) {
+        Shop shop = findShop(shopNo);
+
+        String ipAddress = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddress, userAgent, "shop", shop.getShopName())) {
+            ipService.markTypeAsViewed(ipAddress, userAgent, "shop", shop.getShopName());
+            shop.setViewCount(shop.getViewCount() + 1);
+        }
+        return ShopResponseDto.of(shop);
     }
 
     @Override
     @Transactional // 상점 수정
-    @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager") // 특정 상점 수정 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
+    @Caching(evict = { // // 특정 상점 수정 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
+        @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager"), // 전체 상점 캐시 무효화
+        @CacheEvict(cacheNames = "getTop5Items", allEntries = true, cacheManager = "ItemTop5CacheManager") // Top5 아이템 캐시 무효화
+    })
     public ShopResponseDto updateShop(Long shopNo, ShopRequestDto requestDto,
         List<MultipartFile> files) throws IOException {
         Shop shop = findShop(shopNo);
@@ -241,7 +274,10 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional // 상점 삭제
-    @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager") // 특정 상점 삭제 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
+    @Caching(evict = {
+        @CacheEvict(cacheNames = "shops", allEntries = true, cacheManager = "marketCacheManager"), // 전체 상점 캐시 무효화
+        @CacheEvict(cacheNames = "getTop5Items", allEntries = true, cacheManager = "ItemTop5CacheManager") // Top5 아이템 캐시 무효화
+    }) // 특정 상점 삭제 시 전체 상점 캐시도 삭제해서 동기화 문제 해결
     public void deleteShop(Long shopNo) {
         Shop shop = findShop(shopNo);
         List<Image> images = imageRepository.findByShop_No(shopNo);
@@ -375,13 +411,26 @@ public class ShopServiceImpl implements ShopService {
         }
     }
 
-    @Override
+/*    @Override
     @Transactional // 조회수 증가 로직
     public void addViewCount(HttpServletRequest request, Long shopNo) {
         Shop shop = findShop(shopNo);
         String ipAddr = ipService.getIpAddress(request);
         if (!ipService.hasTypeBeenViewed(ipAddr, "shop", shopNo)) {
             ipService.markTypeAsViewed(ipAddr, "shop", shopNo);
+            shop.setViewCount(shop.getViewCount() + 1);
+        }
+    }*/
+
+    @Override
+    @Transactional // 조회수 증가 로직
+    public void addViewCount(HttpServletRequest request, Long shopNo) {
+        Shop shop = findShop(shopNo);
+        String ipAddr = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+
+        if (!ipService.hasTypeBeenViewed(ipAddr, userAgent, "shop", shop.getShopName())) {
+            ipService.markTypeAsViewed(ipAddr, userAgent, "shop", shop.getShopName());
             shop.setViewCount(shop.getViewCount() + 1);
         }
     }

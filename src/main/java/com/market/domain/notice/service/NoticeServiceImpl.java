@@ -38,8 +38,9 @@ public class NoticeServiceImpl implements NoticeService {
     // 공지사항 생성
     @Override
     @Transactional
-    public NoticeResponseDto createNotice(NoticeRequestDto noticeRequestDto, List<MultipartFile> files)
-            throws IOException {
+    public NoticeResponseDto createNotice(NoticeRequestDto noticeRequestDto,
+        List<MultipartFile> files)
+        throws IOException {
 
         Notice notice = noticeRequestDto.toEntity();
         noticeRepository.save(notice);
@@ -52,7 +53,8 @@ public class NoticeServiceImpl implements NoticeService {
 
                 String fileUrl = awsS3upload.upload(file, "notice " + notice.getNoticeNo());
 
-                if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl, notice.getNoticeNo())) {
+                if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl,
+                    notice.getNoticeNo())) {
                     throw new BusinessException(ErrorCode.EXISTED_FILE);
                 }
                 imageRepository.save(new Image(notice, fileUrl));
@@ -64,7 +66,7 @@ public class NoticeServiceImpl implements NoticeService {
     // 공지사항 전체 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<NoticeResponseDto> findAll(Pageable pageable) {
+    public Page<NoticeResponseDto> getAllNotices(Pageable pageable) {
         Page<Notice> notices = noticeRepository.findAll(pageable);
         return notices.map(NoticeResponseDto::of);
     }
@@ -76,7 +78,7 @@ public class NoticeServiceImpl implements NoticeService {
         return noticeRepositoryQuery.searchNotices(cond, pageable).map(NoticeResponseDto::of);
     }
 
-    // 특정 공지사항 조회
+/*  // 특정 공지사항 조회
     @Override
     @Transactional
     public NoticeResponseDto getNotice(long noticeNo, HttpServletRequest request) {
@@ -89,15 +91,36 @@ public class NoticeServiceImpl implements NoticeService {
             notice.setViewCount(notice.getViewCount() + 1);
         }
         return NoticeResponseDto.of(notice);
+    }*/
+
+    // 특정 공지사항 조회
+    @Override
+    @Transactional
+    public NoticeResponseDto getNotice(Long noticeNo, HttpServletRequest request) {
+        Notice notice = findById(noticeNo);
+        String ipAddress = ipService.getIpAddress(request);
+        String userAgent = ipService.getUserAgent(request);
+        if (!ipService.hasTypeBeenViewed(ipAddress, userAgent, "notice", notice.getNoticeTitle())) {
+            ipService.markTypeAsViewed(ipAddress, userAgent, "notice", notice.getNoticeTitle());
+            notice.setViewCount(notice.getViewCount() + 1);
+        }
+        return NoticeResponseDto.of(notice);
     }
-    
+
+    @Override
+    @Transactional(readOnly = true) // 공지사항 찾기
+    public Notice findById(Long noticeNo) {
+        return noticeRepository.findById(noticeNo)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_NOTICE));
+    }
+
     // 공지사항 수정
     @Override
     @Transactional
-    public NoticeResponseDto update(long noticeNo, NoticeRequestDto requestDto, List<MultipartFile> files)
-            throws IOException {
-        Notice notice = noticeRepository.findById(noticeNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));
+    public NoticeResponseDto updateNotice(Long noticeNo, NoticeRequestDto requestDto,
+        List<MultipartFile> files)
+        throws IOException {
+        Notice notice = findById(noticeNo);
 
         log.info("입력받은 제목 : " + requestDto.getNoticeTitle());
         log.info("입력받은 내용 : " + requestDto.getNoticeContent());
@@ -119,7 +142,8 @@ public class NoticeServiceImpl implements NoticeService {
                     // 파일이 존재하면 S3에 업로드 후 DB에 저장
                     String fileUrl = awsS3upload.upload(file, "notice " + notice.getNoticeNo());
 
-                    if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl, notice.getNoticeNo())) {
+                    if (imageRepository.existsByImageUrlAndNotice_NoticeNo(fileUrl,
+                        notice.getNoticeNo())) {
                         throw new BusinessException(ErrorCode.EXISTED_FILE);
                     }
                     imageRepository.save(new Image(notice, fileUrl));
@@ -127,7 +151,7 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        // 이미지 URL이 있을 경우 (기존 이미지 유지 및 삭제 처리)
+        // 이미지 URL 이 있을 경우 (기존 이미지 유지 및 삭제 처리)
         if (imageUrls != null) {
             // 기존 이미지 중 클라이언트에서 삭제된 이미지 처리
             for (Image existingImage : existingImages) {
@@ -137,20 +161,19 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        // 이미지 URL이 비어 있을 경우 (모든 기존 이미지 삭제 처리)
+        // 이미지 URL 이 비어 있을 경우 (모든 기존 이미지 삭제 처리)
         if (imageUrls == null || imageUrls.isEmpty()) {
             imageRepository.deleteAll(existingImages);
         }
 
         return NoticeResponseDto.of(notice);
     }
-    
+
     // 공지사항 삭제
     @Override
     @Transactional
-    public void delete(long noticeNo) {
-        Notice notice = noticeRepository.findById(noticeNo)
-                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항 조회 실패 : " + noticeNo));
+    public void deleteNotice(Long noticeNo) {
+        Notice notice = findById(noticeNo);
         noticeRepository.deleteById(notice.getNoticeNo());
 
         List<Image> savedNoticeImage = imageRepository.findByNotice_NoticeNo(notice.getNoticeNo());

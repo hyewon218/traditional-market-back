@@ -107,6 +107,8 @@ public enum ErrorCode {
     // 이메일
     NOT_FOUND_EMAIL(HttpStatus.NOT_FOUND, "E001", "존재하지 않는 이메일입니다."),
     EMAIL_SEND_FAIL(HttpStatus.NOT_FOUND, "E002", "이메일 전송에 실패했습니다."),
+    // 공지사항
+    NOT_FOUND_NOTICE(HttpStatus.BAD_REQUEST, "NT002", "존재하지 않는 공지사항입나다."),
     ;
 
     private final HttpStatus httpStatus;

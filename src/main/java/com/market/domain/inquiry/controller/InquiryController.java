@@ -50,9 +50,8 @@ public class InquiryController {
     }
 
     @GetMapping("{inquiryNo}") // 특정 문의사항 조회(admin 권한도 조회 가능)
-    public ResponseEntity<InquiryResponseDto> findInquiry(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable Long inquiryNo) {
+    public ResponseEntity<InquiryResponseDto> getInquiry(
+        @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long inquiryNo) {
         return ResponseEntity.ok(inquiryService.getInquiry(userDetails.getMember(), inquiryNo));
     }
 
