@@ -19,7 +19,10 @@ import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
-@Table(name = "shop")
+@Table(name = "shop", indexes = {
+    @Index(name = "idx_shop_seller_member_no", columnList = "member_no")
+})
+//@Table(name = "shop")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
