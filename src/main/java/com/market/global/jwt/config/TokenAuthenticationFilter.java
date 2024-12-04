@@ -29,12 +29,20 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
         String method = request.getMethod();
+
+        // 메인 페이지에서만 방문자 추적
+        // 해당 조건 안 걸면 api 호출마다 방문자 쿠키 생성하므로
+        if (uri.equals("/api/markets")) {
+            visitorService.trackVisitor(request, response);
+        }
+
         if (uri.equals("/api/members/signup") || uri.equals("/api/members/login") ||
             uri.equals("/auth/success") || uri.equals("/api/members/checkid") ||
             uri.equals("/login/oauth2/code/*") || uri.equals("/api/send-mail/email") ||
+            uri.equals("/api/send-mail/email/findid") || uri.equals("/api/send-mail/email/temppw") ||
             uri.equals("/api/members/checkemail") || uri.equals("/api/members/verifycode") ||
-            uri.equals("/api/notices/search") || uri.equals("/api/acc-token") ||
-            uri.equals("/api/ref-token") ||
+            uri.equals("/api/notices/search") || uri.equals("/api/members/findid") ||
+            uri.equals("/api/acc-token") || uri.equals("/api/ref-token") ||
             (uri.startsWith("/api/") && uri.endsWith("/markets")
                 && method.equalsIgnoreCase("get")) ||
             (uri.startsWith("/api/") && uri.endsWith("/notices")
@@ -54,9 +62,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
-        // 로그인, 비로그인 모두 방문자 쿠키 생성
-        visitorService.trackVisitor(request, response);
 
         final String authorizationHeader;
         // 요청 헤더와 Authorization 키의 값
