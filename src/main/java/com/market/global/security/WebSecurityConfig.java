@@ -10,10 +10,9 @@ import com.market.global.security.handler.CustomAuthenticationEntryPoint;
 import com.market.global.security.oauth2.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import com.market.global.security.oauth2.OAuth2SuccessHandler;
 import com.market.global.security.oauth2.OAuth2UserCustomService;
+import com.market.global.visitor.VisitorService;
 import java.util.Arrays;
 import java.util.List;
-
-import com.market.global.visitor.VisitorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -84,6 +83,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/chatrooms/{chatRoomNo}/read").hasAnyRole("ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/seller/shops/mine").hasAnyRole("SELLER", "ADMIN") // 판매자가 소유한 상점 목록 조회
                         .requestMatchers(HttpMethod.POST, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 생성
                         .requestMatchers(HttpMethod.GET, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 조회
                         .requestMatchers(HttpMethod.DELETE, "/api/items/{itemNo}/likes").authenticated() // 상품 좋아요 삭제
@@ -99,7 +99,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/members/**","/api/chatrooms", "/api/chatrooms/**", "/myinfo/inquiry/**",
                                 "/api/inquiries/**", "/api/notifications/subscribe", "/api/notifications", "/api/payment/**",
                                 "/api/cartitems", "/api/carts", "/api/carts/**").authenticated()
-                        .requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
+                        //.requestMatchers("/oauth2/authorization", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
+                        .requestMatchers("/oauth2/authorization/*", "/*/oauth2/code/*", "/oauth/success").permitAll() // oauth2
                         .anyRequest().authenticated()
                 )
 
@@ -186,11 +187,10 @@ public class WebSecurityConfig {
                 "http://localhost:3000" // 필요시 개발용 localhost 허용
             ));
             configuration.setAllowedMethods(
-                Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE")); // 모든 HTTP 메서드 허용
+                Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")); // 모든 HTTP 메서드 허용
             configuration.setAllowedHeaders(
                 Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
             configuration.setAllowCredentials(true); // 클라이언트와 서버 간에 쿠키 주고받기 허용
-
             UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
             source.registerCorsConfiguration("/**", configuration);
 
