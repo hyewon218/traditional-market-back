@@ -24,13 +24,13 @@ import java.util.Optional;
 @Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    public static final String FIRST_REDIRECT_PATH = "http://localhost:3000/add-info"; // 추가정보 입력 페이지
+    //public static final String FIRST_REDIRECT_PATH = "http://localhost:3000/add-info"; // 추가정보 입력 페이지
     //public static final String FIRST_REDIRECT_PATH = "http://3.36.96.0/add-info"; // 추가정보 입력 페이지
-    //public static final String FIRST_REDIRECT_PATH = "https://tmarket.store/add-info"; // 추가정보 입력 페이지
+    public static final String FIRST_REDIRECT_PATH = "https://tmarket.store/add-info"; // 추가정보 입력 페이지
 
-    public static final String REDIRECT_PATH = "http://localhost:3000/market"; // 홈
+    //public static final String REDIRECT_PATH = "http://localhost:3000/market"; // 홈
     //public static final String REDIRECT_PATH = "http://3.36.96.0/market"; // 홈
-    //public static final String REDIRECT_PATH = "https://tmarket.store/market"; // 홈
+    public static final String REDIRECT_PATH = "https://tmarket.store/market"; // 홈
 
     private final TokenProvider tokenProvider;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
