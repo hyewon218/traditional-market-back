@@ -148,7 +148,9 @@ public class ShopController {
         return ResponseEntity.ok().body(shopService.countShopsByMarket(marketNo));
     }
 
-    @GetMapping("/shops/seller") // 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
+    // /api/shops 로 시작하는 get 요청은 토큰 검증 안하고 통과되기 때문에 userDetails 생성 X(userDetails 객체 null)
+    // 위와 같은 이유로 url 경로를 기존 /api/shops~ 에서 아래와 같이 수정
+    @GetMapping("/seller/shops/mine") // 판매자가 소유한 상점 목록 조회 (판매자 본인이 본인의 상점 목록 조회)
     public ResponseEntity<Page<ShopResponseDto>> getShopsBySeller(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         Pageable pageable) {
@@ -156,7 +158,7 @@ public class ShopController {
             .body(shopService.getShopsBySellerNo(userDetails.getMember(), pageable));
     }
 
-    @GetMapping("/shops/admin/{sellerNo}") // 판매자가 소유한 상점 목록 조회 (관리자가 특정 판매자의 상점 목록 조회)
+    @GetMapping("/admin/shops/{sellerNo}") // 판매자가 소유한 상점 목록 조회 (관리자가 특정 판매자의 상점 목록 조회)
     public ResponseEntity<Page<ShopResponseDto>> getShopsBySellerAdmin(
         @AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long sellerNo,
         Pageable pageable) {
